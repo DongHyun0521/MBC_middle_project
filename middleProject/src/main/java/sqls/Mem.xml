@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+ 	<mapper namespace="com.mbc.mid.dao.MemDao">
+ 	<!-- 아이디 중복 확인 -->
+ 	<select id="idCheck" parameterType="String" resultType="int">
+		SELECT COUNT(*) FROM mem WHERE id = #{id}
+	</select>
+  
+	<!-- 회원가입 -->
+	<insert id="addMem" parameterType="com.mbc.mid.dto.MemDto">
+        INSERT INTO mem (id, password, name, birthday, gender, address, address_detail, phone_number, email) 
+        VALUES (#{id}, #{password}, #{name}, #{birthday}, #{gender}, #{address}, #{addressDetail}, #{phoneNumber}, #{email})
+    </insert>
+	  
+	<!-- 회원탈퇴 (del=0 -> del=1)-->
+	<delete id="delMem" parameterType="String">
+		UPDATE mem SET del = 1 WHERE id = #{id}
+	</delete>
+	  
+	<!-- 로그인 -->
+	<select id="login" parameterType="com.mbc.mid.dto.MemDto" resultType="com.mbc.mid.dto.MemDto">
+        SELECT mem_id as memId, id, password, name, birthday, gender, address, address_detail, phone_number as phoneNumber, email
+        FROM mem WHERE id = #{id} AND password = #{password} AND del = 0
+    </select>
+	  
+	<!-- 아이디 찾기 (이름, 전화번호, 이메일 입력받고 일치하면 아이디 리턴) -->
+	<select id="findId" parameterType="com.mbc.mid.dto.MemDto" resultType="String">
+        SELECT id FROM mem 
+        WHERE name = #{name} AND phone_number = #{phoneNumber} AND email = #{email}
+    </select>
+	  
+	<!-- 마이페이지 (개인정보 List) -->
+	<select id="getMemberInfo" parameterType="String" resultType="com.mbc.mid.dto.MemDto">
+        SELECT mem_id as memId, id, name, birthday, gender, address, address_detail, phone_number as phoneNumber, email
+        FROM mem WHERE id = #{id}
+    </select>
+    
+    <!-- 마이페이지 (차량목록 List) -->
+    <select id="getMemberVehicleList" parameterType="String" resultType="com.mbc.mid.dto.MemberVehicleDto">
+        SELECT v.vehicle_id as vehicleId, v.mem_id as memId, v.vehicle_num as vehicleNum, v.vehicle_type as vehicleType, v.fuel_type as fuelType 
+        FROM member_vehicle v JOIN mem m 
+        ON v.mem_id = m.mem_id WHERE m.id = #{id}
+    </select>
+	  
+	<!-- 회원정보 수정 (아이디 빼고 모두 수정 가능) -->
+	<update id="updateMem" parameterType="com.mbc.mid.dto.MemDto">
+        UPDATE mem SET password = #{password}, name = #{name}, address = #{address}, address_detail = #{addressDetail}, phone_number = #{phoneNumber}, email = #{email}, birthday = #{birthday},  gender = #{gender}
+        WHERE id = #{id}
+    </update>
+	  
+	<!-- 차량 등록 -->
+	<insert id="addVehi" parameterType="com.mbc.mid.dto.MemberVehicleDto">
+        INSERT INTO member_vehicle (mem_id, vehicle_num, vehicle_type, fuel_type) 
+        VALUES (#{memId}, #{vehicleNum}, #{vehicleType}, #{fuelType})
+    </insert>
+    
+    <!-- 차량 수정 -->
+    <update id="updateVehi" parameterType="com.mbc.mid.dto.MemberVehicleDto">
+        UPDATE member_vehicle 
+        SET vehicle_num = #{vehicleNum}, vehicle_type = #{vehicleType}, fuel_type = #{fuelType}
+        WHERE vehicle_id = #{vehicleId} AND mem_id = #{memId}
+    </update>
+	  
+	<!-- 차량 삭제 -->
+	<delete id="delVehi" parameterType="String">
+        DELETE FROM member_vehicle 
+        WHERE vehicle_num = #{vehicleNum}
+    </delete>
+    
+    <!-- 차량 번호로 회원 차량인지 확인 -->
+    <select id="checkMemberVehicle" parameterType="String" resultType="int">
+        SELECT COUNT(*) FROM member_vehicle WHERE vehicle_num = #{vehicleNum}
+    </select>
+    
+    <!--  -->
+    <select id="getMemIdByVehicle" parameterType="String" resultType="Long">
+        SELECT mem_id FROM member_vehicle WHERE vehicle_num = #{vehicleNum}
+    </select>
+  
+</mapper>

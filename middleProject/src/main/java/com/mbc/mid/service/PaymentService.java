@@ -1,0 +1,23 @@
+package com.mbc.mid.service;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import com.mbc.mid.dao.ParkingLogDao;
+import com.mbc.mid.dao.PaymentDao;
+import com.mbc.mid.dto.PaymentDto;
+
+@Service
+@Transactional
+public class PaymentService {
+    @Autowired
+    private PaymentDao paymentDao;
+    @Autowired
+    private ParkingLogDao parkingLogDao;
+
+    public void processPayment(PaymentDto paymentDto) {
+        paymentDao.insertPayment(paymentDto);
+        parkingLogDao.updatePaymentStatus(paymentDto.getParkingLogId());
+    }
+}

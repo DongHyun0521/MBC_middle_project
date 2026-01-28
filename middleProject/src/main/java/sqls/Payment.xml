@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.mbc.mid.dao.PaymentDao">
+
+	<!-- 결제 정보 저장 -->
+    <insert id="insertPayment" parameterType="com.mbc.mid.dto.PaymentDto">
+        INSERT INTO payment (parking_log_id, mem_id, amount, pay_method, pay_date)
+        VALUES (#{parkingLogId}, #{memId}, #{amount}, '카드', now())
+    </insert>
+
+</mapper>
