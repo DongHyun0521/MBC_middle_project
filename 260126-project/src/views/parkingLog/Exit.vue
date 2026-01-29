@@ -1,55 +1,57 @@
 <template>
     <div>
-        <h1>[ 주차장 출차 ]</h1>
-        <div v-if="!resultText && !isLoading">
-            <input type="file" id="fileInput" @change="handleFileUpload" accept="image/*"/>
-        </div>
-    <!-- --------------------------------------------------------- -->
-        <div v-if="isLoading">
-            <h2>번호판 인식 및 요금 계산 중...</h2>
-        </div>
-    <!-- --------------------------------------------------------- -->
-        <div v-if="resultText && !isLoading">
-            <table>
-            <thead>
-                <tr>
-                    <td>
-                        <h2>[ 번호판 이미지 ]</h2>
-                        <img v-if="debugImages[0]" :src="`data:image/png;base64,${debugImages[0]}`" alt="번호판 이미지"/>
-                    </td>
-                    <td>
-                        <h2>[ 차량 번호 ]</h2>
-                        <p>{{ resultText }}</p>
-                        <div>
-                            <span v-if="isMember">[ 회원 차량 ]</span>
-                            <span v-else>[ 일반 차량 ]</span>
-                        </div>
-                    </td>
-                </tr>
-
-                <tr>
-                    <td>
-                        <p>[ 입차 시간 ]</p>
-                        <p>{{ entryTime || '-' }}</p>
-                    </td>
-                    <td>
-                        <p>[ 출차 시간 ]</p>
-                        <p>{{ exitTime || '-' }}</p>
-                    </td>
-                </tr>
-            </thead>
-            <tbody>
+      <h1>[ 주차장 출차 ]</h1>
+      <div v-if="!resultText && !isLoading">
+          <input type="file" id="fileInput" @change="handleFileUpload" accept="image/*"/>
+      </div>
+  <!-- --------------------------------------------------------- -->
+      <div v-if="isLoading">
+          <h2>번호판 인식 및 요금 계산 중...</h2>
+      </div>
+  <!-- --------------------------------------------------------- -->
+      <div v-if="resultText && !isLoading">
+        <table>
+          <thead>
             <tr>
-                <td colspan="2">
-                    <h2>[ 결제 금액 ]</h2>
-                    <p>{{ formattedFee }}원</p>
-                    <p>(최초 30분 무료 / 이후 30분당 {{ isMember ? '1,000' : '2,000' }}원)</p>
-                </td>
+              <td>
+                <h2>[ 번호판 이미지 ]</h2>
+                <img v-if="debugImages[0]" :src="`data:image/png;base64,${debugImages[0]}`" alt="번호판 이미지"/>
+              </td>
+              <td>
+                <h2>[ 차량 번호 ]</h2>
+                  <p>{{ resultText }}</p>
+                  <div>
+                  <span v-if="isMember">[ 회원 차량 ]</span>
+                  <span v-else>[ 일반 차량 ]</span>
+                  </div>
+              </td>
             </tr>
-            </tbody>
-            </table>
-            <button @click="handlePayment">(카드)결제하기</button>
-        </div>
+
+            <tr>
+              <td>
+                <p>[ 입차 시간 ]</p>
+                <p>{{ entryTime || '-' }}</p>
+              </td>
+              <td>
+                <p>[ 출차 시간 ]</p>
+                <p>{{ exitTime || '-' }}</p>
+              </td>
+            </tr>
+        </thead>
+        <tbody>
+        <tr>
+            <td colspan="2">
+                <h2>[ 결제 금액 ]</h2>
+                <p>{{ formattedFee }}원</p>
+                <p>(최초 30분 무료 / 이후 30분당 {{ isMember ? '1,000' : '2,000' }}원)</p>
+            </td>
+        </tr>
+        </tbody>
+        </table>
+        <button v-if="parkingFee > 0" @click="handlePayment" class="pay-btn">
+          (카드)결제하기
+        </button>
+      </div>
     </div>
 </template>
 
@@ -69,7 +71,12 @@
   const currentLogId = ref(null);
   const currentMemId = ref(null);
 
-  const formattedFee = computed(() => parkingFee.value.toLocaleString());
+  const formattedFee = computed(() => {
+    if (parkingFee.value === -1) {
+      return '확인 불가';
+    }
+    return parkingFee.value.toLocaleString();
+  });
 
   const handleFileUpload = async (event) => {
     const file = event.target.files[0];
@@ -90,11 +97,10 @@
     debugImages.value = [];
 
     try {
-      // ★ API 함수 호출 (이미지 전송)
       const response = await uploadExitImage(selectedFile.value);
-
       const data = response.data;
       
+      // 데이터 바인딩
       resultText.value = data.resultText;
       entryTime.value = data.entryTime;
       exitTime.value = data.exitTime;
@@ -104,6 +110,14 @@
       
       currentLogId.value = data.parkingLogId;
       currentMemId.value = data.memId;
+
+      // 30분 이내는 바로 얼럿 창
+      if (data.parkingFee === 0) {
+        setTimeout(() => {
+          alert(`[무료 주차]\n차량번호: ${data.resultText}\n회차 차량(30분 이내)입니다.\n안녕히 가십시오.`);
+          resetUpload(); // 확인 누르면 바로 초기화
+        }, 1000); // 1초 딜레이
+      }
       
     } catch (error) {
       console.error(error);

@@ -1,3 +1,9 @@
+DROP TABLE IF EXISTS member_vehicle;	-- 1번
+DROP TABLE IF EXISTS payment;			-- 2번
+DROP TABLE IF EXISTS mem;				-- 3번
+DROP TABLE IF EXISTS parking_spot;		-- 4번
+DROP TABLE IF EXISTS parking_log;		-- 5번
+
 -- mem 테이블 (회원 정보)
 CREATE TABLE mem (
     mem_id SERIAL PRIMARY KEY,				-- PK
@@ -30,16 +36,6 @@ CREATE TABLE parking_log (
     is_member BOOLEAN DEFAULT FALSE,		-- 회원 여부
     payment_status BOOLEAN DEFAULT FALSE	-- 결제 여부
 );
--- parking_spot 테이블 (주차 구역 상태)
-CREATE TABLE parking_spot (
-    spot_id SERIAL PRIMARY KEY,					-- PK
-    parking_log_id INTEGER
-		REFERENCES parking_log(parking_log_id),	-- FK(parking_log.parking_log_id)
-    floor INTEGER NOT NULL,						-- 층수
-    row_num INTEGER NOT NULL,					-- 행 번호
-    column_num INTEGER NOT NULL,				-- 열 번호
-    is_parked BOOLEAN NOT NULL DEFAULT FALSE	-- 주차 여부
-);
 -- payment 테이블 (결제 정보)
 CREATE TABLE payment (
     pay_id SERIAL PRIMARY KEY,						-- PK
@@ -51,14 +47,16 @@ CREATE TABLE payment (
     pay_method VARCHAR(20),							-- 결제 수단
     pay_date TIMESTAMP DEFAULT now()				-- 결제 일시
 );
-
-DROP TABLE IF EXISTS member_vehicle;	-- 1번
-DROP TABLE IF EXISTS mem;				-- 2번
-
-DROP TABLE IF EXISTS parking_log;	-- 1번
-DROP TABLE IF EXISTS payment;		-- 2번
-
-DROP TABLE IF EXISTS parking_spot;
+-- parking_spot 테이블 (주차 구역 상태)
+CREATE TABLE parking_spot (
+    spot_id SERIAL PRIMARY KEY,					-- PK
+    parking_log_id INTEGER
+		REFERENCES parking_log(parking_log_id),	-- FK(parking_log.parking_log_id)
+    floor INTEGER NOT NULL,						-- 층수
+    row_num INTEGER NOT NULL,					-- 행 번호
+    column_num INTEGER NOT NULL,				-- 열 번호
+    is_parked BOOLEAN NOT NULL DEFAULT FALSE	-- 주차 여부
+);
 
 SELECT * FROM mem;
 SELECT * FROM member_vehicle;
@@ -66,8 +64,8 @@ SELECT * FROM parking_log;
 SELECT * FROM parking_spot;
 SELECT * FROM payment;
 
-DELETE FROM parking_log;	-- 1번
-DELETE FROM payment;		-- 2번
+DELETE FROM payment;		-- 1번
+DELETE FROM parking_log;	-- 2번
 
 DELETE FROM member_vehicle;	-- 1번
 DELETE FROM mem;			-- 2번

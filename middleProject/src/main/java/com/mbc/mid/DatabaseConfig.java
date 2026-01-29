@@ -29,13 +29,13 @@ public class DatabaseConfig {
 	@Bean
 	public DataSource dataSource() {
 		DataSource dataSource = new HikariDataSource(hikariConfig());
-		System.out.println("= DatabaseConfig: dataSource | " + dataSource);
+		System.out.println("=> DatabaseConfig: dataSource | " + dataSource);
 		return dataSource;
 	}
 	
 	@Bean
 	public SqlSessionFactory sqlSessionFactory(DataSource dataSource) throws Exception {
-		System.out.println("= DatabaseConfig: sqlSessionFactory()");
+		System.out.println("=> DatabaseConfig: sqlSessionFactory()");
 		  
 		SqlSessionFactoryBean sqlSessionFactoryBean = new SqlSessionFactoryBean();
 		sqlSessionFactoryBean.setDataSource(dataSource);

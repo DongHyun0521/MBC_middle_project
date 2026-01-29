@@ -1,5 +1,7 @@
 package com.mbc.mid.service;
 
+import java.util.Date;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -13,10 +15,12 @@ import com.mbc.mid.dto.PaymentDto;
 public class PaymentService {
     @Autowired
     private PaymentDao paymentDao;
+    
     @Autowired
     private ParkingLogDao parkingLogDao;
 
     public void processPayment(PaymentDto paymentDto) {
+    	System.out.println("=> PaymentService: processPayment | "+ new Date());
         paymentDao.insertPayment(paymentDto);
         parkingLogDao.updatePaymentStatus(paymentDto.getParkingLogId());
     }

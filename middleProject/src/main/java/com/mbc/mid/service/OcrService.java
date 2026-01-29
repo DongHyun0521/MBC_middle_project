@@ -36,20 +36,25 @@ public class OcrService {
     
     @Autowired
     private ParkingLogDao parkingLogDao;
+    
     @Autowired
     private MemDao memDao;
     
-    // 입차 시 번호판 이미지 OCR
+    // 입차 시
     public OcrResponse processEntryImage(MultipartFile file) {
+    	System.out.println("=> OcrService: processEntryImage | "+ new Date());
         return processImageCommon(file, "ENTRY");
     }
 
-    // 출차 시 번호판 이미지 OCR
+    // 출차 시
     public OcrResponse processExitImage(MultipartFile file) {
+    	System.out.println("=> OcrService: processExitImage | "+ new Date());
         return processImageCommon(file, "EXIT");
     }
 
+    // 번호판에 OCR 적용
     private OcrResponse processImageCommon(MultipartFile file, String type) {
+    	System.out.println("=> OcrService: processImageCommon | "+ new Date());
         List<String> debugImages = new ArrayList<>();
         File tempFile = null;
 
@@ -83,7 +88,7 @@ public class OcrService {
             
             String entryTimeStr = "";
             String exitTimeStr = "";
-            Integer parkingFee = 0;
+            Integer parkingFee = -1;
             Boolean isMember = false;
 
             // OCR 성공 시 DB 로직 수행
@@ -93,6 +98,7 @@ public class OcrService {
                     // [입차 로직]
                     parkingLogDao.insertEntryLog(finalResult);
                     entryTimeStr = formatDateTime(LocalDateTime.now());
+                    parkingFee = 0;
                     
                 } else if (type.equals("EXIT")) {
                     ParkingLogDto log = parkingLogDao.selectRecentEntryLog(finalResult);
@@ -132,7 +138,7 @@ public class OcrService {
             return new OcrResponse(finalResult, rawResult, debugImages, entryTimeStr, exitTimeStr, isMember, parkingFee, null, null);
         } catch (Exception e) {
             e.printStackTrace();
-            return new OcrResponse("에러", "에러", debugImages, "에러", "에러", false, 0, null, null);
+            return new OcrResponse("에러", "에러", debugImages, "에러", "에러", false, -1, null, null);
         } finally {
             if (tempFile != null) tempFile.delete();
         }
@@ -140,10 +146,12 @@ public class OcrService {
 
     // 요금 계산 함수
     private Integer calculateFee(LocalDateTime in, LocalDateTime out, boolean isMember) {
+    	System.out.println("=> OcrService: calculateFee | "+ new Date());
         long minutes = Duration.between(in, out).toMinutes();
 
         // 최초 30분 무료
-        if (minutes <= 30) return 0;
+        if (minutes <= 30)
+        	return 0;
 
         // 이후 30분당 요금
         long chargeMinutes = minutes - 30;
@@ -154,14 +162,17 @@ public class OcrService {
     }
 
     private boolean isValidResult(String text) {
+    	System.out.println("=> OcrService: isValidResult | "+ new Date());
         return text != null && !text.equals("인식 실패") && !text.contains("에러") && !text.trim().isEmpty();
     }
 
     private String formatDateTime(LocalDateTime time) {
+    	System.out.println("=> OcrService: formatDateTime | "+ new Date());
         return time.format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
     }
     
     private BufferedImage preprocessBoldBlur(BufferedImage source) {
+    	System.out.println("=> OcrService: preprocessBoldBlur | "+ new Date());
         BufferedImage resized = resizeImage(source, 2);		// 확대 2x
         BufferedImage bold = applyDilation(resized);		// 글자 굵게
         BufferedImage smoothBold = applyGaussianBlur(bold);	// 가우시안 블러
@@ -170,6 +181,7 @@ public class OcrService {
 
     // 확대 2x
     private BufferedImage resizeImage(BufferedImage original, int scale) {
+    	System.out.println("=> OcrService: resizeImage | "+ new Date());
         int w = original.getWidth() * scale;
         int h = original.getHeight() * scale;
         BufferedImage resized = new BufferedImage(w, h, BufferedImage.TYPE_BYTE_GRAY);
@@ -182,6 +194,7 @@ public class OcrService {
     
     // 글자 굵게
     private BufferedImage applyDilation(BufferedImage source) {
+    	System.out.println("=> OcrService: applyDilation | "+ new Date());
         int w = source.getWidth();
         int h = source.getHeight();
         BufferedImage dest = new BufferedImage(w, h, BufferedImage.TYPE_BYTE_GRAY);
@@ -204,6 +217,7 @@ public class OcrService {
 
     // 가우시안 블러
     private BufferedImage applyGaussianBlur(BufferedImage source) {
+    	System.out.println("=> OcrService: applyGaussianBlur | "+ new Date());
         float[] matrix = {
             1/16f, 1/8f, 1/16f,
             1/8f,  1/4f, 1/8f,
@@ -216,6 +230,7 @@ public class OcrService {
 
     // 패딩
     private BufferedImage addPadding(BufferedImage original, int padding) {
+    	System.out.println("=> OcrService: addPadding | "+ new Date());
         BufferedImage padded = new BufferedImage(original.getWidth() + padding * 2, original.getHeight() + padding * 2, BufferedImage.TYPE_BYTE_GRAY);
         Graphics2D g = padded.createGraphics();
         g.setColor(Color.WHITE);
@@ -227,6 +242,7 @@ public class OcrService {
 
     // 번호판 문자열 추출
     private String parseLicensePlate(String text) {
+    	System.out.println("=> OcrService: parseLicensePlate | "+ new Date());
         String cleanText = text.replaceAll("[^0-9가-힣]", "");
         Pattern fullPattern = Pattern.compile("([0-9]{2,3})([가-힣])([0-9]{4})$");
         Matcher fullMatcher = fullPattern.matcher(cleanText);
@@ -244,6 +260,7 @@ public class OcrService {
 
     // BufferedImage -> Base64 String 변환
     private String imageToBase64(BufferedImage image) throws IOException {
+    	System.out.println("=> OcrService: imageToBase64 | "+ new Date());
         ByteArrayOutputStream bos = new ByteArrayOutputStream();
         ImageIO.write(image, "png", bos);
         return Base64.getEncoder().encodeToString(bos.toByteArray());
