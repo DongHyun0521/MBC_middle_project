@@ -1,3 +1,4 @@
+// middleProject - com.mbc.mid.service - OcrService.java
 package com.mbc.mid.service;
 
 import net.sourceforge.tess4j.ITesseract;
@@ -95,25 +96,19 @@ public class OcrService {
             if (isValidResult(finalResult)) {
                 
                 if (type.equals("ENTRY")) {
-                    // [입차 로직]
                     parkingLogDao.insertEntryLog(finalResult);
                     entryTimeStr = formatDateTime(LocalDateTime.now());
                     parkingFee = 0;
                     
                 } else if (type.equals("EXIT")) {
                     ParkingLogDto log = parkingLogDao.selectRecentEntryLog(finalResult);
-                    Long memId = null; // ★ 회원 ID 담을 변수
+                    Long memId = null;
 
                     if (log != null) {
-                        // 회원 여부 및 ID 확인
-                        // (DAO에 메서드 하나 추가 필요: vehicleNum으로 MemDto나 memId 조회)
-                        // 간단하게 하기 위해 checkVehicleMembership을 수정하거나, 여기서 memId를 구하는 로직 추가
-                        // 여기서는 기존 로직 활용:
                         int count = memDao.checkMemberVehicle(finalResult);
                         isMember = (count > 0);
                         
                         if (isMember) {
-                            // 회원이면 memId 가져오기 (MemDao에 메서드 추가 필요, 아래 3번 참고)
                             memId = memDao.getMemIdByVehicle(finalResult);
                         }
 
@@ -126,11 +121,10 @@ public class OcrService {
                         LocalDateTime outTime = LocalDateTime.now();
                         parkingFee = calculateFee(inTime, outTime, isMember);
 
+                        // 시간 보여주는 모양 변경
                         entryTimeStr = formatDateTime(inTime);
                         exitTimeStr = formatDateTime(outTime);
                         
-                        // ★ Log ID 저장
-                        // log객체에 ID가 들어있음
                         return new OcrResponse(finalResult, rawResult, debugImages, entryTimeStr, exitTimeStr, isMember, parkingFee, log.getParkingLogId(), memId);
                     }
                 }
@@ -140,7 +134,8 @@ public class OcrService {
             e.printStackTrace();
             return new OcrResponse("에러", "에러", debugImages, "에러", "에러", false, -1, null, null);
         } finally {
-            if (tempFile != null) tempFile.delete();
+            if (tempFile != null)
+            	tempFile.delete();
         }
     }
 
@@ -153,24 +148,26 @@ public class OcrService {
         if (minutes <= 30)
         	return 0;
 
-        // 이후 30분당 요금
+        // 이후 30분당
         long chargeMinutes = minutes - 30;
-        int unit = (int) Math.ceil(chargeMinutes / 30.0); // 올림 처리
-
+        int unit = (int) Math.ceil(chargeMinutes / 30.0);
         int rate = isMember ? 1000 : 2000;
         return unit * rate;
     }
 
+    // 추출한 문자열이 번호판 형태인지 확인
     private boolean isValidResult(String text) {
     	System.out.println("=> OcrService: isValidResult | "+ new Date());
         return text != null && !text.equals("인식 실패") && !text.contains("에러") && !text.trim().isEmpty();
     }
 
+    // 시간 보여주는 모양 변경
     private String formatDateTime(LocalDateTime time) {
     	System.out.println("=> OcrService: formatDateTime | "+ new Date());
         return time.format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
     }
     
+    // 전처리 종합
     private BufferedImage preprocessBoldBlur(BufferedImage source) {
     	System.out.println("=> OcrService: preprocessBoldBlur | "+ new Date());
         BufferedImage resized = resizeImage(source, 2);		// 확대 2x

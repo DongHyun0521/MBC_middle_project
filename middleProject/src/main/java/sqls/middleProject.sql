@@ -23,7 +23,7 @@ CREATE TABLE member_vehicle (
     vehicle_id SERIAL PRIMARY KEY,					-- PK
     mem_id INTEGER NOT NULL
 		REFERENCES mem(mem_id) ON DELETE CASCADE,	-- FK (mem.mem_id)
-    vehicle_num VARCHAR(20) NOT NULL,		-- 차량 번호 (회원이 등록)
+    vehicle_num VARCHAR(20) NOT NULL,				-- 차량 번호 (회원이 등록)
     vehicle_type VARCHAR(20),						-- 차종
     fuel_type VARCHAR(20)							-- 연료
 );
@@ -50,7 +50,7 @@ CREATE TABLE payment (
 -- parking_spot 테이블 (주차 구역 상태)
 CREATE TABLE parking_spot (
     spot_id SERIAL PRIMARY KEY,					-- PK
-    parking_log_id INTEGER
+    parking_log_id INTEGER DEFAULT NULL
 		REFERENCES parking_log(parking_log_id),	-- FK(parking_log.parking_log_id)
     floor INTEGER NOT NULL,						-- 층수
     row_num INTEGER NOT NULL,					-- 행 번호
@@ -81,7 +81,3 @@ INSERT INTO member_vehicle (mem_id, vehicle_num, vehicle_type, fuel_type)
 	VALUES (2, '10다4776', '세단', '전기');
 INSERT INTO member_vehicle (mem_id, vehicle_num, vehicle_type, fuel_type)
 	VALUES (2, '11나8192', 'SUV', '경유');
-
-
-
-
