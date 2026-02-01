@@ -95,10 +95,16 @@ public class OcrService {
             // OCR 성공 시 DB 로직 수행
             if (isValidResult(finalResult)) {
                 
-                if (type.equals("ENTRY")) {
+            	if (type.equals("ENTRY")) {
+                    // 중복 입차 방지
+                    ParkingLogDto existingLog = parkingLogDao.selectRecentEntryLog(finalResult);
+                    if (existingLog != null && existingLog.getExitTime() == null) {
+                        return new OcrResponse(finalResult, rawResult, debugImages, "ALREADY_PARKED", null, isMember, 0, null, null);
+                    }
+                    
                     parkingLogDao.insertEntryLog(finalResult);
                     entryTimeStr = formatDateTime(LocalDateTime.now());
-                    parkingFee = 0;
+                    parkingFee = 0; 
                     
                 } else if (type.equals("EXIT")) {
                     ParkingLogDto log = parkingLogDao.selectRecentEntryLog(finalResult);
@@ -108,9 +114,8 @@ public class OcrService {
                         int count = memDao.checkMemberVehicle(finalResult);
                         isMember = (count > 0);
                         
-                        if (isMember) {
+                        if (isMember)
                             memId = memDao.getMemIdByVehicle(finalResult);
-                        }
 
                         // DB 업데이트 (출차시간, 회원여부)
                         log.setIsMember(isMember);

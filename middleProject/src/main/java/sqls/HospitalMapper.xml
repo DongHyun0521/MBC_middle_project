@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+	"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+	<mapper namespace="HospitalMapper">
+
+	<!-- 의료진 회원가입 -->
+    <insert id="addStaff" parameterType="com.mbc.mid.dto.MedStaffDto">
+        INSERT INTO med_staff (mem_id, role, license_number, status, dept_id, spot_id) 
+        VALUES (#{memId}, #{role}, #{licenseNumber}, #{status}, #{deptId}, #{spotId})
+    </insert>
+
+	<!-- 예약하기 -->
+    <insert id="createReservation" parameterType="com.mbc.mid.dto.ReservationDto">
+        INSERT INTO reservation (
+            mem_id, dept_id, doctor_id, reservation_date, reservation_time, 
+            reservation_type, visit_type, reservation_status, reservation_memo, reservation_made_time
+        ) VALUES (
+            #{memId}, #{deptId}, #{doctorId}, #{reservationDate}, #{reservationTime}, 
+            #{reservationType}, #{visitType}, #{reservationStatus}, #{reservationMemo}, NOW()
+        )
+    </insert>
+    
+    <!-- 부서별 의사 리스트 -->
+    <select id="getDoctorListByDept" parameterType="long" resultType="map">
+        SELECT s.staff_id, s.role, m.name AS staff_name
+        FROM med_staff s
+        JOIN mem m ON s.mem_id = m.mem_id
+        WHERE s.dept_id = #{deptId} AND s.role = '의사' AND s.status = '재직'
+    </select>
+
+	<!-- 멤버별 예약 내역 -->
+    <select id="getReservationsByMember" parameterType="long" resultType="map">
+        SELECT r.reservation_id, r.reservation_date, r.reservation_time, r.reservation_status,
+            d.dept_name, m.name AS doctor_name    
+        FROM reservation r
+        JOIN med_dept d ON r.dept_id = d.dept_id
+        JOIN med_staff s ON r.doctor_id = s.staff_id
+        JOIN mem m ON s.mem_id = m.mem_id
+        WHERE r.mem_id = #{memId}
+        ORDER BY r.reservation_date DESC, r.reservation_time DESC
+    </select>
+
+	<!-- 의사별 예약 내역 -->
+    <select id="getReservationsByDoctor" parameterType="long" resultType="map">
+        SELECT r.reservation_id, r.reservation_date, r.reservation_time, r.visit_type, r.reservation_memo, r.reservation_status,
+            m.name AS patient_name, m.phone_number AS patient_phone
+        FROM reservation r
+        JOIN mem m ON r.mem_id = m.mem_id
+        WHERE r.doctor_id = #{doctorId}
+        ORDER BY r.reservation_date ASC, r.reservation_time ASC
+    </select>
+
+</mapper>

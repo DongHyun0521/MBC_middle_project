@@ -1,10 +1,14 @@
-DROP TABLE IF EXISTS member_vehicle;	-- 1번
-DROP TABLE IF EXISTS payment;			-- 2번
-DROP TABLE IF EXISTS mem;				-- 3번
-DROP TABLE IF EXISTS parking_spot;		-- 4번
-DROP TABLE IF EXISTS parking_log;		-- 5번
 
--- mem 테이블 (회원 정보)
+DROP TABLE IF EXISTS member_vehicle;	-- 
+DROP TABLE IF EXISTS reservation;		-- 
+DROP TABLE IF EXISTS payment;			-- 
+DROP TABLE IF EXISTS med_staff;			-- 
+DROP TABLE IF EXISTS med_dept;			-- 
+DROP TABLE IF EXISTS parking_spot;		-- 
+DROP TABLE IF EXISTS parking_log;		-- 
+DROP TABLE IF EXISTS mem;				-- 
+
+-- 회원 정보
 CREATE TABLE mem (
     mem_id SERIAL PRIMARY KEY,				-- PK
     id VARCHAR(20) UNIQUE NOT NULL,			-- 아이디 (6~16자, 영어 소문자+숫자만 사용가능)
@@ -18,7 +22,7 @@ CREATE TABLE mem (
     email VARCHAR(50) NOT NULL,				-- 이메일
     del INTEGER DEFAULT 0 NOT NULL			-- 탈퇴 여부
 );
--- member_vehicle 테이블 (회원 차량 정보)
+-- 회원 차량 정보
 CREATE TABLE member_vehicle (
     vehicle_id SERIAL PRIMARY KEY,					-- PK
     mem_id INTEGER NOT NULL
@@ -27,7 +31,7 @@ CREATE TABLE member_vehicle (
     vehicle_type VARCHAR(20),						-- 차종
     fuel_type VARCHAR(20)							-- 연료
 );
--- parking_log 테이블 (주차 이용 기록)
+-- 주차장 기록
 CREATE TABLE parking_log (
     parking_log_id SERIAL PRIMARY KEY,		-- PK
     vehicle_num VARCHAR(20) NOT NULL,		-- 차량 번호 (OCR 결과)
@@ -36,7 +40,7 @@ CREATE TABLE parking_log (
     is_member BOOLEAN DEFAULT FALSE,		-- 회원 여부
     payment_status BOOLEAN DEFAULT FALSE	-- 결제 여부
 );
--- payment 테이블 (결제 정보)
+-- 요금 결제 기록
 CREATE TABLE payment (
     pay_id SERIAL PRIMARY KEY,						-- PK
     parking_log_id INTEGER NOT NULL
@@ -47,7 +51,7 @@ CREATE TABLE payment (
     pay_method VARCHAR(20),							-- 결제 수단
     pay_date TIMESTAMP DEFAULT now()				-- 결제 일시
 );
--- parking_spot 테이블 (주차 구역 상태)
+-- 주차장 구역 상태
 CREATE TABLE parking_spot (
     spot_id SERIAL PRIMARY KEY,					-- PK
     parking_log_id INTEGER DEFAULT NULL
@@ -57,27 +61,60 @@ CREATE TABLE parking_spot (
     column_num INTEGER NOT NULL,				-- 열 번호
     is_parked BOOLEAN NOT NULL DEFAULT FALSE	-- 주차 여부
 );
+-- 의료 부서
+CREATE TABLE med_dept (
+    dept_id SERIAL PRIMARY KEY,		-- PK
+	dept_name VARCHAR(50) NOT NULL,	-- 부서 이름
+	office_location VARCHAR(100),	-- 부서 위치
+	office_phone_number VARCHAR(20)	-- 부서 전화번호
+);
+-- 의료진
+CREATE TABLE med_staff (
+	staff_id SERIAL PRIMARY KEY,			-- PK
+	mem_id INTEGER NOT NULL
+		REFERENCES mem(mem_id),				-- FK(mem.mem_id)
+	role VARCHAR(20) NOT NULL,				-- 직업
+	license_number VARCHAR(50) NOT NULL,	-- 의료진 등록 번호
+	status VARCHAR(20) NOT NULL,			-- 재직 상태
+	dept_id INTEGER
+		REFERENCES med_dept(dept_id),		-- FK(med_dept.dept_id)
+	spot_id INTEGER
+		REFERENCES parking_spot(spot_id)	-- FK(parking_spot.spot_id)
+);
+-- 진료 예약
+CREATE TABLE reservation (
+	reservation_id SERIAL PRIMARY KEY,	-- PK
+	mem_id INTEGER NOT NULL
+		REFERENCES mem(mem_id),			-- FK(mem.mem_id)
+	dept_id INTEGER NOT NULL
+		REFERENCES med_dept(dept_id),	-- FK(med_dept.dept_id)
+	doctor_id INTEGER NOT NULL
+		REFERENCES med_staff(staff_id),	-- FK(med_staff.staff_id)
+	reservation_date INTEGER NOT NULL,				-- 예약 날짜
+	reservation_time VARCHAR(30) NOT NULL,			-- 예약 시간
+	reservation_type VARCHAR(20) NOT NULL,			-- 예약 종류
+	visit_type VARCHAR(20) NOT NULL,				-- 초진/재진
+	reservation_status VARCHAR(20) NOT NULL,		-- 예약 상태(예약, 진행중, 진료완료, 노쇼)
+	reservation_memo VARCHAR(1000),					-- 예약 관련 메모
+	reservation_made_time TIMESTAMP DEFAULT now()	-- 예약 당시 시간
+);
 
 SELECT * FROM mem;
 SELECT * FROM member_vehicle;
 SELECT * FROM parking_log;
 SELECT * FROM parking_spot;
 SELECT * FROM payment;
+SELECT * FROM med_staff;
+SELECT * FROM med_dept;
+SELECT * FROM reservation;
 
-DELETE FROM payment;		-- 1번
-DELETE FROM parking_log;	-- 2번
+DELETE FROM member_vehicle;		-- 
+DELETE FROM reservation;		-- 
+DELETE FROM payment;			-- 
+DELETE FROM med_staff;			-- 
+DELETE FROM med_dept;			-- 
+DELETE FROM parking_spot;		-- 
+DELETE FROM parking_log;		-- 
+DELETE FROM mem;				-- 
 
-DELETE FROM member_vehicle;	-- 1번
-DELETE FROM mem;			-- 2번
-
-INSERT INTO mem (id, password, name, birthday, gender, address, address_detail, phone_number, email)
-	VALUES ('abc123', 'Password!', '가나다', '20010521', 1, '서울 종로구 종로 69', '서울YMCA 3층 MBC아카데미', '010-1234-5678', 'test1@shospital.com');
-INSERT INTO mem (id, password, name, birthday, gender, address, address_detail, phone_number, email)
-	VALUES ('def456', 'A!1234', '하파타', '19981225', 2, '경기 성남시 중원구 상대원동 사기막골로9번길 40', '에스트래픽 성남캠퍼스', '017-098-7654', 'test2@shospital.com');
-
-INSERT INTO member_vehicle (mem_id, vehicle_num, vehicle_type, fuel_type)
-	VALUES (1, '10거1425', 'SUV', '휘발유');
-INSERT INTO member_vehicle (mem_id, vehicle_num, vehicle_type, fuel_type)
-	VALUES (2, '10다4776', '세단', '전기');
-INSERT INTO member_vehicle (mem_id, vehicle_num, vehicle_type, fuel_type)
-	VALUES (2, '11나8192', 'SUV', '경유');
+INSERT INTO 

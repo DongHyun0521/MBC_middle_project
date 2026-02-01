@@ -73,7 +73,7 @@
         SELECT COUNT(*) FROM member_vehicle WHERE vehicle_num = #{vehicleNum}
     </select>
     
-    <!--  -->
+    <!-- 차량 번호로 멤버 차량 찾기 -->
     <select id="getMemIdByVehicle" parameterType="String" resultType="Long">
         SELECT mem_id FROM member_vehicle WHERE vehicle_num = #{vehicleNum}
     </select>
