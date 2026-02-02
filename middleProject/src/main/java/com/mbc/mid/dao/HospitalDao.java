@@ -31,6 +31,11 @@ public class HospitalDao {
         sqlSession.insert(NS + "createReservation", resDto);
     }
     
+    // 부서 목록
+    public List<Map<String, Object>> getAllDepts() {
+        return sqlSession.selectList(NS + "getAllDepts");
+    }
+    
     // 부서별 의사 리스트
     public List<Map<String, Object>> getDoctorListByDept(Long deptId) {
         return sqlSession.selectList(NS + "getStaffListByDept", deptId);

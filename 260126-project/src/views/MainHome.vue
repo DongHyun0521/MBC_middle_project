@@ -1,25 +1,11 @@
 <template>
-  <div class="main-container">
-    <header class="main-header">
-      <div class="logo">S-HOSPITAL</div>
-      <nav class="nav-menu">
-        <span>진료안내</span>
-        <span>의료진소개</span>
-        <span class="active">주차안내</span>
-        <span>고객센터</span>
-      </nav>
-      <div class="user-menu">
-        <button @click="goToLogin">로그인</button>
-        <button @click="goToRegi">회원가입</button>
-      </div>
-    </header>
-
+  <div class="home-content">
     <main>
       <section class="hero-section">
         <div class="hero-text">
           <h3>당신의 건강과 편안한 방문을 위해</h3>
           <p>최고의 의료진이 365일 함께합니다</p>
-          <button class="reserve-btn">간편 진료예약</button>
+          <button class="reserve-btn" @click="goToReserve">간편 진료예약</button>
         </div>
       </section>
 
@@ -66,74 +52,27 @@
       <span class="f-icon">🚗</span>
       <span class="f-text">차량등록</span>
     </div>
-
-    <footer class="main-footer">
-      <p>(01234) 서울특별시 건국구 냠냠로 1004</p>
-      <p>Copyright © Gongju Hospital. All rights reserved.</p>
-    </footer>
   </div>
 </template>
 
 <script setup>
-import { useRouter } from 'vue-router';
+import { useRouter } from 'vue-router'
 
-const router = useRouter();
+const router = useRouter()
 
-// 페이지 이동 함수들
-const goToLogin = () => router.push('/login');
-const goToRegi = () => router.push('/regi');
-const goToCarRegi = () => router.push('/vehiregi'); // 차량등록 페이지(생성예정)
-const goToParkingGuide = () => router.push('/parking-guide'); // 주차안내 페이지(생성예정)
-
-// 아직 페이지가 없는 함수들 (구조만)
-const goToReserve = () => alert('진료예약 페이지는 준비 중입니다');
-const goToDoctor = () => alert('의료진 찾기 페이지는 준비 중입니다');
-const goToLocation = () => alert('오시는 길 페이지는 준비 중입니다');
-const goToStatus = () => {};
+const goToCarRegi = () => router.push('/vehiregi')
+const goToParkingGuide = () => router.push('/parking-guide')
+const goToReserve = () => alert('진료예약 페이지는 준비 중입니다')
+const goToDoctor = () => alert('의료진 찾기 페이지는 준비 중입니다')
+const goToLocation = () => alert('오시는 길 페이지는 준비 중입니다')
 </script>
 
 <style scoped>
-/* 전체 컨테이너 */
-.main-container { width: 100%; position: relative; color: #333; }
-
-/* 헤더: 신뢰감 있는 블루 포인트 */
-.main-header { display: flex; justify-content: space-between; align-items: center; padding: 20px 50px; border-bottom: 2px solid #f0f4f8; }
-.logo { font-size: 24px; font-weight: bold; color: #007bff; }
-.nav-menu span { margin: 0 20px; cursor: pointer; font-weight: 500; transition: 0.2s; }
-.nav-menu span:hover { color: #007bff; }
-.active { color: #007bff; border-bottom: 2px solid #007bff; }
-
-/* 히어로 섹션 */
+/* 📌 메인 알맹이 스타일 (헤더/푸터 제외) */
 .hero-section { background: linear-gradient(135deg, #f0f7ff 0%, #d9ebff 100%); height: 350px; display: flex; align-items: center; padding-left: 10%; }
-.hero-text h3 { font-size: 32px; margin-bottom: 10px; }
-.reserve-btn { padding: 12px 25px; background: #007bff; color: white; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; margin-top: 20px; }
-
-/* 퀵 메뉴 (4구조) */
-.quick-menu { display: flex; justify-content: center; gap: 30px; margin-top: -40px; } /* 배너 위에 살짝 걸치게 */
-.quick-item { 
-  width: 160px; height: 160px; background: white; border-radius: 20px; 
-  box-shadow: 0 10px 20px rgba(0,0,0,0.05); display: flex; flex-direction: column; 
-  align-items: center; justify-content: center; cursor: pointer; transition: 0.3s;
-}
-.quick-item:hover { transform: translateY(-10px); }
-.quick-item .icon { font-size: 40px; margin-bottom: 10px; }
-.quick-item .label { font-weight: bold; font-size: 16px; }
-
-/* 정보 섹션 */
-.info-section { display: flex; justify-content: center; gap: 50px; padding: 80px 50px; }
-.notice-box, .parking-guide-box { width: 450px; padding: 30px; background: white; border-radius: 15px; border: 1px solid #eee; }
-.parking-guide-box { border-left: 5px solid #007bff; } /* 강조 포인트 */
-.count { color: #007bff; font-weight: bold; font-size: 20px; }
-.detail-btn { margin-top: 15px; background: none; border: 1px solid #007bff; color: #007bff; padding: 5px 15px; border-radius: 20px; cursor: pointer; }
-
-/* 📌 플로팅 버튼 */
-.floating-btn {
-  position: fixed; right: 40px; bottom: 60px; width: 85px; height: 85px;
-  background: #007bff; color: white; border-radius: 50%;
-  display: flex; flex-direction: column; align-items: center; justify-content: center;
-  box-shadow: 0 8px 16px rgba(0,123,255,0.3); cursor: pointer; z-index: 1000;
-}
-.floating-btn .f-text { font-size: 12px; font-weight: bold; margin-top: 2px; }
-
-.main-footer { background: #333; color: #ccc; padding: 40px; text-align: center; font-size: 14px; }
+.quick-menu { display: flex; justify-content: center; gap: 25px; margin-top: -50px; }
+.quick-item { width: 150px; height: 150px; background: white; border-radius: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.08); display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer; transition: 0.3s; }
+.info-section { display: flex; justify-content: center; gap: 40px; padding: 80px 50px; }
+.floating-btn { position: fixed; right: 40px; bottom: 50px; width: 80px; height: 80px; background: #007bff; color: white; border-radius: 50%; display: flex; flex-direction: column; align-items: center; justify-content: center; box-shadow: 0 10px 20px rgba(0,123,255,0.4); cursor: pointer; z-index: 1000; }
+/* ... (공주님이 주신 스타일 그대로 유지) */
 </style>

@@ -20,7 +20,14 @@
         )
     </insert>
     
-    <!-- 부서별 의사 리스트 -->
+    <!-- 부서 목록 -->
+    <select id="getAllDepts" resultType="map">
+        SELECT dept_id, dept_name, office_location, office_phone_number 
+        FROM med_dept 
+        ORDER BY dept_name ASC
+    </select>
+    
+    <!-- 부서별 의사 목록 -->
     <select id="getDoctorListByDept" parameterType="long" resultType="map">
         SELECT s.staff_id, s.role, m.name AS staff_name
         FROM med_staff s

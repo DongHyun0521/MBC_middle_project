@@ -1,5 +1,6 @@
 import Login from '@/views/member/Login.vue'
 import Regi from '@/views/member/Regi.vue'
+import Mypage from '@/views/member/Mypage.vue'
 
 export default [
     { 
@@ -13,5 +14,10 @@ export default [
         name: 'regi', 
         component: Regi,
         //meta: { title: '회원가입 센터' }
+    },
+    {
+        path: '/mypage',
+        name: 'mypage',
+        component: Mypage
     }
 ]

@@ -191,7 +191,7 @@ public class MemController {
         return "success";
     }
     
-    // ========== 진료 예약 추가 ==========
+    // ========== 진료 예약 기능 추가 ==========
     
     // 의료진 회원가입
     @PostMapping("/staffRegi")
@@ -224,6 +224,12 @@ public class MemController {
             e.printStackTrace();
             return "fail";
         }
+    }
+    
+    // 부서 목록
+    @GetMapping("/dept/list")
+    public List<Map<String, Object>> getAllDepts() {
+        return hospitalService.getAllDepts();
     }
     
     // 부서별 의사 목록
