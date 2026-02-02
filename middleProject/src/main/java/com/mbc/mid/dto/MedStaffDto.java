@@ -1,30 +1,34 @@
 // middleProject - com.mbc.mid.dto - MedStaffDto.java
 package com.mbc.mid.dto;
-
 public class MedStaffDto {
-	private Long staffId;			// PK
-	private Long memId;				// FK (mem.memId)
-	private String role;			// 직업
-	private String licenseNumber;	// 면허 번호
-	private String status;			// 재직 상태
-	private Long deptId;			// FK(medDept.deptId)
-	private Long spotId;			// FK(parkingSpot.spotId)
-	
-	public MedStaffDto() {}
-	public MedStaffDto(Long staffId, Long memId, String role, String licenseNumber, String status, Long deptId, Long spotId) {
-		this.staffId = staffId;
+    private Long medStaffId;        // PK
+    private Long memId;             // FK
+    private String role;            // 직업 (의사/간호사)
+    private String licenseNumber;   // 면허번호
+    private String status;          // 재직 상태
+    private Long medDeptId;         // FK
+    private Long spotId;            // FK
+    private String createTime;      // 생성일시
+	public MedStaffDto() {
+		super();
+	}
+	public MedStaffDto(Long medStaffId, Long memId, String role, String licenseNumber, String status, Long medDeptId,
+			Long spotId, String createTime) {
+		super();
+		this.medStaffId = medStaffId;
 		this.memId = memId;
 		this.role = role;
 		this.licenseNumber = licenseNumber;
 		this.status = status;
-		this.deptId = deptId;
+		this.medDeptId = medDeptId;
 		this.spotId = spotId;
+		this.createTime = createTime;
 	}
-	public Long getStaffId() {
-		return staffId;
+	public Long getMedStaffId() {
+		return medStaffId;
 	}
-	public void setStaffId(Long staffId) {
-		this.staffId = staffId;
+	public void setMedStaffId(Long medStaffId) {
+		this.medStaffId = medStaffId;
 	}
 	public Long getMemId() {
 		return memId;
@@ -50,11 +54,11 @@ public class MedStaffDto {
 	public void setStatus(String status) {
 		this.status = status;
 	}
-	public Long getDeptId() {
-		return deptId;
+	public Long getMedDeptId() {
+		return medDeptId;
 	}
-	public void setDeptId(Long deptId) {
-		this.deptId = deptId;
+	public void setMedDeptId(Long medDeptId) {
+		this.medDeptId = medDeptId;
 	}
 	public Long getSpotId() {
 		return spotId;
@@ -62,9 +66,11 @@ public class MedStaffDto {
 	public void setSpotId(Long spotId) {
 		this.spotId = spotId;
 	}
-	@Override
-	public String toString() {
-		return "MedStaffDto [staffId=" + staffId + ", memId=" + memId + ", role=" + role + ", licenseNumber="
-				+ licenseNumber + ", status=" + status + ", deptId=" + deptId + ", spotId=" + spotId + "]";
+	public String getCreateTime() {
+		return createTime;
 	}
+	public void setCreateTime(String createTime) {
+		this.createTime = createTime;
+	}
+    
 }

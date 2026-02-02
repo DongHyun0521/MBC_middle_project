@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.mbc.mid.dao.AdminDao">
+
+    <insert id="addAdminStaff" parameterType="com.mbc.mid.dto.AdminStaffDto">
+        INSERT INTO admin_staff (mem_id, rank, emp_number, status, admin_dept_id, spot_id) 
+        VALUES (#{memId}, #{rank}, #{empNumber}, #{status}, #{adminDeptId}, #{spotId})
+    </insert>
+
+    </mapper>

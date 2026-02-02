@@ -2,10 +2,20 @@
 DROP TABLE IF EXISTS member_vehicle;	-- 
 DROP TABLE IF EXISTS reservation;		-- 
 DROP TABLE IF EXISTS payment;			-- 
+
 DROP TABLE IF EXISTS med_staff;			-- 
 DROP TABLE IF EXISTS med_dept;			-- 
+
+DROP TABLE IF EXISTS notice;			-- 
+DROP TABLE IF EXISTS faq;				-- 
+DROP TABLE IF EXISTS voc;				-- 
+
+DROP TABLE IF EXISTS admin_staff;		-- 
+DROP TABLE IF EXISTS admin_dept;		-- 
+
 DROP TABLE IF EXISTS parking_spot;		-- 
 DROP TABLE IF EXISTS parking_log;		-- 
+
 DROP TABLE IF EXISTS mem;				-- 
 
 -- 회원 정보
@@ -20,7 +30,8 @@ CREATE TABLE mem (
 	address_detail VARCHAR(100) NOT NULL,	-- 상세 주소
     phone_number VARCHAR(20) NOT NULL,		-- 전화번호
     email VARCHAR(50) NOT NULL,				-- 이메일
-    del INTEGER DEFAULT 0 NOT NULL			-- 탈퇴 여부
+    del INTEGER DEFAULT 0 NOT NULL,			-- 탈퇴 여부
+	create_time TIMESTAMP DEFAULT now()		-- 회원가입 일시
 );
 -- 회원 차량 정보
 CREATE TABLE member_vehicle (
@@ -29,7 +40,8 @@ CREATE TABLE member_vehicle (
 		REFERENCES mem(mem_id) ON DELETE CASCADE,	-- FK (mem.mem_id)
     vehicle_num VARCHAR(20) NOT NULL,				-- 차량 번호 (회원이 등록)
     vehicle_type VARCHAR(20),						-- 차종
-    fuel_type VARCHAR(20)							-- 연료
+    fuel_type VARCHAR(20),							-- 연료
+	create_time TIMESTAMP DEFAULT now()				-- 차량 추가 일시
 );
 -- 주차장 기록
 CREATE TABLE parking_log (
@@ -56,40 +68,42 @@ CREATE TABLE parking_spot (
     spot_id SERIAL PRIMARY KEY,					-- PK
     parking_log_id INTEGER DEFAULT NULL
 		REFERENCES parking_log(parking_log_id),	-- FK(parking_log.parking_log_id)
-    floor INTEGER NOT NULL,						-- 층수
-    row_num INTEGER NOT NULL,					-- 행 번호
-    column_num INTEGER NOT NULL,				-- 열 번호
-    is_parked BOOLEAN NOT NULL DEFAULT FALSE	-- 주차 여부
+    floor INTEGER NOT NULL,						-- 층(1, 2, ...)
+    zone VARCHAR(1) NOT NULL,					-- 구역(A, B, ...)
+	spot_number INTEGER NOT NULL,				-- 번호(1, 2, ...)
+	distance_from_entrance INTEGER NOT NULL,	-- 입구로부터의 거리
+	is_parked BOOLEAN NOT NULL DEFAULT FALSE	-- 해당 위치 주차 여부
 );
 -- 의료 부서
 CREATE TABLE med_dept (
-    dept_id SERIAL PRIMARY KEY,		-- PK
-	dept_name VARCHAR(50) NOT NULL,	-- 부서 이름
-	office_location VARCHAR(100),	-- 부서 위치
-	office_phone_number VARCHAR(20)	-- 부서 전화번호
+    med_dept_id SERIAL PRIMARY KEY,	-- PK
+	dept_name VARCHAR(50) NOT NULL,	-- 의료 부서 이름
+	dept_location VARCHAR(100),		-- 부서 위치
+	dept_phone_number VARCHAR(20)	-- 부서 전화번호
 );
 -- 의료진
 CREATE TABLE med_staff (
-	staff_id SERIAL PRIMARY KEY,			-- PK
+	med_staff_id SERIAL PRIMARY KEY,		-- PK
 	mem_id INTEGER NOT NULL
 		REFERENCES mem(mem_id),				-- FK(mem.mem_id)
 	role VARCHAR(20) NOT NULL,				-- 직업
 	license_number VARCHAR(50) NOT NULL,	-- 의료진 등록 번호
 	status VARCHAR(20) NOT NULL,			-- 재직 상태
-	dept_id INTEGER
-		REFERENCES med_dept(dept_id),		-- FK(med_dept.dept_id)
+	med_dept_id INTEGER
+		REFERENCES med_dept(med_dept_id),	-- FK(med_dept.med_dept_id)
 	spot_id INTEGER
-		REFERENCES parking_spot(spot_id)	-- FK(parking_spot.spot_id)
+		REFERENCES parking_spot(spot_id),	-- FK(parking_spot.spot_id)
+	create_time TIMESTAMP DEFAULT now()
 );
 -- 진료 예약
 CREATE TABLE reservation (
-	reservation_id SERIAL PRIMARY KEY,	-- PK
+	reservation_id SERIAL PRIMARY KEY,		-- PK
 	mem_id INTEGER NOT NULL
-		REFERENCES mem(mem_id),			-- FK(mem.mem_id)
-	dept_id INTEGER NOT NULL
-		REFERENCES med_dept(dept_id),	-- FK(med_dept.dept_id)
+		REFERENCES mem(mem_id),				-- FK(mem.mem_id)
+	med_dept_id INTEGER NOT NULL
+		REFERENCES med_dept(med_dept_id),	-- FK(med_dept.med_dept_id)
 	doctor_id INTEGER NOT NULL
-		REFERENCES med_staff(staff_id),	-- FK(med_staff.staff_id)
+		REFERENCES med_staff(med_staff_id),	-- FK(med_staff.med_staff_id)
 	reservation_date INTEGER NOT NULL,				-- 예약 날짜
 	reservation_time VARCHAR(30) NOT NULL,			-- 예약 시간
 	reservation_type VARCHAR(20) NOT NULL,			-- 예약 종류
@@ -98,23 +112,101 @@ CREATE TABLE reservation (
 	reservation_memo VARCHAR(1000),					-- 예약 관련 메모
 	reservation_made_time TIMESTAMP DEFAULT now()	-- 예약 당시 시간
 );
+-- 행정 부서
+CREATE TABLE admin_dept (
+	admin_dept_id SERIAL PRIMARY KEY,	-- PK
+	dept_name VARCHAR(50) NOT NULL,		-- 행정 부서 이름
+	dept_location VARCHAR(100),			-- 부서 위치
+	dept_phone_number VARCHAR(20)		-- 부서 전화번호
+);
+-- 행정직
+CREATE TABLE admin_staff (
+	admin_staff_id SERIAL PRIMARY KEY,			-- PK
+	mem_id INTEGER NOT NULL
+		REFERENCES mem(mem_id),					-- FK(mem.mem_id)
+	rank VARCHAR(20),							-- 직급
+	emp_number VARCHAR(50) NOT NULL,			-- 사원번호
+	status VARCHAR(20) NOT NULL,				-- 재직 상태
+	admin_dept_id INTEGER
+		REFERENCES admin_dept(admin_dept_id),	-- FK(admin_dept.admin_dept_id)
+	spot_id INTEGER
+		REFERENCES parking_spot(spot_id),		-- FK(parking_spot.spot_id)
+	create_time TIMESTAMP DEFAULT now()			-- 회원가입 일시
+);
+-- 고객의소리
+CREATE TABLE voc (
+	voc_id SERIAL PRIMARY KEY,						-- PK
+	mem_id INTEGER NOT NULL
+		REFERENCES mem(mem_id),						-- FK(mem.mem_id)
+	admin_staff_id INTEGER
+		REFERENCES admin_staff(admin_staff_id),		-- FK(admin_staff.admin_staff_id)
+	ref INTEGER NOT NULL,							-- ?
+	step INTEGER NOT NULL,							-- ?
+	depth INTEGER NOT NULL,							-- ?
+	title VARCHAR(200) NOT NULL,					-- 제목
+	content VARCHAR(4000) NOT NULL,					-- 내용
+	write_date TIMESTAMP DEFAULT now(),				-- 작성일시
+	parent INTEGER NOT NULL,						-- ?
+	answer_status BOOLEAN NOT NULL DEFAULT FALSE,	-- 답변 여부
+	del INTEGER NOT NULL DEFAULT 0					-- 글 삭제 여부
+);
+-- 공지사항
+CREATE TABLE notice (
+	notice_id SERIAL PRIMARY KEY,				-- PK
+	admin_staff_id INTEGER
+		REFERENCES admin_staff(admin_staff_id),	-- FK(admin_staff.admin_staff_id)
+	top_fix BOOLEAN NOT NULL DEFAULT FALSE,		-- 상단고정 여부
+	title VARCHAR(200) NOT NULL,				-- 제목
+	content VARCHAR(4000) NOT NULL,				-- 내용
+	write_date TIMESTAMP DEFAULT now(),			-- 작성일시
+	read_count INTEGER DEFAULT 0				-- 조회수
+);
+-- FAQ
+CREATE TABLE faq (
+	faq_id SERIAL PRIMARY KEY,						-- PK
+	admin_staff_id INTEGER
+		REFERENCES admin_staff(admin_staff_id),		-- FK(admin_staff.admin_staff_id)
+	category VARCHAR(50) NOT NULL DEFAULT '기타',	-- 카테고리
+	title VARCHAR(200) NOT NULL,					-- 제목
+	content VARCHAR(4000) NOT NULL,					-- 내용
+	write_date TIMESTAMP DEFAULT now(),				-- 작성일시
+	read_count INTEGER DEFAULT 0					-- 조회수
+);
 
-SELECT * FROM mem;
-SELECT * FROM member_vehicle;
-SELECT * FROM parking_log;
-SELECT * FROM parking_spot;
-SELECT * FROM payment;
-SELECT * FROM med_staff;
-SELECT * FROM med_dept;
-SELECT * FROM reservation;
+SELECT * FROM mem;				-- 회원
+SELECT * FROM med_staff;		-- 의료진
+SELECT * FROM admin_staff;		-- 행정 직원
 
-DELETE FROM member_vehicle;		-- 
-DELETE FROM reservation;		-- 
-DELETE FROM payment;			-- 
-DELETE FROM med_staff;			-- 
-DELETE FROM med_dept;			-- 
-DELETE FROM parking_spot;		-- 
-DELETE FROM parking_log;		-- 
-DELETE FROM mem;				-- 
+SELECT * FROM med_dept;			-- 의료 부서
+SELECT * FROM admin_dept;		-- 행정 부서
+
+SELECT * FROM member_vehicle;	-- 회원 차량
+
+SELECT * FROM parking_log;		-- 주차 기록
+SELECT * FROM parking_spot;		-- 주차 위치
+SELECT * FROM payment;			-- 결제
+
+SELECT * FROM reservation;		-- 예약
+
+SELECT * FROM voc;				-- 고객의소리
+SELECT * FROM notice;			-- 공지사항
+SELECT * FROM faq;				-- FAQ
+
+
+DELETE FROM reservation;
+DELETE FROM voc;
+DELETE FROM notice;
+DELETE FROM faq;
+DELETE FROM member_vehicle;
+DELETE FROM payment;
+
+DELETE FROM med_staff;
+DELETE FROM admin_staff;
+DELETE FROM parking_spot;
+
+DELETE FROM parking_log;
+DELETE FROM med_dept;
+DELETE FROM admin_dept;
+DELETE FROM mem;
 
 INSERT INTO 

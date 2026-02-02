@@ -2,20 +2,25 @@
 package com.mbc.mid.dto;
 
 public class ParkingSpotDto {
-	private Long spotId;		// PK
-	private Long parkingLogId;	// FK (parking_log.parking_log_id)
-    private Integer floor;		// 층수
-    private Integer rowNum;		// 행 번호
-    private Integer columnNum;	// 열 번호
-    private Boolean isParked;	// 주차 여부
-    
-	public ParkingSpotDto() {}
-	public ParkingSpotDto(Long spotId, Long parkingLogId, Integer floor, Integer rowNum, Integer columnNum, Boolean isParked) {
+    private Long spotId;            		// PK
+    private Long parkingLogId;      		// FK (현재 주차된 차의 로그)
+    private Integer floor;          		// 층
+    private String zone;            		// 구역
+    private Integer spotNumber;     		// 번호
+    private Integer distanceFromEntrance;	// 입구 거리
+    private Boolean isParked;       		// 주차 여부
+	public ParkingSpotDto() {
+		super();
+	}
+	public ParkingSpotDto(Long spotId, Long parkingLogId, Integer floor, String zone, Integer spotNumber,
+			Integer distanceFromEntrance, Boolean isParked) {
+		super();
 		this.spotId = spotId;
 		this.parkingLogId = parkingLogId;
 		this.floor = floor;
-		this.rowNum = rowNum;
-		this.columnNum = columnNum;
+		this.zone = zone;
+		this.spotNumber = spotNumber;
+		this.distanceFromEntrance = distanceFromEntrance;
 		this.isParked = isParked;
 	}
 	public Long getSpotId() {
@@ -36,17 +41,23 @@ public class ParkingSpotDto {
 	public void setFloor(Integer floor) {
 		this.floor = floor;
 	}
-	public Integer getRowNum() {
-		return rowNum;
+	public String getZone() {
+		return zone;
 	}
-	public void setRowNum(Integer rowNum) {
-		this.rowNum = rowNum;
+	public void setZone(String zone) {
+		this.zone = zone;
 	}
-	public Integer getColumnNum() {
-		return columnNum;
+	public Integer getSpotNumber() {
+		return spotNumber;
 	}
-	public void setColumnNum(Integer columnNum) {
-		this.columnNum = columnNum;
+	public void setSpotNumber(Integer spotNumber) {
+		this.spotNumber = spotNumber;
+	}
+	public Integer getDistanceFromEntrance() {
+		return distanceFromEntrance;
+	}
+	public void setDistanceFromEntrance(Integer distanceFromEntrance) {
+		this.distanceFromEntrance = distanceFromEntrance;
 	}
 	public Boolean getIsParked() {
 		return isParked;
@@ -54,9 +65,5 @@ public class ParkingSpotDto {
 	public void setIsParked(Boolean isParked) {
 		this.isParked = isParked;
 	}
-	@Override
-	public String toString() {
-		return "ParkingSpotDto [spotId=" + spotId + ", parkingLogId=" + parkingLogId + ", floor=" + floor + ", rowNum="
-				+ rowNum + ", columnNum=" + columnNum + ", isParked=" + isParked + "]";
-	}
+    
 }

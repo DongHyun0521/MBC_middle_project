@@ -1,3 +1,17 @@
+이미지 확대 2x
+이미지 확대 3x
+바이큐빅 보간법
+흑백화
+이진화
+패딩
+명암비 조절
+가우시간 블러
+Dilation
+Closing : Dilation -> Erosion
+Opening : Erosion -> Dilation
+
+
+======================================
 
 [ 1000장 정확도 측정 ] : OcrService_?
 

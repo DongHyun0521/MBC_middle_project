@@ -1,24 +1,33 @@
 <template>
-  <div class="vehi-regi-container">
+  <div class="vehi-regi-wrap">
     <div class="regi-card">
-      <div class="top-txt">
+      <div class="regi-header">
         <h2>차량 정보 등록</h2>
-        <p>환자 및 보호자 차량 정보를 정확히 입력해 주세요</p>
+        <div class="title-bar"></div>
+        <p class="regi-desc">환자 및 보호자 차량 정보를 정확히 입력해 주세요</p>
       </div>
 
-      <form @submit.prevent="handleVehiRegi">
-        <div class="input-group">
+      <form @submit.prevent="handleVehiRegi" class="regi-form">
+        <div class="input-section">
           <label for="vehicleNum">차량 번호</label>
-          <div class="input-info">
-            <input type="text" id="vehicleNum" v-model="vehi.vehicleNum" ref="idInput" placeholder="예) 12가 3456" @input="checkVehiNum"/>
-            <p v-if="vehiMsg" class="error-msg">{{ vehiMsg }}</p>
+          <div class="input-inner">
+            <input 
+              type="text" 
+              id="vehicleNum" 
+              v-model="vehi.vehicleNum" 
+              ref="idInput" 
+              placeholder="예) 12가 3456" 
+              @input="checkVehiNum"
+              class="res-input"
+            />
+            <p v-if="vehiMsg" class="status-txt error">{{ vehiMsg }}</p>
           </div>  
         </div>
 
-        <div class="input-group">
+        <div class="input-section">
           <label for="vehicleType">차종 선택</label>
-          <div class="input-info">
-            <select id="vehicleType" v-model="vehi.vehicleType">
+          <div class="input-inner">
+            <select id="vehicleType" v-model="vehi.vehicleType" class="res-select">
               <option value="">차종을 선택해 주세요</option>
               <option value="경차">경차</option>
               <option value="승용차">승용차</option>
@@ -28,18 +37,20 @@
           </div>
         </div>
 
-        <div class="input-row">
-          <label>유종</label>
+        <div class="input-section">
+          <label>유종 선택</label>
           <div class="fuel-grid">
-            <label class="fuel-item" v-for="fuel in ['전기', '휘발유', '경유', 'LPG']" :key="fuel">
-              <input type="radio" :value="fuel" v-model="vehi.fuelType" />
-              <span class="fuel-label">{{ fuel }}</span>
+            <label v-for="fuel in ['전기', '휘발유', '경유', 'LPG']" :key="fuel" class="fuel-tile">
+              <input type="radio" :value="fuel" v-model="vehi.fuelType" class="hide-radio" />
+              <span class="fuel-txt">{{ fuel }}</span>
             </label>
           </div>
         </div>
 
         <div class="btn-area">
-          <button type="submit" class="submit-btn" :disabled="!isReady">차량 등록하기</button> 
+          <button type="submit" class="regi-submit-btn" :disabled="!isReady">
+            차량 등록하기
+          </button> 
         </div>
       </form>
     </div>
@@ -62,12 +73,12 @@ const vehi = ref({
   vehicleType: '',
   fuelType: '휘발유'
 })
-const vehiMsg = ref('')
+const veMsg = ref('') // 유저 요청대로 심플하게 유지 🧩
 
 onMounted(() => {
   const loginData = sessionStorage.getItem('login') 
   if (!loginData) {
-    alert("로그인이 필요한 서비스입니다")
+    alert("로그인이 필요한 서비스입니다 🧩")
     router.push({ path: '/login', query: { redirect: route.fullPath } })
   } else {
     const user = JSON.parse(loginData)
@@ -76,12 +87,11 @@ onMounted(() => {
   }
 })
 
-// 1. 차량 번호 형식 체크
 const checkVehiNum = () => {
   let val = vehi.value.vehicleNum.toUpperCase().replace(/\s/g, '')
   val = val.replace(/[^A-Z0-9가-힣]/g, '')
   vehi.value.vehicleNum = val
-  const vehiRegex = /^\d{2}[가-힣]{1}\d{4}$/
+  const vehiRegex = /^\d{2,3}[가-힣]{1}\d{4}$/
   if (!val) {
     vehiMsg.value = "차량 번호를 입력해 주세요"
   } else if (!vehiRegex.test(val)) {
@@ -91,16 +101,13 @@ const checkVehiNum = () => {
   }
 }
 
-// 버튼 활성화 조건
 const isReady = computed(() => { 
-  const vehiRegex = /^\d{2}[가-힣]{1}\d{4}$/
-  // 번호 형식도 맞고 + 차종도 선택해야 버튼이 활성화됨!
+  const vehiRegex = /^\d{2,3}[가-힣]{1}\d{4}$/
   return vehiRegex.test(vehi.value.vehicleNum) && vehi.value.vehicleType !== ''
 })
 
-// 2. 차량 등록 실행
 const handleVehiRegi = async () => {
-  if (!isReady.value) return // 💡 이제 isReady를 정상적으로 참조함!
+  if (!isReady.value) return 
   
   const saveData = {
     ...vehi.value,
@@ -113,7 +120,7 @@ const handleVehiRegi = async () => {
       alert("차량 등록이 완료되었습니다 🚗")
       router.push('/mypage')
     } else {
-      alert("등록 실패! 정보를 다시 확인해 주세요")
+      alert("등록 실패! 정보를 다시 확인해 주세요 🧩")
     }
   } catch (err) {
     if (err.response && err.response.status === 500) {
@@ -124,3 +131,162 @@ const handleVehiRegi = async () => {
   }
 }
 </script>
+
+<style scoped>
+/* 📌 전문 병원 레이아웃 🚗 */
+.vehi-regi-wrap {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 80vh;
+  background-color: #f4f7fa;
+  padding: 60px 20px;
+}
+
+.regi-card {
+  width: 100%;
+  max-width: 550px;
+  background: #fff;
+  padding: 60px 50px;
+  border-radius: 4px;
+  border: 1px solid #eee;
+  box-shadow: 0 15px 40px rgba(0, 0, 0, 0.05);
+}
+
+.regi-header {
+  text-align: center;
+  margin-bottom: 50px;
+}
+
+.regi-header h2 {
+  font-size: 28px;
+  color: #404347;
+  margin-bottom: 12px;
+  font-weight: 700;
+}
+
+.title-bar {
+  width: 40px;
+  height: 3px;
+  background: #0171e9;
+  margin: 0 auto 20px;
+}
+
+.regi-desc {
+  font-size: 15px;
+  color: #888;
+  font-weight: 300;
+}
+
+.regi-form {
+  display: flex;
+  flex-direction: column;
+  gap: 35px;
+}
+
+.input-section label {
+  display: block;
+  font-size: 14px;
+  font-weight: 600;
+  color: #4e4e4e;
+  margin-bottom: 12px;
+}
+
+/* 🪄 입력 필드 스타일 🧩 */
+.res-input, .res-select {
+  width: 100%;
+  padding: 15px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 15px;
+  background: #f9f9f9;
+  transition: 0.3s;
+}
+
+.res-input:focus, .res-select:focus {
+  border-color: #0171e9;
+  outline: none;
+  background: #fff;
+}
+
+/* ⛽ 유종 선택 그리드 🪄 */
+.fuel-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 10px;
+}
+
+.fuel-tile {
+  height: 50px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  background: #f9f9f9;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+.fuel-txt {
+  font-size: 14px;
+  color: #666;
+  font-weight: 500;
+}
+
+.hide-radio {
+  display: none !important;
+}
+
+.fuel-tile:hover {
+  border-color: #0171e9;
+  background: #f0f7ff;
+}
+
+/* 라디오 체크 시 스타일 빡! ✨ */
+.fuel-tile:has(.hide-radio:checked) {
+  background: #0171e9;
+  border-color: #0171e9;
+}
+
+.fuel-tile:has(.hide-radio:checked) .fuel-txt {
+  color: #fff;
+  font-weight: 600;
+}
+
+/* ⚠️ 메시지 스타일 */
+.status-txt {
+  font-size: 12px;
+  margin-top: 8px;
+}
+
+.error {
+  color: #dc3545;
+}
+
+/* 🚀 등록 버튼 🚗 */
+.regi-submit-btn {
+  width: 100%;
+  padding: 18px;
+  background: #0171e9;
+  color: #fff;
+  border: none;
+  border-radius: 4px;
+  font-size: 17px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: 0.3s;
+}
+
+.regi-submit-btn:hover:not(:disabled) {
+  background: #0056b3;
+  transform: translateY(-3px);
+  box-shadow: 0 10px 20px rgba(1, 113, 233, 0.2);
+}
+
+.regi-submit-btn:disabled {
+  background: #eee;
+  color: #bbb;
+  cursor: not-allowed;
+}
+</style>

@@ -1,27 +1,36 @@
 import axios from "axios";
 
+// 🏥 Axios 인스턴스 설정
 const url = axios.create({
-    //baseURL: 'http://localhost:8080/',
-    withCredentials: true // 세션(쿠키)을 주고받기 위해 필수!
+    baseURL: 'http://localhost:8080', // Spring 서버 대문 주소 🪄
+    withCredentials: true            // 세션(쿠키) 연동 필수 ✨
 })
 
-// 🚗 차량 등록
-export const vehicleRegisterRequest = (vehicleData) => {
-    return url.post('/member/vehiRegi', vehicleData)
+// 1. 차량 등록 🚗
+// 💡 백엔드 주소: /member/vehiRegi
+export const vehicleRegisterRequest = (vehicleData, userId = null) => {
+    // 세션이 없을 경우를 대비해 id를 쿼리 파라미터로 선택적 전달 가능 💉
+    return url.post('/member/vehiRegi', vehicleData, { params: { id: userId } })
 }
 
-// 🚗 차량 목록 조회 (세션 대신 id 파라미터 사용)
+// 2. 내 차량 목록 조회 📋
+// 💡 백엔드 주소: /member/vehicles
+// 백엔드에서 HttpSession("loginId")을 쓰므로 파라미터 없이 호출 빡!
 export const getMyVehiclesRequest = () => {
-    return url.get(`/member/vehicles`)
+    return url.get('/member/vehicles')
 }
 
-// 🛠️ 차량 정보 수정 (PUT)
+// 3. 차량 정보 수정 🛠️
+// 💡 백엔드 주소: /member/vehiUpdate
 export const updateVehicleRequest = (vehicleData) => {
     return url.put('/member/vehiUpdate', vehicleData)
 }
 
-// 🗑️ 차량 삭제 (DELETE)
+// 4. 차량 정보 삭제 🗑️
+// 💡 백엔드 주소: /member/vehiDelete
+// 쿼리 스트링(?vehicleNum=...) 형태로 쥰나 정확하게 전달 🚀
 export const deleteVehicleRequest = (vNum) => {
-    // 💡 주소창에 ?vehicleNum=... 형태로 전달
-    return url.delete(`/member/vehiDelete`, { params: { vehicleNum: vNum } })
+    return url.delete('/member/vehiDelete', { params: { vehicleNum: vNum } })
 }
+
+export default url;

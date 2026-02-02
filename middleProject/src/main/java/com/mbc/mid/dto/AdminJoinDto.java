@@ -1,27 +1,30 @@
-// middleProject - com.mbc.mid.dto - MemDto.java
+// middleProject - com.mbc.mid.dto - AdminJoinDto.java
 package com.mbc.mid.dto;
 
-public class MemDto {
-    private Long memId;             // PK
-    private String id;              // 아이디
-    private String password;        // 비밀번호
-    private String name;            // 이름
-    private Integer birthday;       // 생년월일 (숫자 8자리)
-    private Integer gender;         // 성별 (1:남, 2:여)
-    private String address;         // 주소
-    private String addressDetail;   // 상세 주소
-    private String phoneNumber;     // 전화번호
-    private String email;           // 이메일
-    private Integer del;            // 탈퇴 여부
-    private String createTime;      // 가입 일시
+public class AdminJoinDto {
+	// MemDto
+    private String id;
+    private String password;
+    private String name;
+    private Integer birthday;
+    private Integer gender;
+    private String address;
+    private String addressDetail;
+    private String phoneNumber;
+    private String email;
     
-    public MemDto() {
+    // AdminStaffDto
+    private String rank;            // 직급
+    private String empNumber;       // 사번
+    private Long adminDeptId;       // FK
+    private Long spotId;            // FK
+	public AdminJoinDto() {
 		super();
 	}
-	public MemDto(Long memId, String id, String password, String name, Integer birthday, Integer gender, String address,
-			String addressDetail, String phoneNumber, String email, Integer del, String createTime) {
+	public AdminJoinDto(String id, String password, String name, Integer birthday, Integer gender, String address,
+			String addressDetail, String phoneNumber, String email, String rank, String empNumber, Long adminDeptId,
+			Long spotId) {
 		super();
-		this.memId = memId;
 		this.id = id;
 		this.password = password;
 		this.name = name;
@@ -31,14 +34,10 @@ public class MemDto {
 		this.addressDetail = addressDetail;
 		this.phoneNumber = phoneNumber;
 		this.email = email;
-		this.del = del;
-		this.createTime = createTime;
-	}
-	public Long getMemId() {
-		return memId;
-	}
-	public void setMemId(Long memId) {
-		this.memId = memId;
+		this.rank = rank;
+		this.empNumber = empNumber;
+		this.adminDeptId = adminDeptId;
+		this.spotId = spotId;
 	}
 	public String getId() {
 		return id;
@@ -94,17 +93,29 @@ public class MemDto {
 	public void setEmail(String email) {
 		this.email = email;
 	}
-	public Integer getDel() {
-		return del;
+	public String getRank() {
+		return rank;
 	}
-	public void setDel(Integer del) {
-		this.del = del;
+	public void setRank(String rank) {
+		this.rank = rank;
 	}
-	public String getCreateTime() {
-		return createTime;
+	public String getEmpNumber() {
+		return empNumber;
 	}
-	public void setCreateTime(String createTime) {
-		this.createTime = createTime;
+	public void setEmpNumber(String empNumber) {
+		this.empNumber = empNumber;
 	}
-	
+	public Long getAdminDeptId() {
+		return adminDeptId;
+	}
+	public void setAdminDeptId(Long adminDeptId) {
+		this.adminDeptId = adminDeptId;
+	}
+	public Long getSpotId() {
+		return spotId;
+	}
+	public void setSpotId(Long spotId) {
+		this.spotId = spotId;
+	}
+    
 }

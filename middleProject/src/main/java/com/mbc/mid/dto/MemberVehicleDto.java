@@ -1,20 +1,24 @@
 // middleProject - com.mbc.mid.dto - MemberVehicleDto.java
 package com.mbc.mid.dto;
-
 public class MemberVehicleDto {
-	private Long vehicleId;		// PK
-    private Long memId;			// FK (mem.mem_id)
-    private String vehicleNum;	// 차량 번호 (회원이 등록)
-    private String vehicleType;	// 차종
-    private String fuelType;	// 연료
-    
-	public MemberVehicleDto() {}
-	public MemberVehicleDto(Long vehicleId, Long memId, String vehicleNum, String vehicleType, String fuelType) {
+    private Long vehicleId;     // PK
+    private Long memId;         // FK
+    private String vehicleNum;  // 차량 번호
+    private String vehicleType; // 차종
+    private String fuelType;    // 연료
+    private String createTime;  // 등록 일시
+	public MemberVehicleDto() {
+		super();
+	}
+	public MemberVehicleDto(Long vehicleId, Long memId, String vehicleNum, String vehicleType, String fuelType,
+			String createTime) {
+		super();
 		this.vehicleId = vehicleId;
 		this.memId = memId;
 		this.vehicleNum = vehicleNum;
 		this.vehicleType = vehicleType;
 		this.fuelType = fuelType;
+		this.createTime = createTime;
 	}
 	public Long getVehicleId() {
 		return vehicleId;
@@ -46,9 +50,11 @@ public class MemberVehicleDto {
 	public void setFuelType(String fuelType) {
 		this.fuelType = fuelType;
 	}
-	@Override
-	public String toString() {
-		return "MemberVehicleDto [vehicleId=" + vehicleId + ", memId=" + memId + ", vehicleNum=" + vehicleNum
-				+ ", vehicleType=" + vehicleType + ", fuelType=" + fuelType + "]";
+	public String getCreateTime() {
+		return createTime;
 	}
+	public void setCreateTime(String createTime) {
+		this.createTime = createTime;
+	}
+    
 }

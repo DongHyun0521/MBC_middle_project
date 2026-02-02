@@ -1,25 +1,26 @@
-// middleProject - com.mbc.mid.dto - MedDeptDto.java
+// middleProject - com.mbc.mid.dto - AdminDeptDto.java
 package com.mbc.mid.dto;
-public class MedDeptDto {
-    private Long medDeptId;         // PK
+
+public class AdminDeptDto {
+    private Long adminDeptId;       // PK
     private String deptName;        // 부서명
     private String deptLocation;    // 위치
     private String deptPhoneNumber; // 전화번호
-	public MedDeptDto() {
+	public AdminDeptDto() {
 		super();
 	}
-	public MedDeptDto(Long medDeptId, String deptName, String deptLocation, String deptPhoneNumber) {
+	public AdminDeptDto(Long adminDeptId, String deptName, String deptLocation, String deptPhoneNumber) {
 		super();
-		this.medDeptId = medDeptId;
+		this.adminDeptId = adminDeptId;
 		this.deptName = deptName;
 		this.deptLocation = deptLocation;
 		this.deptPhoneNumber = deptPhoneNumber;
 	}
-	public Long getMedDeptId() {
-		return medDeptId;
+	public Long getAdminDeptId() {
+		return adminDeptId;
 	}
-	public void setMedDeptId(Long medDeptId) {
-		this.medDeptId = medDeptId;
+	public void setAdminDeptId(Long adminDeptId) {
+		this.adminDeptId = adminDeptId;
 	}
 	public String getDeptName() {
 		return deptName;

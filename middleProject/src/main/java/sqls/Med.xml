@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.mbc.mid.dao.MemDao">
+
+    <select id="idCheck" parameterType="String" resultType="int">
+        SELECT COUNT(*) FROM mem WHERE id = #{id}
+    </select>
+
+    <insert id="addMem" parameterType="com.mbc.mid.dto.MemDto" useGeneratedKeys="true" keyProperty="memId">
+        INSERT INTO mem (id, password, name, birthday, gender, address, address_detail, phone_number, email) 
+        VALUES (#{id}, #{password}, #{name}, #{birthday}, #{gender}, #{address}, #{addressDetail}, #{phoneNumber}, #{email})
+    </insert>
+
+    <select id="login" parameterType="com.mbc.mid.dto.MemDto" resultType="com.mbc.mid.dto.MemDto">
+        SELECT mem_id as memId, id, password, name, birthday, gender, address, address_detail, phone_number as phoneNumber, email
+        FROM mem WHERE id = #{id} AND password = #{password} AND del = 0
+    </select>
+
+    <select id="findId" parameterType="com.mbc.mid.dto.MemDto" resultType="String">
+        SELECT id FROM mem 
+        WHERE name = #{name} AND phone_number = #{phoneNumber} AND email = #{email}
+    </select>
+    
+    <delete id="delMem" parameterType="String">
+        UPDATE mem SET del = 1 WHERE id = #{id}
+    </delete>
+
+    <select id="getMemberInfo" parameterType="String" resultType="com.mbc.mid.dto.MemDto">
+        SELECT mem_id as memId, id, name, birthday, gender, address, address_detail, phone_number as phoneNumber, email
+        FROM mem WHERE id = #{id}
+    </select>
+    
+    <update id="updateMem" parameterType="com.mbc.mid.dto.MemDto">
+        UPDATE mem SET password = #{password}, name = #{name}, address = #{address}, address_detail = #{addressDetail}, phone_number = #{phoneNumber}, email = #{email}, birthday = #{birthday},  gender = #{gender}
+        WHERE id = #{id}
+    </update>
+
+    <select id="getMemberVehicleList" parameterType="String" resultType="com.mbc.mid.dto.MemberVehicleDto">
+        SELECT v.vehicle_id as vehicleId, v.mem_id as memId, v.vehicle_num as vehicleNum, v.vehicle_type as vehicleType, v.fuel_type as fuelType 
+        FROM member_vehicle v JOIN mem m ON v.mem_id = m.mem_id WHERE m.id = #{id}
+    </select>
+      
+    <insert id="addVehi" parameterType="com.mbc.mid.dto.MemberVehicleDto">
+        INSERT INTO member_vehicle (mem_id, vehicle_num, vehicle_type, fuel_type) 
+        VALUES (#{memId}, #{vehicleNum}, #{vehicleType}, #{fuelType})
+    </insert>
+    
+    <update id="updateVehi" parameterType="com.mbc.mid.dto.MemberVehicleDto">
+        UPDATE member_vehicle SET vehicle_num = #{vehicleNum}, vehicle_type = #{vehicleType}, fuel_type = #{fuelType}
+        WHERE vehicle_id = #{vehicleId} AND mem_id = #{memId}
+    </update>
+      
+    <delete id="delVehi" parameterType="String">
+        DELETE FROM member_vehicle WHERE vehicle_num = #{vehicleNum}
+    </delete>
+
+</mapper>

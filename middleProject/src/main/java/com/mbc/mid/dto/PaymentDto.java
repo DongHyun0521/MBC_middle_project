@@ -1,18 +1,19 @@
 // middleProject - com.mbc.mid.dto - PaymentDto.java
 package com.mbc.mid.dto;
 
-import java.time.LocalDateTime;
-
 public class PaymentDto {
-	private Long payId;				// PK
-    private Long parkingLogId;		// FK (parking_log.parking_log_id)
-    private Long memId;				// FK (mem.mem_id)
-    private Integer amount;			// 결제 금액
-    private String payMethod;		// 결제 수단
-    private LocalDateTime payDate;	// 결제 일시
+    private Long payId;             // PK
+    private Long parkingLogId;      // FK
+    private Long memId;             // FK
+    private Integer amount;         // 결제 금액
+    private String payMethod;       // 결제 수단
+    private String payDate;         // 결제 일시
     
-	public PaymentDto() {}
-	public PaymentDto(Long payId, Long parkingLogId, Long memId, Integer amount, String payMethod, LocalDateTime payDate) {
+	public PaymentDto() {
+		super();
+	}
+	public PaymentDto(Long payId, Long parkingLogId, Long memId, Integer amount, String payMethod, String payDate) {
+		super();
 		this.payId = payId;
 		this.parkingLogId = parkingLogId;
 		this.memId = memId;
@@ -50,15 +51,11 @@ public class PaymentDto {
 	public void setPayMethod(String payMethod) {
 		this.payMethod = payMethod;
 	}
-	public LocalDateTime getPayDate() {
+	public String getPayDate() {
 		return payDate;
 	}
-	public void setPayDate(LocalDateTime payDate) {
+	public void setPayDate(String payDate) {
 		this.payDate = payDate;
 	}
-	@Override
-	public String toString() {
-		return "PaymentDto [payId=" + payId + ", parkingLogId=" + parkingLogId + ", memId=" + memId + ", amount="
-				+ amount + ", payMethod=" + payMethod + ", payDate=" + payDate + "]";
-	}
+    
 }

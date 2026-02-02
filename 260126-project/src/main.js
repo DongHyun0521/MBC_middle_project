@@ -2,7 +2,7 @@
 
 import { createApp } from 'vue' 
 import { createPinia } from 'pinia' // 로그인 정보처럼 모든 페이지에서 공유할 데이터 창고를 만드는 기능 가져오기
-import './style.css'
+//import './style.css'
 import App from './App.vue'
 import router from './router' // "어느 주소로 가면 어느 화면을 보여줄지" 정해놓은 지도 가져오기
 

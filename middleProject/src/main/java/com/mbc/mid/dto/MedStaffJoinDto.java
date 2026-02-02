@@ -1,7 +1,7 @@
-// middleProject - com.mbc.mid.dto - StaffJoinDto.java
+// middleProject - com.mbc.mid.dto - MedStaffJoinDto.java
 package com.mbc.mid.dto;
 
-public class StaffJoinDto {
+public class MedStaffJoinDto {
     // MemDto
     private String id;
     private String password;
@@ -14,14 +14,17 @@ public class StaffJoinDto {
     private String email;
 
     // MedStaffDto
-    private String role;
-    private String licenseNumber;
-    private Long deptId;
-    private Long spotId;
-	
-    public StaffJoinDto() {}
-	public StaffJoinDto(String id, String password, String name, Integer birthday, Integer gender, String address,
-			String addressDetail, String phoneNumber, String email, String role, String licenseNumber, Long deptId, Long spotId) {
+    private String role;            // 직업 (의사/간호사)
+    private String licenseNumber;   // 면허번호
+    private Long medDeptId;         // FK
+    private Long spotId;            // FK
+	public MedStaffJoinDto() {
+		super();
+	}
+	public MedStaffJoinDto(String id, String password, String name, Integer birthday, Integer gender, String address,
+			String addressDetail, String phoneNumber, String email, String role, String licenseNumber, Long medDeptId,
+			Long spotId) {
+		super();
 		this.id = id;
 		this.password = password;
 		this.name = name;
@@ -33,7 +36,7 @@ public class StaffJoinDto {
 		this.email = email;
 		this.role = role;
 		this.licenseNumber = licenseNumber;
-		this.deptId = deptId;
+		this.medDeptId = medDeptId;
 		this.spotId = spotId;
 	}
 	public String getId() {
@@ -102,11 +105,11 @@ public class StaffJoinDto {
 	public void setLicenseNumber(String licenseNumber) {
 		this.licenseNumber = licenseNumber;
 	}
-	public Long getDeptId() {
-		return deptId;
+	public Long getMedDeptId() {
+		return medDeptId;
 	}
-	public void setDeptId(Long deptId) {
-		this.deptId = deptId;
+	public void setMedDeptId(Long medDeptId) {
+		this.medDeptId = medDeptId;
 	}
 	public Long getSpotId() {
 		return spotId;
@@ -114,11 +117,5 @@ public class StaffJoinDto {
 	public void setSpotId(Long spotId) {
 		this.spotId = spotId;
 	}
-	@Override
-	public String toString() {
-		return "StaffJoinDto [id=" + id + ", password=" + password + ", name=" + name + ", birthday=" + birthday
-				+ ", gender=" + gender + ", address=" + address + ", addressDetail=" + addressDetail + ", phoneNumber="
-				+ phoneNumber + ", email=" + email + ", role=" + role + ", licenseNumber=" + licenseNumber + ", deptId="
-				+ deptId + ", spotId=" + spotId + "]";
-	}
+	
 }
