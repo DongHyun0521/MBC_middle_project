@@ -2,9 +2,60 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.mbc.mid.dao.AdminDao">
 
+	<!-- 행정직 회원 가입 -->
     <insert id="addAdminStaff" parameterType="com.mbc.mid.dto.AdminStaffDto">
         INSERT INTO admin_staff (mem_id, rank, emp_number, status, admin_dept_id, spot_id) 
         VALUES (#{memId}, #{rank}, #{empNumber}, #{status}, #{adminDeptId}, #{spotId})
     </insert>
+    
+    <!-- 행정직인지 확인 -->
+    <select id="checkAdminCount" parameterType="long" resultType="int">
+        SELECT COUNT(*) FROM admin_staff WHERE mem_id = #{memId}
+    </select>
+    
+    <!-- 회원ID로 행정직인지 확인 -->
+    <select id="getAdminStaffIdByMemId" parameterType="long" resultType="long">
+        SELECT admin_staff_id FROM admin_staff WHERE mem_id = #{memId}
+    </select>
 
-    </mapper>
+	<!-- 공지사항 작성 -->
+    <insert id="addNotice" parameterType="com.mbc.mid.dto.NoticeDto">
+        INSERT INTO notice (admin_staff_id, top_fix, title, content, write_date, read_count)
+        VALUES (#{adminStaffId}, #{topFix}, #{title}, #{content}, NOW(), 0)
+    </insert>
+
+	<!-- FAQ 작성 -->
+    <insert id="addFaq" parameterType="com.mbc.mid.dto.FaqDto">
+        INSERT INTO faq (admin_staff_id, category, title, content, write_date, read_count)
+        VALUES (#{adminStaffId}, #{category}, #{title}, #{content}, NOW(), 0)
+    </insert>
+
+	<!-- 미답변 고객의소리 목록 -->
+    <select id="getUnansweredVocList" resultType="map">
+        SELECT 
+            v.voc_id, v.title, v.write_date, m.name AS writer_name
+        FROM voc v
+        JOIN mem m ON v.mem_id = m.mem_id
+        WHERE v.parent = 0 
+          AND v.answer_status = FALSE 
+          AND v.del = 0
+        ORDER BY v.write_date ASC
+    </select>
+
+	<!-- 고객의소리 답글 -->
+    <insert id="addVocReply" parameterType="com.mbc.mid.dto.VocDto">
+        INSERT INTO voc (
+            mem_id, admin_staff_id, title, content, write_date,
+            ref, step, depth, parent, answer_status, del
+        ) VALUES (
+            #{memId}, #{adminStaffId}, #{title}, #{content}, NOW(), 
+            0, 1, 1, #{parent}, true, 0
+        )
+    </insert>
+
+	<!-- 고객의소리 미답변->답변완료 -->
+    <update id="updateVocStatus" parameterType="long">
+        UPDATE voc SET answer_status = TRUE WHERE voc_id = #{vocId}
+    </update>
+
+</mapper>

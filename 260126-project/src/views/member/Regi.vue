@@ -191,7 +191,8 @@ const handleRegi = async () => {
     ...user.value,
     birthday: Number(user.value.birthday), // 숫자로 빡!
     gender: Number(user.value.gender),     // 숫자로 빡!
-    dept_id: user.value.dept_id ? Number(user.value.dept_id) : null
+    medDeptId: user.value.dept_id ? Number(user.value.dept_id) : null, 
+    spotId: null
   };
 
   try {

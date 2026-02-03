@@ -11,14 +11,14 @@ public class VocDto {
     private String title;           // 제목
     private String content;         // 내용
     private String writeDate;       // 작성일
-    private Integer parent;         // 부모글 ID
+    private Long parent;         	// 부모글 ID
     private Boolean answerStatus;   // 답변 여부
     private Integer del;            // 삭제 여부
 	public VocDto() {
 		super();
 	}
 	public VocDto(Long vocId, Long memId, Long adminStaffId, Integer ref, Integer step, Integer depth, String title,
-			String content, String writeDate, Integer parent, Boolean answerStatus, Integer del) {
+			String content, String writeDate, Long parent, Boolean answerStatus, Integer del) {
 		super();
 		this.vocId = vocId;
 		this.memId = memId;
@@ -87,10 +87,10 @@ public class VocDto {
 	public void setWriteDate(String writeDate) {
 		this.writeDate = writeDate;
 	}
-	public Integer getParent() {
+	public Long getParent() {
 		return parent;
 	}
-	public void setParent(Integer parent) {
+	public void setParent(Long parent) {
 		this.parent = parent;
 	}
 	public Boolean getAnswerStatus() {

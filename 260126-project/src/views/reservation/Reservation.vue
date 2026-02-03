@@ -21,11 +21,11 @@
         <div v-else class="input-section">
           <label>진료 정보</label>
           <div class="grid-row">
-            <select v-model="form.dept_id" @change="fetchDoctors" class="res-select">
+            <select v-model="form.medDeptId" @change="fetchDoctors" class="res-select">
               <option value="">진료과 선택</option>
               <option v-for="d in depts" :key="d.dept_id" :value="d.dept_id">{{ d.dept_name }}</option>
             </select>
-            <select v-if="form.dept_id" v-model="form.staff_id" @change="resetDateTime" class="res-select">
+            <select v-if="form.dept_id" v-model="form.medStaffId" @change="resetDateTime" class="res-select">
               <option value="">담당 의사 선택</option>
               <option v-for="s in doctors" :key="s.staff_id" :value="s.staff_id">{{ s.name }} 의사</option>
             </select>
@@ -62,6 +62,7 @@
 </template>
 
 <script setup>
+import { postReservation, getDepts, getDoctorsByDept } from '@/api/reservation';
 import { ref, reactive, computed, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import axios from 'axios'
@@ -71,9 +72,17 @@ const depts = ref([]); const doctors = ref([]); const bookedSlots = ref([])
 const isFixedDoc = ref(false)
 
 const form = reactive({
-  mem_id: 1, dept_id: '', staff_id: '', patient_name: '',
-  patient_phone: '', reservation_date: '', reservation_time: '',
-  visit_type: '초진', reservation_status: '예약'
+  memId: 0, // mem_id -> memId (카멜케이스)
+  medDeptId: '', // dept_id -> medDeptId
+  doctorId: '', // staff_id -> doctorId
+  // patient_name, patient_phone은 백엔드 ReservationDto에 필드가 없다면
+  // reservationMemo 등에 합쳐서 보내거나 백엔드 DTO에 추가해야 함.
+  // 여기서는 DTO에 해당 필드가 없으므로 memo에 합치는 방식 예시:
+  reservationMemo: '', 
+  reservationDate: '', // reservation_date -> reservationDate
+  reservationTime: '', // reservation_time -> reservationTime
+  visitType: '초진', // visit_type -> visitType
+  reservationStatus: '예약' // reservation_status -> reservationStatus
 })
 
 const today = new Date().toISOString().split('T')[0]
@@ -88,16 +97,14 @@ const allTimeSlots = computed(() => {
 const isBooked = (time) => bookedSlots.value.includes(time)
 
 const fetchBookedSlots = async () => {
-  if (!form.staff_id || !form.reservation_date) return
-  try {
-    const res = await axios.get(`/api/res/booked-times`, { params: { staff_id: form.staff_id, date: form.reservation_date } })
-    bookedSlots.value = res.data 
-  } catch (err) { console.error('조회 실패') }
+  // 백엔드 미구현 상태이므로 빈 배열 처리 (추후 구현 필요)
+  bookedSlots.value = []; 
 }
 
 const fetchDoctors = async () => {
-  if(!form.dept_id) return
-  const res = await axios.get(`/api/res/doctors/${form.dept_id}`)
+  if(!form.medDeptId) return
+  // [수정] API 함수 사용
+  const res = await getDoctorsByDept(form.medDeptId)
   doctors.value = res.data
 }
 
@@ -109,17 +116,25 @@ const resetToGeneral = () => {
 
 const submitReservation = async () => {
   try {
-    await axios.post('/api/res/make', form)
+    // 환자 정보를 메모에 저장 (백엔드 DTO에 patient_name이 없다면)
+    form.reservationMemo = `환자명:${form.patient_name}, 연락처:${form.patient_phone}`;
+    
+    // [수정] API 함수 사용 (postReservation)
+    await postReservation(form) 
     alert('예약이 완료되었습니다! 🎉')
-  } catch (err) { alert('다시 시도해 주세요 🧩') }
+    router.push('/checkreservation') // 완료 후 조회 페이지로 이동 추천
+  } catch (err) { 
+    alert('다시 시도해 주세요 🧩') 
+  }
 }
 
 onMounted(async () => {
-  const res = await axios.get('/api/res/depts'); depts.value = res.data
+  // [수정] API 함수 사용
+  const res = await getDepts(); 
+  depts.value = res.data
   
-  // 💡 의사 골라온 경우 빡 세팅! 🚗
   if (route.query.docId) {
-    form.staff_id = Number(route.query.docId)
+    form.doctorId = Number(route.query.docId)
     isFixedDoc.value = true
   }
 })

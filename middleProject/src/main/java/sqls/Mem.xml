@@ -1,49 +1,90 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="com.mbc.mid.dao.MedDao">
+<mapper namespace="com.mbc.mid.dao.MemDao">
 
-    <insert id="addMedStaff" parameterType="com.mbc.mid.dto.MedStaffDto">
-        INSERT INTO med_staff (mem_id, role, license_number, status, med_dept_id, spot_id) 
-        VALUES (#{memId}, #{role}, #{licenseNumber}, #{status}, #{medDeptId}, #{spotId})
+	<!-- 아이디 중복 확인 -->
+    <select id="idCheck" parameterType="String" resultType="int">
+        SELECT COUNT(*) FROM mem WHERE id = #{id}
+    </select>
+
+	<!-- 회원 가입 -->
+    <insert id="addMem" parameterType="com.mbc.mid.dto.MemDto" useGeneratedKeys="true" keyProperty="memId">
+        INSERT INTO mem (id, password, name, birthday, gender, address, address_detail, phone_number, email) 
+        VALUES (#{id}, #{password}, #{name}, #{birthday}, #{gender}, #{address}, #{addressDetail}, #{phoneNumber}, #{email})
     </insert>
 
-    <insert id="createReservation" parameterType="com.mbc.mid.dto.ReservationDto">
-        INSERT INTO reservation (
-            mem_id, med_dept_id, doctor_id, reservation_date, reservation_time, 
-            reservation_type, visit_type, reservation_status, reservation_memo, reservation_made_time
+	<!-- 로그인 -->
+    <select id="login" parameterType="com.mbc.mid.dto.MemDto" resultType="com.mbc.mid.dto.MemDto">
+        SELECT mem_id as memId, id, password, name, birthday, gender, address, address_detail, phone_number as phoneNumber, email
+        FROM mem WHERE id = #{id} AND password = #{password} AND del = 0
+    </select>
+
+	<!-- 아이디 찾기 -->
+    <select id="findId" parameterType="com.mbc.mid.dto.MemDto" resultType="String">
+        SELECT id FROM mem 
+        WHERE name = #{name} AND phone_number = #{phoneNumber} AND email = #{email}
+    </select>
+    
+    <!-- 회원 탈퇴 -->
+    <delete id="delMem" parameterType="String">
+        UPDATE mem SET del = 1 WHERE id = #{id}
+    </delete>
+
+	<!-- 내 정보 -->
+    <select id="getMemberInfo" parameterType="String" resultType="com.mbc.mid.dto.MemDto">
+        SELECT mem_id as memId, id, name, birthday, gender, address, address_detail, phone_number as phoneNumber, email
+        FROM mem WHERE id = #{id}
+    </select>
+    
+    <!-- 내 정보 수정 -->
+    <update id="updateMem" parameterType="com.mbc.mid.dto.MemDto">
+        UPDATE mem SET password = #{password}, name = #{name}, address = #{address}, address_detail = #{addressDetail}, phone_number = #{phoneNumber}, email = #{email}, birthday = #{birthday},  gender = #{gender}
+        WHERE id = #{id}
+    </update>
+
+	<!-- 내 차량 목록 -->
+    <select id="getMemberVehicleList" parameterType="String" resultType="com.mbc.mid.dto.MemberVehicleDto">
+        SELECT v.vehicle_id as vehicleId, v.mem_id as memId, v.vehicle_num as vehicleNum, v.vehicle_type as vehicleType, v.fuel_type as fuelType 
+        FROM member_vehicle v JOIN mem m ON v.mem_id = m.mem_id WHERE m.id = #{id}
+    </select>
+
+	<!-- 내 차량 추가 -->
+    <insert id="addVehi" parameterType="com.mbc.mid.dto.MemberVehicleDto">
+        INSERT INTO member_vehicle (mem_id, vehicle_num, vehicle_type, fuel_type) 
+        VALUES (#{memId}, #{vehicleNum}, #{vehicleType}, #{fuelType})
+    </insert>
+    
+    <!-- 내 차량 수정 -->
+    <update id="updateVehi" parameterType="com.mbc.mid.dto.MemberVehicleDto">
+        UPDATE member_vehicle SET vehicle_num = #{vehicleNum}, vehicle_type = #{vehicleType}, fuel_type = #{fuelType}
+        WHERE vehicle_id = #{vehicleId} AND mem_id = #{memId}
+    </update>
+
+	<!-- 내 차량 삭제 -->
+    <delete id="delVehi" parameterType="String">
+        DELETE FROM member_vehicle WHERE vehicle_num = #{vehicleNum}
+    </delete>
+    
+    <!-- 번호판으로 회원 차량인지 확인 -->
+    <select id="checkMemberVehicle" parameterType="String" resultType="int">
+        SELECT COUNT(*) FROM member_vehicle WHERE vehicle_num = #{vehicleNum}
+    </select>
+    
+    <!-- 번호판으로 회원ID 찾기 -->
+    <select id="getMemIdByVehicle" parameterType="String" resultType="Long">
+        SELECT mem_id FROM member_vehicle WHERE vehicle_num = #{vehicleNum}
+        LIMIT 1
+    </select>
+    
+    <!-- 고객의소리 작성 -->
+    <insert id="addVoc" parameterType="com.mbc.mid.dto.VocDto">
+        INSERT INTO voc (
+            mem_id, title, content, write_date, 
+            ref, step, depth, parent, answer_status, del
         ) VALUES (
-            #{memId}, #{medDeptId}, #{doctorId}, #{reservationDate}, #{reservationTime}, 
-            #{reservationType}, #{visitType}, #{reservationStatus}, #{reservationMemo}, NOW()
+            #{memId}, #{title}, #{content}, NOW(), 
+            0, 0, 0, 0, false, 0
         )
     </insert>
-    
-    <select id="getAllMedDepts" resultType="map">
-        SELECT med_dept_id, dept_name, dept_location, dept_phone_number 
-        FROM med_dept ORDER BY dept_name ASC
-    </select>
-    
-    <select id="getDoctorListByDept" parameterType="long" resultType="map">
-        SELECT s.med_staff_id AS staff_id, s.role, m.name AS staff_name
-        FROM med_staff s JOIN mem m ON s.mem_id = m.mem_id
-        WHERE s.med_dept_id = #{medDeptId} AND s.role = 'DOCTOR' AND s.status = '재직'
-    </select>
 
-    <select id="getReservationsByMember" parameterType="long" resultType="map">
-        SELECT r.reservation_id, r.reservation_date, r.reservation_time, r.reservation_status, d.dept_name, m.name AS doctor_name    
-        FROM reservation r
-        JOIN med_dept d ON r.med_dept_id = d.med_dept_id
-        JOIN med_staff s ON r.doctor_id = s.med_staff_id
-        JOIN mem m ON s.mem_id = m.mem_id
-        WHERE r.mem_id = #{memId}
-        ORDER BY r.reservation_date DESC, r.reservation_time DESC
-    </select>
-
-    <select id="getReservationsByDoctor" parameterType="long" resultType="map">
-        SELECT r.reservation_id, r.reservation_date, r.reservation_time, r.visit_type, r.reservation_memo, r.reservation_status,
-            m.name AS patient_name, m.phone_number AS patient_phone
-        FROM reservation r JOIN mem m ON r.mem_id = m.mem_id
-        WHERE r.doctor_id = #{doctorId}
-        ORDER BY r.reservation_date ASC, r.reservation_time ASC
-    </select>
-    
 </mapper>

@@ -1,3 +1,4 @@
+// middleProject - com.mbc.mid.service - MedService.java
 package com.mbc.mid.service;
 
 import java.util.List;
@@ -12,12 +13,15 @@ import com.mbc.mid.dto.*;
 @Service
 @Transactional
 public class MedService {
-    @Autowired private MedDao medDao;
-    @Autowired private MemDao memDao; // 기본 회원정보 처리를 위해 필요
+	
+    @Autowired
+    private MedDao medDao;
+    
+    @Autowired
+    private MemDao memDao;
 
-    // 의료진 회원가입
+    // 의료진 회원 가입
     public void registerMedStaff(MedStaffJoinDto joinDto) {
-        // 1. 기본 회원정보 저장 (MemDao 사용)
         MemDto memDto = new MemDto();
         memDto.setId(joinDto.getId());
         memDto.setPassword(joinDto.getPassword());
@@ -30,9 +34,8 @@ public class MedService {
         memDto.setEmail(joinDto.getEmail());
         memDto.setDel(0);
         
-        memDao.addMem(memDto); // DB 실행 후 memId 생성됨
+        memDao.addMem(memDto);
 
-        // 2. 의료진 상세정보 저장 (MedDao 사용)
         MedStaffDto staffDto = new MedStaffDto();
         staffDto.setMemId(memDto.getMemId());
         staffDto.setRole(joinDto.getRole());
@@ -44,13 +47,35 @@ public class MedService {
         medDao.addMedStaff(staffDto);
     }
 
+    // 예약하기
     public void createReservation(ReservationDto resDto) {
-        if(resDto.getReservationStatus() == null) resDto.setReservationStatus("예약완료");
+        if(resDto.getReservationStatus() == null)
+        	resDto.setReservationStatus("예약완료");
         medDao.createReservation(resDto);
     }
+    
+    // 전체 의사 목록
+    public List<Map<String, Object>> getAllDoctors() {
+        return medDao.getAllDoctors();
+    }
 
-    public List<Map<String, Object>> getAllMedDepts() { return medDao.getAllMedDepts(); }
-    public List<Map<String, Object>> getDoctorListByDept(Long medDeptId) { return medDao.getDoctorListByDept(medDeptId); }
-    public List<Map<String, Object>> getReservationsByMember(Long memId) { return medDao.getReservationsByMember(memId); }
-    public List<Map<String, Object>> getReservationsByDoctor(Long doctorId) { return medDao.getReservationsByDoctor(doctorId); }
+    // 전체 의료 부서 목록
+    public List<Map<String, Object>> getAllMedDepts() {
+    	return medDao.getAllMedDepts();
+    }
+    
+    // 부서별 의사 목록
+    public List<Map<String, Object>> getDoctorListByDept(Long medDeptId) {
+    	return medDao.getDoctorListByDept(medDeptId);
+    }
+    
+    // 회원별 예약 목록
+    public List<Map<String, Object>> getReservationsByMember(Long memId) {
+    	return medDao.getReservationsByMember(memId);
+    }
+    
+    // 의사별 예약 목록
+    public List<Map<String, Object>> getReservationsByDoctor(Long doctorId) {
+    	return medDao.getReservationsByDoctor(doctorId);
+    }
 }

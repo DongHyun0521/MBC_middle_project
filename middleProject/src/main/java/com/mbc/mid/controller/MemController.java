@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.mbc.mid.dto.MemDto;
 import com.mbc.mid.dto.MemberVehicleDto;
+import com.mbc.mid.dto.VocDto;
 import com.mbc.mid.service.MemService;
 
 import jakarta.servlet.http.HttpSession;
@@ -28,7 +29,7 @@ public class MemController {
     @Autowired
     private MemService memService;
 
-    // 아이디 중복 확인 (return 0 -> 중복X)
+    // 아이디 중복 확인
     @GetMapping("/idcheck")
     public boolean checkId(@RequestParam("id") String id) {
     	System.out.println("=> MemController: checkId | "+ new Date());
@@ -48,7 +49,7 @@ public class MemController {
         }
     }
     
-    // 회원 탈퇴 (del=0 -> del=1)
+    // 회원 탈퇴
     @DeleteMapping("/withdraw")
     public String withdraw(HttpSession session) {
     	System.out.println("=> MemController: withdraw | "+ new Date());
@@ -91,7 +92,7 @@ public class MemController {
         return "success";
     }
 
-    // 마이 페이지 (개인 정보)
+    // 내 정보
     @GetMapping("/mypage")
     public MemDto getMyInfo(HttpSession session) {
     	System.out.println("=> MemController: getMyInfo | "+ new Date());
@@ -103,7 +104,7 @@ public class MemController {
         return memService.getMemberInfo(id);
     }
 
-    // 마이 페이지 (차량 목록)
+    // 내 차량 목록
     @GetMapping("/vehicles")
     public List<MemberVehicleDto> getMyVehicles(HttpSession session) {
     	System.out.println("=> MemController: getMyVehicles | "+ new Date());
@@ -115,7 +116,7 @@ public class MemController {
         return memService.getMemberVehicleList(id);
     }
     
-    // 회원 정보 수정
+    // 내 정보 수정
     @PutMapping("/mypageUpdate")
     public String updateInfo(@RequestBody MemDto memDto, HttpSession session) {
     	System.out.println("=> MemController: updateInfo | "+ new Date());
@@ -129,7 +130,7 @@ public class MemController {
         return "success";
     }
 
-    // 차량 등록
+    // 내 차량 등록
     @PostMapping("/vehiRegi")
     public String addVehicle(@RequestBody MemberVehicleDto vehicleDto, @RequestParam(value = "id", required = false) String paramId, HttpSession session) {
     	System.out.println("=> MemController: addVehicle | "+ new Date());
@@ -151,7 +152,7 @@ public class MemController {
         return "fail";
     }
     
-    // 차량 수정
+    // 내 차량 수정
     @PutMapping("/vehiUpdate")
     public String updateVehicle(@RequestBody MemberVehicleDto vehicleDto, HttpSession session) {
     	System.out.println("=> MemController: updateVehicle | "+ new Date());
@@ -175,11 +176,27 @@ public class MemController {
         return "fail";
     }
 
-    // 차량 삭제
+    // 내 차량 삭제
     @DeleteMapping("/vehiDelete")
     public String deleteVehicle(@RequestParam("vehicleNum") String vehicleNum) {
     	System.out.println("=> MemController: deleteVehicle | "+ new Date());
         memService.delVehi(vehicleNum);
+        return "success";
+    }
+    
+    // 고객의소리 작성
+    @PostMapping("/voc/write")
+    public String writeVoc(@RequestBody VocDto vocDto, HttpSession session) {
+        String loginId = (String) session.getAttribute("loginId");
+        if (loginId == null)
+        	return "fail";
+        
+        MemDto member = memService.getMemberInfo(loginId);
+        if (member == null)
+        	return "fail";
+
+        vocDto.setMemId(member.getMemId());
+        memService.addVoc(vocDto);
         return "success";
     }
 }

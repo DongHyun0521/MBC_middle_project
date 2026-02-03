@@ -1,3 +1,4 @@
+// middleProject - com.mbc.mid.dao - ParkingLogDao.java
 package com.mbc.mid.dao;
 
 import org.apache.ibatis.annotations.Mapper;
