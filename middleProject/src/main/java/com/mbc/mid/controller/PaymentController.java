@@ -21,7 +21,7 @@ public class PaymentController {
     @Autowired
     private PaymentService paymentService;
 
-    // 출차 시 요금 계산
+    // 결제 정보 저장
     @PostMapping("/payment")
     public String pay(@RequestBody PaymentDto paymentDto) {
     	System.out.println("=> PaymentController: pay | "+ new Date());

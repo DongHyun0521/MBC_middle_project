@@ -7,29 +7,63 @@
         INSERT INTO med_staff (mem_id, role, license_number, status, med_dept_id, spot_id) 
         VALUES (#{memId}, #{role}, #{licenseNumber}, #{status}, #{medDeptId}, #{spotId})
     </insert>
+    
+    <!-- 의사인지 확인 -->
+    <select id="checkDoctorCount" parameterType="long" resultType="int">
+        SELECT COUNT(*) FROM med_staff 
+        WHERE mem_id = #{memId} 
+			AND (role = 'DOCTOR' OR role = '의사') 
+			AND status = '재직'
+    </select>
+	
+	<!-- ========== 진료 예약 ========== -->
 
 	<!-- 예약하기 -->
     <insert id="createReservation" parameterType="com.mbc.mid.dto.ReservationDto">
         INSERT INTO reservation (
             mem_id, med_dept_id, doctor_id, reservation_date, reservation_time, 
-            reservation_type, visit_type, reservation_status, reservation_memo, reservation_made_time
+            reservation_type, visit_type, reservation_status, reservation_memo
         ) VALUES (
             #{memId}, #{medDeptId}, #{doctorId}, #{reservationDate}, #{reservationTime}, 
-            #{reservationType}, #{visitType}, #{reservationStatus}, #{reservationMemo}, NOW()
+            #{reservationType}, #{visitType}, #{reservationStatus}, #{reservationMemo}
         )
     </insert>
+    
+    <!-- 회원이 예약 취소하기 (예약->취소) -->
+    <update id="cancelReservation" parameterType="long">
+        UPDATE reservation 
+	    SET reservation_status = '취소' 
+	    WHERE reservation_id = #{reservationId} AND mem_id = #{memId}
+    </update>
+    
+    <!-- 해당 의사인지 확인 -->
+    <select id="getMedStaffIdByMemId" parameterType="long" resultType="long">
+        SELECT med_staff_id 
+        FROM med_staff 
+        WHERE mem_id = #{memId}
+    </select>
+    
+    <!-- 의사가 예약 강제 취소하기 (예약->취소) -->
+    <update id="cancelReservationByDoctor">
+        UPDATE reservation 
+        SET reservation_status = '취소' 
+        WHERE reservation_id = #{reservationId} 
+          AND doctor_id = #{doctorId}
+    </update>
     
     <!-- 전체 의사 목록 -->
     <select id="getAllDoctors" resultType="map">
         SELECT 
             s.med_staff_id AS staff_id, 
             m.name AS staff_name,
+            m.id AS user_id,
             d.dept_name,
             s.role
         FROM med_staff s
         JOIN mem m ON s.mem_id = m.mem_id
         JOIN med_dept d ON s.med_dept_id = d.med_dept_id
-        WHERE s.role = 'DOCTOR' AND s.status = '재직'
+        WHERE (s.role IN ('DOCTOR', 'NURSE', '의사', '간호사'))
+			AND s.status = '재직'
         ORDER BY d.dept_name ASC, m.name ASC
     </select>
     
@@ -43,7 +77,9 @@
     <select id="getDoctorListByDept" parameterType="long" resultType="map">
         SELECT s.med_staff_id AS staff_id, s.role, m.name AS staff_name
         FROM med_staff s JOIN mem m ON s.mem_id = m.mem_id
-        WHERE s.med_dept_id = #{medDeptId} AND s.role = 'DOCTOR' AND s.status = '재직'
+        WHERE s.med_dept_id = #{medDeptId} 
+			AND (s.role = 'DOCTOR' OR s.role = '의사')
+			AND s.status = '재직'
     </select>
 
 	<!-- 회원별 예약 목록 -->

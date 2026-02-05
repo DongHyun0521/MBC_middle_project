@@ -5,6 +5,7 @@ public class MedDeptDto {
     private String deptName;        // 부서명
     private String deptLocation;    // 위치
     private String deptPhoneNumber; // 전화번호
+    
 	public MedDeptDto() {
 		super();
 	}

@@ -2,7 +2,7 @@
   <div class="check-res-wrap">
     <div class="check-res-container">
       <header class="page-header">
-        <h2>📅 나의 진료 예약 조회</h2>
+        <h2>나의 진료 예약 조회</h2>
         <div class="title-bar"></div>
         <p class="page-desc">예약 내역을 확인하고 관리하실 수 있습니다.</p>
       </header>
@@ -22,25 +22,21 @@
           <tbody>
             <tr v-for="res in myReservations" :key="res.reservation_id">
               <td class="w-id"><div class="cell-content res-id">#{{ res.reservation_id }}</div></td>
-              
               <td class="w-info">
                 <div class="cell-content res-doc-info">
                   <strong class="dept-name">{{ res.dept_name }}</strong>
-                  <span class="staff-name">{{ res.name }} 의사</span>
+                  <span class="staff-name">{{ res.doctor_name }} 의사</span>
                 </div>
               </td>
-              
               <td class="w-date">
                 <div class="cell-content res-date-time">
                   <span class="d-txt">{{ formatDate(res.reservation_date) }}</span>
                   <span class="t-txt">{{ res.reservation_time }}</span>
                 </div>
               </td>
-              
               <td class="w-type">
-                <div class="cell-content"><span class="visit-badge">{{ res.visit_type }}</span></div>
+                <div class="cell-content"><span class="visit-badge">{{ res.visit_type || '진료' }}</span></div>
               </td>
-              
               <td class="w-status">
                 <div class="cell-content">
                   <span :class="['status-badge', statusClass(res.reservation_status)]">
@@ -48,7 +44,6 @@
                   </span>
                 </div>
               </td>
-              
               <td class="w-action">
                 <div class="cell-content txt-center">
                   <button 
@@ -66,7 +61,7 @@
         </table>
 
         <div v-if="myReservations.length === 0" class="empty-state">
-          <div class="empty-icon">📅</div>
+          <div class="empty-icon"></div>
           <p>예약된 내역이 존재하지 않습니다.</p>
         </div>
       </div>
@@ -76,41 +71,43 @@
 
 <script setup>
 import { ref, onMounted } from 'vue'
-import { getMyReservations } from '@/api/reservation' // 💡 심부름 센터 호출
-import axios from 'axios'
+import { getMyResReq, cancelResReq } from '@/api/reservation' 
 
 const myReservations = ref([])
 
-// 📌 [핵심] 데이터 불러오기
+/**
+ * [데이터 로드]
+ */
 const fetchMyReservations = async () => {
   try {
-    const res = await getMyReservations()
-    // 💡 백엔드 hospitalService.getReservationsByMember 가 주는 리스트 빡! 담기
-    myReservations.value = res.data
+    const res = await getMyResReq()
+    myReservations.value = res.data // DB Map 리스트 (스네이크 케이스)
   } catch (err) {
-    console.error('데이터 로드 실패 ㅠㅠ')
+    console.error('데이터 로드 실패')
   }
 }
 
-// 📌 [핵심] 예약 취소 처리 ❌
+/**
+ * [예약 취소]
+ */
 const handleCancel = async (resId) => {
-  if (!confirm('정말로 예약을 취소하시겠습니까? 🧩')) return
+  if (!confirm('정말로 예약을 취소하시겠습니까?')) return
 
   try {
-    // 💡 백엔드 컨트롤러에 맞게 취소 API 호출 (PUT 또는 DELETE)
-    // 여기서는 예시로 axios 직접 호출, 나중에 reservation.js에 정의해서 쓰는 걸 추천!
-    const res = await axios.put(`http://localhost:8080/member/reservation/cancel/${resId}`, {}, { withCredentials: true })
-    
+    const res = await cancelResReq(resId)
+    // 성공 시 'success' 문자열 또는 true 리턴
     if (res.data === 'success' || res.data === true) {
-      alert('예약이 정상적으로 취소되었습니다 🎉')
-      fetchMyReservations() // 목록 새로고침 쥰나 중요! ✨
+      alert('예약이 정상적으로 취소되었습니다')
+      fetchMyReservations() 
     }
   } catch (err) {
-    alert('취소 처리 중 오류가 발생했습니다 👋')
+    alert('취소 처리 중 오류가 발생했습니다')
   }
 }
 
-// 🪄 [유틸] DB 숫자날짜(20260205) -> 문자날짜(2026-02-05) 변환 📐
+/**
+ * [유틸] 날짜 변환
+ */
 const formatDate = (dateInt) => {
   if (!dateInt) return '-'
   const s = String(dateInt)
@@ -123,7 +120,6 @@ onMounted(fetchMyReservations)
 </script>
 
 <style scoped>
-/* 📌 기존 스타일 100% 보존 (안 깨짐 🧩) */
 .check-res-wrap { background-color: #f4f7fa; min-height: 100vh; padding: 80px 20px; }
 .check-res-container { max-width: 1100px; margin: 0 auto; }
 .page-header { text-align: center; margin-bottom: 60px; }

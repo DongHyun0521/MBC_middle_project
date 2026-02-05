@@ -7,23 +7,29 @@ export default [
     {
         path: '/reservation',
         name: 'reservation',
-        component: Reservation
+        component: Reservation,
+        // [핵심] 예약 신청은 로그인 필수!
+        meta: { requiresAuth: true, title: '진료 예약' } 
     },
     {
         path: '/doctorsearch',
         name: 'doctorsearch',
-        component: DoctorSearch
+        component: DoctorSearch,
+        // 비로그인 허용은 meta를 안 쓰거나 false로 두면 됨!(비회원도 조회 가능)
+        meta: { requiresAuth: false, title: '의료진 찾기' } 
     },
     {
         path: '/deptsearch',
         name: 'deptsearch',
-        component: DeptSearch
+        component: DeptSearch,
+        // 비회원도 조회 가능
+        meta: { requiresAuth: false, title: '진료과 찾기' }
     },
     {
         path: '/checkreservation',
         name: 'checkreservation',
-        component: CheckReservation
+        component: CheckReservation,
+        // [핵심] 내 예약 확인도 당연히 로그인이 필수!
+        meta: { requiresAuth: true, title: '예약 확인' }
     }
-
-
 ]

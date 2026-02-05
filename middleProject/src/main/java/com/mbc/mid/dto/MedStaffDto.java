@@ -9,6 +9,7 @@ public class MedStaffDto {
     private Long medDeptId;         // FK
     private Long spotId;            // FK
     private String createTime;      // 생성일시
+    
 	public MedStaffDto() {
 		super();
 	}

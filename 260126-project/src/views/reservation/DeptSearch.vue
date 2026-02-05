@@ -1,51 +1,41 @@
 <template>
   <div class="search-wrap">
     <div class="search-container">
-      <div class="page-header">
-        <h2>🩺 진료과 찾기</h2>
+      <header class="page-header">
+        <h2>진료과 찾기</h2>
         <div class="title-bar"></div>
         <p class="page-desc">우리 병원의 모든 진료과 정보를 한눈에 확인해보세요.</p>
-      </div>
+      </header>
 
       <div class="filter-box">
         <select v-model="selectedLocation" class="search-input select-icon">
           <option value="">전체 위치(층/동)</option>
-          <option value="본관 1층">본관 1층</option>
-          <option value="본관 2층">본관 2층</option>
-          <option value="본관 3층">본관 3층</option>
+          <option value="본관">본관</option>
+          <option value="신관">신관</option>
           <option value="별관">별관</option>
         </select>
-
-        <input 
-          type="text" 
-          v-model="searchDeptName" 
-          placeholder="진료과 명칭 입력 (예: 내과)"
-          class="search-input name-input"
-        >
+        <input type="text" v-model="searchDeptName" placeholder="진료과 명칭 입력" class="search-input name-input">
       </div>
 
       <div class="dept-grid">
-        <div v-for="dept in filteredDepts" :key="dept.dept_id" class="dept-card">
+        <div v-for="dept in filteredDepts" :key="dept.med_dept_id" class="dept-card">
           <div class="dept-info">
             <div class="dept-main">
               <h3>{{ dept.dept_name }}</h3>
               <div class="dept-tags">
-                <span class="tag location">📍 {{ dept.office_location }}</span>
-                <span class="tag phone">📞 {{ dept.office_phone_number }}</span>
+                <span class="tag location">📍 {{ dept.dept_location }}</span>
+                <span class="tag phone">📞 {{ dept.dept_phone_number }}</span>
               </div>
             </div>
-            <p class="desc">
-              {{ dept.dept_description || `${dept.dept_name}에서 최상의 진료 서비스를 제공합니다.` }}
-            </p>
+            <p class="desc">{{ dept.dept_name }}에서 최상의 진료 서비스를 제공합니다.</p>
           </div>
-          <button class="view-doc-btn" @click="goToDoctorSearch(dept.dept_name)">
+          <button class="view-doc-btn" @click="goToDoctorSearch(dept.med_dept_id)">
             의료진 상세정보 〉
           </button>
         </div>
 
         <div v-if="filteredDepts.length === 0" class="no-result">
-          <div class="no-result-icon">🩺</div>
-          <p>검색된 진료과가 없습니다. DB 데이터를 확인해주세요!</p>
+          <p>검색된 진료과가 없습니다.</p>
         </div>
       </div>
     </div>
@@ -55,38 +45,32 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
-import { getDepts } from '@/api/reservation' // 💡 아까 만든 예약 API 심부름 센터
+import { getDeptsReq } from '@/api/reservation' 
 
 const router = useRouter()
-
 const selectedLocation = ref('') 
-const searchDeptName = ref('')   
-const allDepts = ref([])         
+const searchDeptName = ref('')     
+const allDepts = ref([])          
 
-// 🧠 [핵심 로직] 위치 및 명칭 필터링 🪄
 const filteredDepts = computed(() => {
   return allDepts.value.filter(dept => {
-    // 💡 DB의 office_location에 선택한 위치가 포함되는지 확인
-    const matchLocation = selectedLocation.value === '' || dept.office_location.includes(selectedLocation.value)
-    const matchName = dept.dept_name.includes(searchDeptName.value)
+    const matchLocation = selectedLocation.value === '' || (dept.dept_location || '').includes(selectedLocation.value)
+    const matchName = (dept.dept_name || '').includes(searchDeptName.value)
     return matchLocation && matchName
   })
 })
 
-// 🚗 의료진 찾기로 이동할 때 검색어(과 이름) 들고 가기
-const goToDoctorSearch = (name) => {
-  router.push({ path: '/doctorsearch', query: { dept: name } })
+// 번호(ID)를 넘겨야 DoctorSearch에서 자동 선택됨
+const goToDoctorSearch = (id) => {
+  router.push({ path: '/doctorsearch', query: { deptId: id } })
 }
 
-// 📌 [수정 핵심] 백엔드에서 진짜 진료과 목록 긁어오기 💉
 const fetchDepts = async () => {
   try {
-    const res = await getDepts()
-    // 💡 백엔드 컨트롤러가 List<MedDept>를 반환하므로 res.data에 빡! 들어있음
+    const res = await getDeptsReq()
     allDepts.value = res.data
   } catch (err) {
-    console.error('진료과 정보 로드 실패 ㅠㅠ')
-    allDepts.value = [] // 에러 시 초기화
+    console.error('진료과 로드 실패')
   }
 }
 
@@ -94,7 +78,7 @@ onMounted(fetchDepts)
 </script>
 
 <style scoped>
-/* 📌 기존 스타일 100% 보존 (안 깨지게 쥰나 조심함 🧩) */
+/* 기존 스타일 100% 유지 */
 .search-wrap { background-color: #f4f7fa; min-height: 100vh; padding: 60px 20px; }
 .search-container { max-width: 1000px; margin: 0 auto; }
 .page-header { text-align: center; margin-bottom: 50px; }

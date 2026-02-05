@@ -18,14 +18,17 @@ public class MemService {
 
     // 아이디 중복 확인
     public int idCheck(String id) {
-    	System.out.println("=> MemService: idCheck | "+ new Date());
     	return memDao.idCheck(id);
     }
     
     // 회원 가입
     public void addMem(MemDto memDto) {
-    	System.out.println("=> MemService: addMem | "+ new Date());
     	memDao.addMem(memDto);
+    }
+    
+    // 회원 탈퇴 (del=1)
+    public void delMem(String id) {
+    	memDao.delMem(id);
     }
     
     // 로그인
@@ -40,11 +43,7 @@ public class MemService {
     	return memDao.findId(memDto);
     }
     
-    // 회원 탈퇴
-    public void delMem(String id) {
-    	System.out.println("=> MemService: delMem | "+ new Date());
-    	memDao.delMem(id);
-    }
+    // ========== 내 정보 ==========
     
     // 내 정보
     public MemDto getMemberInfo(String id) {
@@ -57,6 +56,8 @@ public class MemService {
     	System.out.println("=> MemService: updateMem | "+ new Date());
     	memDao.updateMem(memDto);
     }
+
+    // ========== 내 차량 ==========
     
     // 내 차량 목록
     public List<MemberVehicleDto> getMemberVehicleList(String id) {
@@ -71,19 +72,37 @@ public class MemService {
     }
     
     // 내 차량 수정
-    public void updateVehi(MemberVehicleDto vehicleDto) {
+    public int  updateVehi(MemberVehicleDto vehicleDto) {
     	System.out.println("=> MemService: updateVehi | "+ new Date());
-    	memDao.updateVehi(vehicleDto);
+    	return memDao.updateVehi(vehicleDto);
     }
     
-    // 내 차량 삭제
-    public void delVehi(String vehicleNum) {
+    // 내 차량 삭제 (delete)
+    public int delVehi(String vehicleNum, Long memId) {
     	System.out.println("=> MemService: delVehi | "+ new Date());
-    	memDao.delVehi(vehicleNum);
+        return memDao.delVehi(vehicleNum, memId);
     }
     
+    // ========== 고객의소리 ==========
+    
+    // 회원별 고객의소리 목록 (전체/미답변/답변완료)
+    public List<VocDto> getMyVocList(Long memId, String filter) {
+        if (filter == null || filter.isEmpty()) filter = "all";
+        return memDao.getMyVocList(memId, filter);
+    }
+
     // 고객의소리 작성
     public void addVoc(VocDto vocDto) {
         memDao.addVoc(vocDto);
+    }
+
+    // 고객의소리 수정 (답변 없는 것만 수정 가능)
+    public int updateVoc(VocDto vocDto) {
+        return memDao.updateVoc(vocDto);
+    }
+
+    // 고객의소리 삭제 (답변이 있을 시 같이 삭제)
+    public int deleteVoc(Long vocId, Long memId) {
+        return memDao.deleteVoc(vocId, memId);
     }
 }

@@ -50,17 +50,17 @@
 <script setup>
 import { ref } from 'vue'
 
-// 🪄 부모에게 보내는 신호들
+// 부모(MainHome)에게 "나 이거 눌렀어!"라고 알려주는 전령들
 defineEmits(['parking', 'moreNotice', 'moreHealth'])
 
-// 💾 공지사항 샘플 데이터
+// 공지사항 샘플 데이터(나중에 백엔드 API랑 연결할 데이터 저장소)
 const notices = ref([
   { title: '[안내] S-HOSPITAL 설 연휴 진료 일정 안내', date: '2026.01.28' },
   { title: '[공고] 2026년 상반기 신규 의료진 채용 공고', date: '2026.01.25' },
   { title: '[뉴스] 스마트 주차 시스템 도입 안내', date: '2026.01.20' }
 ])
 
-// 💾 건강이야기 샘플 데이터
+// 건강이야기 샘플 데이터
 const healthStories = ref([
   { tag: '영양가이드', title: '면역력을 높이는 슈퍼푸드', desc: '우리 몸을 지키는 식단 가이드', img: 'https://picsum.photos/400/250?random=1' },
   { tag: '생활습관', title: '꿀잠 자는 법! 수면 가이드', desc: '매일 아침을 개운하게 시작하세요', img: 'https://picsum.photos/400/250?random=2' },
@@ -69,7 +69,7 @@ const healthStories = ref([
 </script>
 
 <style scoped>
-/* 📌 중앙 정렬 컨테이너 */
+/* 중앙 정렬 컨테이너 */
 .integrated-notice-area {
   width: 100%;
   max-width: 1000px;
@@ -81,7 +81,7 @@ const healthStories = ref([
   gap: 60px;
 }
 
-/* 🏢 1단: 공지사항 & 주차안내 스타일 */
+/* 1단: 공지사항 & 주차안내 스타일 */
 .top-section { display: flex; gap: 25px; height: 300px; }
 
 .notice-box { flex: 1.5; background: #fff; border: 1px solid #eee; border-radius: 20px; padding: 30px; box-shadow: 0 5px 15px rgba(0,0,0,0.03); }
@@ -93,7 +93,7 @@ const healthStories = ref([
 .n-title { font-size: 15px; color: #555; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .n-date { font-size: 13px; color: #999; }
 
-/* 🅿️ 주차안내 박스 (IMG 레이어) */
+/* 주차안내 박스 (IMG 레이어) */
 .parking-guide-box { flex: 1; border-radius: 20px; overflow: hidden; position: relative; cursor: pointer; }
 .p-bg-img { position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; z-index: 1; }
 .parking-overlay {
@@ -109,7 +109,7 @@ const healthStories = ref([
 .parking-overlay p { font-size: 14px; line-height: 1.6; opacity: 0.9; margin: 0 0 20px 0; }
 .p-arrow { font-size: 15px; font-weight: 700; }
 
-/* 🍎 2단: 건강이야기 스타일 */
+/* 2단: 건강이야기 스타일 */
 .health-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 25px; }
 .health-card { background: #fff; border-radius: 20px; overflow: hidden; border: 1px solid #eee; transition: 0.3s; cursor: pointer; }
 .health-card:hover { transform: translateY(-10px); box-shadow: 0 15px 30px rgba(0,0,0,0.1); }

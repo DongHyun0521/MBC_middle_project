@@ -7,6 +7,7 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -31,7 +32,7 @@ public class MemController {
 
     // 아이디 중복 확인
     @GetMapping("/idcheck")
-    public boolean checkId(@RequestParam("id") String id) {
+    public boolean checkId(@RequestParam String id) {
     	System.out.println("=> MemController: checkId | "+ new Date());
         return memService.idCheck(id) == 0;
     }
@@ -49,16 +50,16 @@ public class MemController {
         }
     }
     
-    // 회원 탈퇴
+    // 회원 탈퇴 (del=1)
     @DeleteMapping("/withdraw")
     public String withdraw(HttpSession session) {
     	System.out.println("=> MemController: withdraw | "+ new Date());
-        String id = (String) session.getAttribute("loginId");
-        
-        if (id == null)
-        	return "fail";
+    	// 로그인상태 & 회원인지 확인
+        String loginId = (String) session.getAttribute("loginId");
+        MemDto member = memService.getMemberInfo(loginId);
+        if (loginId == null || member == null) return "fail";
 
-        memService.delMem(id);
+        memService.delMem(loginId);
         session.invalidate();
         return "success";
     }
@@ -88,115 +89,155 @@ public class MemController {
     @PostMapping("/logout")
     public String logout(HttpSession session) {
     	System.out.println("=> MemController: logout | "+ new Date());
+    	// 로그인상태 & 회원인지 확인
+        String loginId = (String) session.getAttribute("loginId");
+        MemDto member = memService.getMemberInfo(loginId);
+        if (loginId == null || member == null) return "fail";
+        
         session.invalidate();
         return "success";
     }
+    
+    // ========== 내 정보 ==========
 
     // 내 정보
     @GetMapping("/mypage")
     public MemDto getMyInfo(HttpSession session) {
     	System.out.println("=> MemController: getMyInfo | "+ new Date());
-        String id = (String) session.getAttribute("loginId");
+    	// 로그인상태 & 회원인지 확인
+        String loginId = (String) session.getAttribute("loginId");
+        MemDto member = memService.getMemberInfo(loginId);
+        if (loginId == null || member == null) return null;
         
-        if (id == null)
-        	return null;
-        
-        return memService.getMemberInfo(id);
-    }
-
-    // 내 차량 목록
-    @GetMapping("/vehicles")
-    public List<MemberVehicleDto> getMyVehicles(HttpSession session) {
-    	System.out.println("=> MemController: getMyVehicles | "+ new Date());
-        String id = (String) session.getAttribute("loginId");
-        
-        if (id == null)
-        	return null;
-        
-        return memService.getMemberVehicleList(id);
+        return memService.getMemberInfo(loginId);
     }
     
     // 내 정보 수정
     @PutMapping("/mypageUpdate")
     public String updateInfo(@RequestBody MemDto memDto, HttpSession session) {
     	System.out.println("=> MemController: updateInfo | "+ new Date());
-        String id = (String) session.getAttribute("loginId");
-        
-        if (id == null)
-        	return "fail";
+    	// 로그인상태 & 회원인지 확인
+        String loginId = (String) session.getAttribute("loginId");
+        MemDto member = memService.getMemberInfo(loginId);
+        if (loginId == null || member == null) return "fail";
 
-        memDto.setId(id);
+        memDto.setId(loginId);
         memService.updateMem(memDto);
         return "success";
     }
+    
+    // ========== 내 차량 ==========
 
-    // 내 차량 등록
+    // 내 차량 목록
+    @GetMapping("/vehicles")
+    public List<MemberVehicleDto> getMyVehicles(HttpSession session) {
+    	System.out.println("=> MemController: getMyVehicles | "+ new Date());
+    	// 로그인상태 & 회원인지 확인
+        String loginId = (String) session.getAttribute("loginId");
+        MemDto member = memService.getMemberInfo(loginId);
+        if (loginId == null || member == null) return null;
+        
+        return memService.getMemberVehicleList(loginId);
+    }
+
+    // 내 차량 추가
     @PostMapping("/vehiRegi")
-    public String addVehicle(@RequestBody MemberVehicleDto vehicleDto, @RequestParam(value = "id", required = false) String paramId, HttpSession session) {
+    public String addVehicle(@RequestBody MemberVehicleDto vehicleDto, HttpSession session) {
     	System.out.println("=> MemController: addVehicle | "+ new Date());
-    	String id = (String) session.getAttribute("loginId");
+    	String loginId = (String) session.getAttribute("loginId");
+        MemDto member = memService.getMemberInfo(loginId);
+        if (loginId == null || member == null) return "fail";
         
-        if (id == null)
-            id = paramId;
-        
-        if (id == null)
-        	return "fail";
-
-        MemDto member = memService.getMemberInfo(id);
-        
-        if (member != null) {
-            vehicleDto.setMemId(member.getMemId());
-            memService.addVehi(vehicleDto);
-            return "success";
-        }
-        return "fail";
+        vehicleDto.setMemId(member.getMemId());
+        memService.addVehi(vehicleDto);
+        return "success";
     }
     
     // 내 차량 수정
     @PutMapping("/vehiUpdate")
     public String updateVehicle(@RequestBody MemberVehicleDto vehicleDto, HttpSession session) {
     	System.out.println("=> MemController: updateVehicle | "+ new Date());
-        String id = (String) session.getAttribute("loginId");
-        if (id == null)
-        	return "fail";
-
-        MemDto member = memService.getMemberInfo(id);
+    	// 로그인상태 & 회원인지 확인
+    	String loginId = (String) session.getAttribute("loginId");
+    	MemDto member = memService.getMemberInfo(loginId);
+        if (loginId == null) return "fail";
         
-        if (member != null) {
-            vehicleDto.setMemId(member.getMemId());
-            
-            try {
-                memService.updateVehi(vehicleDto);
-                return "success";
-            } catch (Exception e) {
-                e.printStackTrace();
-                return "fail";
-            }
+        vehicleDto.setMemId(member.getMemId());
+        
+        try {
+            return memService.updateVehi(vehicleDto) > 0 ? "success" : "fail";
+        } catch (Exception e) {
+            e.printStackTrace();
+            return "fail";
         }
-        return "fail";
     }
 
-    // 내 차량 삭제
-    @DeleteMapping("/vehiDelete")
-    public String deleteVehicle(@RequestParam("vehicleNum") String vehicleNum) {
+    // 내 차량 삭제 (delete)
+    @DeleteMapping("/vehiDelete/{vehicleNum}")
+    public String deleteVehicle(@PathVariable String vehicleNum, HttpSession session) {
     	System.out.println("=> MemController: deleteVehicle | "+ new Date());
-        memService.delVehi(vehicleNum);
-        return "success";
+    	// 로그인상태 & 회원인지 확인
+    	String loginId = (String) session.getAttribute("loginId");
+    	MemDto member = memService.getMemberInfo(loginId);
+        if (loginId == null || member == null) return "fail";
+    	
+        try {
+            return memService.delVehi(vehicleNum, member.getMemId()) > 0 ? "success" : "fail";
+        } catch (Exception e) {
+            e.printStackTrace();
+            return "fail";
+        }
     }
     
+    // ========== 고객의소리 ==========
+    
+    // 회원별 고객의소리 목록 (전체/미답변/답변완료)
+    // /member/voc/list?filter=all (또는 unanswered, answered)
+    @GetMapping("/voc/list")
+    public List<VocDto> getMyVocList(@RequestParam(required = false) String filter, HttpSession session) {
+    	// 로그인상태 & 회원인지 확인
+        String loginId = (String) session.getAttribute("loginId");
+        MemDto member = memService.getMemberInfo(loginId);
+        if (loginId == null || member == null) return null;
+
+        return memService.getMyVocList(member.getMemId(), filter);
+    }
+
     // 고객의소리 작성
     @PostMapping("/voc/write")
     public String writeVoc(@RequestBody VocDto vocDto, HttpSession session) {
+    	// 로그인상태 & 회원인지 확인
         String loginId = (String) session.getAttribute("loginId");
-        if (loginId == null)
-        	return "fail";
-        
         MemDto member = memService.getMemberInfo(loginId);
-        if (member == null)
-        	return "fail";
-
+        if (loginId == null || member == null) return "fail";
+        
         vocDto.setMemId(member.getMemId());
+        
         memService.addVoc(vocDto);
         return "success";
+    }
+
+    // 고객의소리 수정 (답변 없는 것만 수정 가능)
+    @PutMapping("/voc/update")
+    public String updateVoc(@RequestBody VocDto vocDto, HttpSession session) {
+    	// 로그인상태 & 회원인지 확인
+        String loginId = (String) session.getAttribute("loginId");
+        MemDto member = memService.getMemberInfo(loginId);
+        if (loginId == null || member == null) return "fail";
+        
+        vocDto.setMemId(member.getMemId());
+
+        return memService.updateVoc(vocDto) > 0 ? "success" : "fail";
+    }
+
+    // 고객의소리 삭제 (답변이 있을 시 같이 삭제)
+    @DeleteMapping("/voc/delete/{vocId}")
+    public String deleteVoc(@PathVariable Long vocId, HttpSession session) {
+    	// 로그인상태 & 회원인지 확인
+        String loginId = (String) session.getAttribute("loginId");
+        MemDto member = memService.getMemberInfo(loginId);
+        if (loginId == null || member == null) return "fail";
+        
+        return memService.deleteVoc(vocId, member.getMemId()) > 0 ? "success" : "fail";
     }
 }

@@ -2,10 +2,11 @@
 package com.mbc.mid.dto;
 
 public class AdminDeptDto {
-    private Long adminDeptId;       // PK
-    private String deptName;        // 부서명
-    private String deptLocation;    // 위치
-    private String deptPhoneNumber; // 전화번호
+	private Long adminDeptId;		// PK
+    private String deptName;		// 부서명
+    private String deptLocation;	// 위치
+    private String deptPhoneNumber;	// 전화번호
+    
 	public AdminDeptDto() {
 		super();
 	}
@@ -40,5 +41,4 @@ public class AdminDeptDto {
 	public void setDeptPhoneNumber(String deptPhoneNumber) {
 		this.deptPhoneNumber = deptPhoneNumber;
 	}
-    
 }

@@ -21,7 +21,7 @@ public class PaymentService {
     @Autowired
     private ParkingLogDao parkingLogDao;
 
-    // 출차 시 결제
+    // 결제 정보 저장
     public void processPayment(PaymentDto paymentDto) {
     	System.out.println("=> PaymentService: processPayment | "+ new Date());
         paymentDao.insertPayment(paymentDto);

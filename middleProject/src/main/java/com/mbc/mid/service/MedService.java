@@ -46,12 +46,33 @@ public class MedService {
 
         medDao.addMedStaff(staffDto);
     }
+    
+    // 의사인지 확인
+    public boolean isDoctor(Long memId) {
+        return medDao.checkDoctorCount(memId) > 0;
+    }
+    
+    // ========== 진료 예약 ==========
 
     // 예약하기
     public void createReservation(ReservationDto resDto) {
-        if(resDto.getReservationStatus() == null)
-        	resDto.setReservationStatus("예약완료");
+    	if (resDto.getReservationStatus() == null || resDto.getReservationStatus().isEmpty()) {
+            resDto.setReservationStatus("예약");
+        }
         medDao.createReservation(resDto);
+    }
+    
+    // 회원이 예약 취소하기 (예약->취소)
+    public int cancelReservation(Long reservationId, Long memId) {
+        return medDao.cancelReservation(reservationId, memId);
+    }
+    
+    // 의사가 예약 강제 취소하기 (예약->취소)
+    public int cancelReservationByDoctor(Long reservationId, Long memId) {
+        Long doctorId = medDao.getMedStaffIdByMemId(memId);
+        if (doctorId == null) return 0; 
+
+        return medDao.cancelReservationByDoctor(reservationId, doctorId);
     }
     
     // 전체 의사 목록
@@ -64,7 +85,7 @@ public class MedService {
     	return medDao.getAllMedDepts();
     }
     
-    // 부서별 의사 목록
+    // 의료 부서별 의사 목록
     public List<Map<String, Object>> getDoctorListByDept(Long medDeptId) {
     	return medDao.getDoctorListByDept(medDeptId);
     }

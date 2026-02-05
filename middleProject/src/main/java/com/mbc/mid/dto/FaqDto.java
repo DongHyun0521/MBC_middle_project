@@ -8,12 +8,12 @@ public class FaqDto {
     private String title;           // 제목
     private String content;         // 내용
     private String writeDate;       // 작성일
-    private Integer readCount;      // 조회수
+    private Integer del;			// FAQ 삭제 여부
+    
 	public FaqDto() {
 		super();
 	}
-	public FaqDto(Long faqId, Long adminStaffId, String category, String title, String content, String writeDate,
-			Integer readCount) {
+	public FaqDto(Long faqId, Long adminStaffId, String category, String title, String content, String writeDate, Integer del) {
 		super();
 		this.faqId = faqId;
 		this.adminStaffId = adminStaffId;
@@ -21,7 +21,7 @@ public class FaqDto {
 		this.title = title;
 		this.content = content;
 		this.writeDate = writeDate;
-		this.readCount = readCount;
+		this.del = del;
 	}
 	public Long getFaqId() {
 		return faqId;
@@ -59,11 +59,10 @@ public class FaqDto {
 	public void setWriteDate(String writeDate) {
 		this.writeDate = writeDate;
 	}
-	public Integer getReadCount() {
-		return readCount;
+	public Integer getDel() {
+		return del;
 	}
-	public void setReadCount(Integer readCount) {
-		this.readCount = readCount;
+	public void setDel(Integer del) {
+		this.del = del;
 	}
-    
 }

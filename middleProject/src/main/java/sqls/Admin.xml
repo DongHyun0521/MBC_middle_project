@@ -10,52 +10,200 @@
     
     <!-- 행정직인지 확인 -->
     <select id="checkAdminCount" parameterType="long" resultType="int">
-        SELECT COUNT(*) FROM admin_staff WHERE mem_id = #{memId}
+        SELECT COUNT(*) 
+        FROM admin_staff 
+        WHERE mem_id = #{memId}
     </select>
     
     <!-- 회원ID로 행정직인지 확인 -->
     <select id="getAdminStaffIdByMemId" parameterType="long" resultType="long">
-        SELECT admin_staff_id FROM admin_staff WHERE mem_id = #{memId}
+        SELECT admin_staff_id 
+        FROM admin_staff 
+        WHERE mem_id = #{memId}
     </select>
-
-	<!-- 공지사항 작성 -->
+    
+    <!-- 행정 부서 전체 목록 -->
+    <select id="getAllAdminDepts" resultType="java.util.Map">
+        SELECT admin_dept_id, dept_name
+        FROM admin_dept
+        ORDER BY admin_dept_id
+    </select>
+    
+    <!-- ========== 공지사항 ========== -->
+    
+    <!-- 공지사항 전체 목록 -->
+    <select id="getAllNoticeList" resultType="com.mbc.mid.dto.NoticeDto">
+        SELECT * FROM notice 
+        WHERE del = 0 
+        ORDER BY top_fix DESC, write_date DESC
+    </select>
+    
+    <!-- 공지사항 상세 보기 -->
+    <select id="getNoticeDetail" parameterType="long" resultType="com.mbc.mid.dto.NoticeDto">
+        SELECT * FROM notice 
+        WHERE notice_id = #{noticeId}
+    </select>
+    
+    <!-- 공지사항 조회수 증가 -->
+    <update id="increaseNoticeReadCount" parameterType="long">
+        UPDATE notice
+        SET read_count = read_count + 1
+        WHERE notice_id = #{noticeId}
+    </update>
+    
+    <!-- 공지사항 작성 -->
     <insert id="addNotice" parameterType="com.mbc.mid.dto.NoticeDto">
-        INSERT INTO notice (admin_staff_id, top_fix, title, content, write_date, read_count)
-        VALUES (#{adminStaffId}, #{topFix}, #{title}, #{content}, NOW(), 0)
+        INSERT INTO notice (admin_staff_id, top_fix, title, content)
+        VALUES (#{adminStaffId}, #{topFix}, #{title}, #{content})
     </insert>
+    
+    <!-- 공지사항 수정 -->
+    <update id="updateNotice" parameterType="com.mbc.mid.dto.NoticeDto">
+        UPDATE notice
+        SET 
+            title = #{title},
+            content = #{content},
+            top_fix = #{topFix}
+        WHERE notice_id = #{noticeId}
+    </update>
+    
+    <!-- 공지사항 삭제 (del=1) -->
+    <update id="deleteNotice" parameterType="long">
+        UPDATE notice
+        SET del = 1
+        WHERE notice_id = #{noticeId}
+    </update>
+    
+    <!-- ========== FAQ ========== -->
+    
+    <!-- FAQ 전체 목록 -->
+    <select id="getAllFaqList" resultType="com.mbc.mid.dto.FaqDto">
+        SELECT * FROM faq 
+        WHERE del = 0 
+        ORDER BY faq_id DESC
+    </select>
+    
+    <!-- FAQ 카테고리별 목록 -->
+    <select id="getFaqListByCategory" parameterType="String" resultType="com.mbc.mid.dto.FaqDto">
+        SELECT * FROM faq 
+        WHERE del = 0 AND category = #{category}
+        ORDER BY faq_id DESC
+    </select>
 
 	<!-- FAQ 작성 -->
     <insert id="addFaq" parameterType="com.mbc.mid.dto.FaqDto">
-        INSERT INTO faq (admin_staff_id, category, title, content, write_date, read_count)
-        VALUES (#{adminStaffId}, #{category}, #{title}, #{content}, NOW(), 0)
+        INSERT INTO faq (admin_staff_id, category, title, content)
+        VALUES (#{adminStaffId}, #{category}, #{title}, #{content})
     </insert>
-
-	<!-- 미답변 고객의소리 목록 -->
-    <select id="getUnansweredVocList" resultType="map">
-        SELECT 
-            v.voc_id, v.title, v.write_date, m.name AS writer_name
-        FROM voc v
-        JOIN mem m ON v.mem_id = m.mem_id
-        WHERE v.parent = 0 
-          AND v.answer_status = FALSE 
-          AND v.del = 0
-        ORDER BY v.write_date ASC
+    
+    <!-- FAQ 수정 -->
+    <update id="updateFaq" parameterType="com.mbc.mid.dto.FaqDto">
+        UPDATE faq
+        SET 
+            category = #{category},
+            title = #{title},
+            content = #{content}
+        WHERE faq_id = #{faqId}
+    </update>
+    
+    <!-- FAQ 삭제 (del=1) -->
+    <update id="deleteFaq" parameterType="long">
+        UPDATE faq
+        SET del = 1
+        WHERE faq_id = #{faqId}
+    </update>
+    
+    <!-- ========== 고객의소리 ========== -->
+    
+    <!-- 무슨 부서(원무)인지 확인 -->
+    <select id="getAdminDeptName" parameterType="long" resultType="String">
+        SELECT d.dept_name 
+        FROM admin_staff s 
+        JOIN admin_dept d ON s.admin_dept_id = d.admin_dept_id
+        WHERE s.mem_id = #{memId}
     </select>
+    
+    <!-- 고객의소리 목록 (전체/미답변/답변완료/삭제) -->
+    <select id="getAllVocList" parameterType="map" resultType="com.mbc.mid.dto.VocDto">
+        SELECT v.voc_id, v.title, v.content, v.write_date, 
+            v.answer_status, v.answer_content, v.answer_write_date, v.del, 
+            m_writer.name AS writer_name, d.dept_name AS admin_dept_name
+        FROM voc v
+        JOIN mem m_writer ON v.mem_id = m_writer.mem_id
+        LEFT JOIN admin_staff s ON v.admin_staff_id = s.admin_staff_id
+        LEFT JOIN admin_dept d ON s.admin_dept_id = d.admin_dept_id
+        WHERE 1=1
+        <choose>
+            <when test="filter == 'deleted'">
+                AND v.del = 1
+            </when>
+            <otherwise>
+                AND v.del = 0
+                <if test="filter == 'unanswered'">
+                    AND v.answer_status = FALSE
+                </if>
+                <if test="filter == 'answered'">
+                    AND v.answer_status = TRUE
+                </if>
+            </otherwise>
+        </choose>
+        ORDER BY v.write_date DESC
+    </select>
+    
+    <!-- 고객의소리 상세 보기 -->
+    <select id="getVocDetail" parameterType="long" resultType="com.mbc.mid.dto.VocDto">
+        SELECT v.voc_id, v.title, v.content, v.write_date, 
+            v.answer_status, v.answer_content, v.answer_write_date, v.del, 
+            m_writer.name AS writer_name, d.dept_name AS admin_dept_name
+        FROM voc v
+        JOIN mem m_writer ON v.mem_id = m_writer.mem_id
+        LEFT JOIN admin_staff s ON v.admin_staff_id = s.admin_staff_id
+        LEFT JOIN admin_dept d ON s.admin_dept_id = d.admin_dept_id
+        WHERE v.voc_id = #{vocId}
+    </select>
+    
+    <!-- 고객의소리 강제 삭제 (del=1) -->
+    <update id="deleteVocByAdmin">
+	    UPDATE voc
+	    SET del = 1, delete_date = NOW()
+	    WHERE voc_id = #{vocId}
+	</update>
+	
+	<!-- 고객의소리 30일 후 자동 삭제 (delete) -->
+	<delete id="permanentDeleteVoc">
+	    DELETE FROM voc
+	    WHERE del = 1 
+	    AND delete_date &lt; (NOW() - INTERVAL '30 DAYS')
+	</delete>
+	
+	<!-- 고객의소리 복구 (del=0) -->
+	<update id="restoreVoc" parameterType="long">
+	    UPDATE voc
+	    SET del = 0, delete_date = NULL
+	    WHERE voc_id = #{vocId}
+	</update>
+    
+    <!-- 고객의소리 답글 작성 -->
+    <update id="addReply" parameterType="com.mbc.mid.dto.VocDto">
+        UPDATE voc
+        SET admin_staff_id = #{adminStaffId}, answer_content = #{answerContent}, answer_write_date = NOW(),
+			answer_status = TRUE
+        WHERE voc_id = #{vocId} AND answer_status = FALSE 
+	</update>
 
-	<!-- 고객의소리 답글 -->
-    <insert id="addVocReply" parameterType="com.mbc.mid.dto.VocDto">
-        INSERT INTO voc (
-            mem_id, admin_staff_id, title, content, write_date,
-            ref, step, depth, parent, answer_status, del
-        ) VALUES (
-            #{memId}, #{adminStaffId}, #{title}, #{content}, NOW(), 
-            0, 1, 1, #{parent}, true, 0
-        )
-    </insert>
-
-	<!-- 고객의소리 미답변->답변완료 -->
-    <update id="updateVocStatus" parameterType="long">
-        UPDATE voc SET answer_status = TRUE WHERE voc_id = #{vocId}
+	<!-- 고객의소리 답글 수정 -->
+    <update id="updateReply" parameterType="com.mbc.mid.dto.VocDto">
+        UPDATE voc
+        SET answer_content = #{answerContent}, admin_staff_id = #{adminStaffId} 
+		WHERE voc_id = #{vocId} AND answer_status = TRUE
     </update>
 
+	<!-- 고객의소리 답글 삭제 (NULL) -->
+    <update id="deleteReply" parameterType="long">
+        UPDATE voc
+        SET admin_staff_id = NULL, answer_content = NULL, answer_write_date = NULL,
+			answer_status = FALSE
+        WHERE voc_id = #{vocId}
+    </update>
+    
 </mapper>

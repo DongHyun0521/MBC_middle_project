@@ -10,6 +10,7 @@ public class AdminStaffDto {
     private Long adminDeptId;       // FK
     private Long spotId;            // FK
     private String createTime;      // 생성일시
+    
 	public AdminStaffDto() {
 		super();
 	}

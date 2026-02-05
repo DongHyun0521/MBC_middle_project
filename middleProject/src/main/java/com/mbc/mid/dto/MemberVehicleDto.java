@@ -7,6 +7,7 @@ public class MemberVehicleDto {
     private String vehicleType; // 차종
     private String fuelType;    // 연료
     private String createTime;  // 등록 일시
+    
 	public MemberVehicleDto() {
 		super();
 	}

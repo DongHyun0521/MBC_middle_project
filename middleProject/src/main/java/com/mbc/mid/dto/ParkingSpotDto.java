@@ -9,6 +9,7 @@ public class ParkingSpotDto {
     private Integer spotNumber;     		// 번호
     private Integer distanceFromEntrance;	// 입구 거리
     private Boolean isParked;       		// 주차 여부
+    
 	public ParkingSpotDto() {
 		super();
 	}

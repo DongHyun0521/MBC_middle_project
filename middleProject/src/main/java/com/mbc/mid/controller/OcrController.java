@@ -20,14 +20,14 @@ public class OcrController {
 
     // 입차 차량 번호판에 OCR
     @PostMapping("/ocr/entry")
-    public OcrResponse entryImage(@RequestParam("file") MultipartFile file) {
+    public OcrResponse entryImage(MultipartFile file) {
     	System.out.println("=> OcrController: entryImage | "+ new Date());
         return ocrService.processEntryImage(file);
     }
     
     // 출차 차량 번호판에 OCR
     @PostMapping("/ocr/exit")
-    public OcrResponse exitImage(@RequestParam("file") MultipartFile file) {
+    public OcrResponse exitImage(MultipartFile file) {
     	System.out.println("=> OcrController: exitImage | "+ new Date());
         return ocrService.processExitImage(file);
     }

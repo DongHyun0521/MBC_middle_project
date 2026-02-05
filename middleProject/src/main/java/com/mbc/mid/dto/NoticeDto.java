@@ -4,16 +4,18 @@ package com.mbc.mid.dto;
 public class NoticeDto {
     private Long noticeId;          // PK
     private Long adminStaffId;      // FK
-    private Boolean topFix;         // 상단 고정
+    private Boolean topFix;         // 상단 고정 여부
     private String title;           // 제목
     private String content;         // 내용
-    private String writeDate;       // 작성일
+    private String writeDate;       // 작성일시
     private Integer readCount;      // 조회수
+    private Integer del;			// 공지사항 삭제 여부
+    
 	public NoticeDto() {
 		super();
 	}
 	public NoticeDto(Long noticeId, Long adminStaffId, Boolean topFix, String title, String content, String writeDate,
-			Integer readCount) {
+			Integer readCount, Integer del) {
 		super();
 		this.noticeId = noticeId;
 		this.adminStaffId = adminStaffId;
@@ -22,6 +24,7 @@ public class NoticeDto {
 		this.content = content;
 		this.writeDate = writeDate;
 		this.readCount = readCount;
+		this.del = del;
 	}
 	public Long getNoticeId() {
 		return noticeId;
@@ -65,5 +68,10 @@ public class NoticeDto {
 	public void setReadCount(Integer readCount) {
 		this.readCount = readCount;
 	}
-    
+	public Integer getDel() {
+		return del;
+	}
+	public void setDel(Integer del) {
+		this.del = del;
+	}
 }

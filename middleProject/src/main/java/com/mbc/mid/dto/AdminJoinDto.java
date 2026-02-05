@@ -18,6 +18,7 @@ public class AdminJoinDto {
     private String empNumber;       // 사번
     private Long adminDeptId;       // FK
     private Long spotId;            // FK
+    
 	public AdminJoinDto() {
 		super();
 	}

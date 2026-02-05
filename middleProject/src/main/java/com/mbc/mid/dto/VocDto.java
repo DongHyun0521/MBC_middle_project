@@ -2,36 +2,43 @@
 package com.mbc.mid.dto;
 
 public class VocDto {
-    private Long vocId;             // PK
-    private Long memId;             // FK
-    private Long adminStaffId;      // FK
-    private Integer ref;            // 그룹 번호
-    private Integer step;           // 순서
-    private Integer depth;          // 들여쓰기
-    private String title;           // 제목
-    private String content;         // 내용
-    private String writeDate;       // 작성일
-    private Long parent;         	// 부모글 ID
-    private Boolean answerStatus;   // 답변 여부
-    private Integer del;            // 삭제 여부
+    private Long vocId;			// PK
+    private Long memId;			// FK
+    private String title;		// 제목
+    private String content;		// 내용
+    private String writeDate;	// 작성일시
+    
+    private Long adminStaffId;		// FK
+    private String answerContent;	// 답변 내용
+    private String answerWriteDate;	// 답변 작성일시
+    private boolean answerStatus;	// 답변 여부
+    
+    private Integer del;		// 삭제 여부
+    private String deleteDate;	// 삭제 버튼 눌린 시간
+    
+    private String writerName;		// JOIN 결과 담기용
+    private String adminDeptName;	// JOIN 결과 담기용
+    
 	public VocDto() {
 		super();
 	}
-	public VocDto(Long vocId, Long memId, Long adminStaffId, Integer ref, Integer step, Integer depth, String title,
-			String content, String writeDate, Long parent, Boolean answerStatus, Integer del) {
+	public VocDto(Long vocId, Long memId, String title, String content, String writeDate, Long adminStaffId,
+			String answerContent, String answerWriteDate, boolean answerStatus, Integer del,
+			String deleteDate, String writerName, String adminDeptName) {
 		super();
 		this.vocId = vocId;
 		this.memId = memId;
-		this.adminStaffId = adminStaffId;
-		this.ref = ref;
-		this.step = step;
-		this.depth = depth;
 		this.title = title;
 		this.content = content;
 		this.writeDate = writeDate;
-		this.parent = parent;
+		this.adminStaffId = adminStaffId;
+		this.answerContent = answerContent;
+		this.answerWriteDate = answerWriteDate;
 		this.answerStatus = answerStatus;
 		this.del = del;
+		this.deleteDate = deleteDate;
+		this.writerName = writerName;
+		this.adminDeptName = adminDeptName;
 	}
 	public Long getVocId() {
 		return vocId;
@@ -44,30 +51,6 @@ public class VocDto {
 	}
 	public void setMemId(Long memId) {
 		this.memId = memId;
-	}
-	public Long getAdminStaffId() {
-		return adminStaffId;
-	}
-	public void setAdminStaffId(Long adminStaffId) {
-		this.adminStaffId = adminStaffId;
-	}
-	public Integer getRef() {
-		return ref;
-	}
-	public void setRef(Integer ref) {
-		this.ref = ref;
-	}
-	public Integer getStep() {
-		return step;
-	}
-	public void setStep(Integer step) {
-		this.step = step;
-	}
-	public Integer getDepth() {
-		return depth;
-	}
-	public void setDepth(Integer depth) {
-		this.depth = depth;
 	}
 	public String getTitle() {
 		return title;
@@ -87,16 +70,28 @@ public class VocDto {
 	public void setWriteDate(String writeDate) {
 		this.writeDate = writeDate;
 	}
-	public Long getParent() {
-		return parent;
+	public Long getAdminStaffId() {
+		return adminStaffId;
 	}
-	public void setParent(Long parent) {
-		this.parent = parent;
+	public void setAdminStaffId(Long adminStaffId) {
+		this.adminStaffId = adminStaffId;
 	}
-	public Boolean getAnswerStatus() {
+	public String getAnswerContent() {
+		return answerContent;
+	}
+	public void setAnswerContent(String answerContent) {
+		this.answerContent = answerContent;
+	}
+	public String getAnswerWriteDate() {
+		return answerWriteDate;
+	}
+	public void setAnswerWriteDate(String answerWriteDate) {
+		this.answerWriteDate = answerWriteDate;
+	}
+	public boolean getAnswerStatus() {
 		return answerStatus;
 	}
-	public void setAnswerStatus(Boolean answerStatus) {
+	public void setAnswerStatus(boolean answerStatus) {
 		this.answerStatus = answerStatus;
 	}
 	public Integer getDel() {
@@ -105,5 +100,22 @@ public class VocDto {
 	public void setDel(Integer del) {
 		this.del = del;
 	}
-    
+	public String getDeleteDate() {
+		return deleteDate;
+	}
+	public void setDeleteDate(String deleteDate) {
+		this.deleteDate = deleteDate;
+	}
+	public String getWriterName() {
+		return writerName;
+	}
+	public void setWriterName(String writerName) {
+		this.writerName = writerName;
+	}
+	public String getAdminDeptName() {
+		return adminDeptName;
+	}
+	public void setAdminDeptName(String adminDeptName) {
+		this.adminDeptName = adminDeptName;
+	}
 }

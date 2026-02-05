@@ -60,7 +60,7 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
-import { vehicleRegisterRequest } from '@/api/vehicle' 
+import { addVehiReq } from '@/api/vehicle' 
 
 const router = useRouter()
 const route = useRoute()
@@ -73,12 +73,12 @@ const vehi = ref({
   vehicleType: '',
   fuelType: '휘발유'
 })
-const veMsg = ref('') // 유저 요청대로 심플하게 유지 🧩
+const vehiMsg = ref('') 
 
 onMounted(() => {
-  const loginData = sessionStorage.getItem('login') 
+  const loginData = sessionStorage.getItem('loginId') 
   if (!loginData) {
-    alert("로그인이 필요한 서비스입니다 🧩")
+    alert("로그인이 필요한 서비스입니다")
     router.push({ path: '/login', query: { redirect: route.fullPath } })
   } else {
     const user = JSON.parse(loginData)
@@ -87,6 +87,9 @@ onMounted(() => {
   }
 })
 
+/**
+ * 차량 번호 유효성 검사
+ */
 const checkVehiNum = () => {
   let val = vehi.value.vehicleNum.toUpperCase().replace(/\s/g, '')
   val = val.replace(/[^A-Z0-9가-힣]/g, '')
@@ -106,25 +109,30 @@ const isReady = computed(() => {
   return vehiRegex.test(vehi.value.vehicleNum) && vehi.value.vehicleType !== ''
 })
 
+/**
+ * 차량 등록 핸들러
+ */
 const handleVehiRegi = async () => {
-  if (!isReady.value) return 
+  if (!isReady.value) return;
   
+  // memId는 있어도 그만 없어도 그만이지만, 깔끔하게 보내고 싶다면
+  // const saveData = { ...vehi.value } 이렇게만 해도 가능
   const saveData = {
     ...vehi.value,
-    memId: memId.value
+    //memId: memId.value
   }
 
   try {
-    const res = await vehicleRegisterRequest(saveData, userId.value)
-    if (res.data === "success" || res.data === true) {
-      alert("차량 등록이 완료되었습니다 🚗")
+    const res = await addVehiReq(saveData)
+    if (res.data === "success") {
+      alert("차량 등록이 완료되었습니다")
       router.push('/mypage')
     } else {
-      alert("등록 실패! 정보를 다시 확인해 주세요 🧩")
+      alert("등록에 실패했습니다. 정보를 다시 확인해 주세요")
     }
   } catch (err) {
     if (err.response && err.response.status === 500) {
-      alert("이미 등록된 차량 번호입니다 🙅‍♀️")
+      alert("이미 등록된 차량 번호입니다")
     } else {
       alert("서버 통신 오류가 발생했습니다")
     }
@@ -133,7 +141,6 @@ const handleVehiRegi = async () => {
 </script>
 
 <style scoped>
-/* 📌 전문 병원 레이아웃 🚗 */
 .vehi-regi-wrap {
   display: flex;
   justify-content: center;
@@ -192,7 +199,7 @@ const handleVehiRegi = async () => {
   margin-bottom: 12px;
 }
 
-/* 🪄 입력 필드 스타일 🧩 */
+/* 입력 필드 스타일 */
 .res-input, .res-select {
   width: 100%;
   padding: 15px;
@@ -209,7 +216,7 @@ const handleVehiRegi = async () => {
   background: #fff;
 }
 
-/* ⛽ 유종 선택 그리드 🪄 */
+/* 유종 선택 그리드*/
 .fuel-grid {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
@@ -243,7 +250,7 @@ const handleVehiRegi = async () => {
   background: #f0f7ff;
 }
 
-/* 라디오 체크 시 스타일 빡! ✨ */
+/* 라디오 체크 시 스타일 빡! */
 .fuel-tile:has(.hide-radio:checked) {
   background: #0171e9;
   border-color: #0171e9;
@@ -254,7 +261,7 @@ const handleVehiRegi = async () => {
   font-weight: 600;
 }
 
-/* ⚠️ 메시지 스타일 */
+/* 메시지 스타일 */
 .status-txt {
   font-size: 12px;
   margin-top: 8px;
@@ -264,7 +271,7 @@ const handleVehiRegi = async () => {
   color: #dc3545;
 }
 
-/* 🚀 등록 버튼 🚗 */
+/* 등록 버튼 */
 .regi-submit-btn {
   width: 100%;
   padding: 18px;

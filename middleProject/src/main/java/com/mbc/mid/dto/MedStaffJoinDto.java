@@ -18,6 +18,7 @@ public class MedStaffJoinDto {
     private String licenseNumber;   // 면허번호
     private Long medDeptId;         // FK
     private Long spotId;            // FK
+    
 	public MedStaffJoinDto() {
 		super();
 	}
