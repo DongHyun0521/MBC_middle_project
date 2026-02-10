@@ -19,6 +19,9 @@ public interface MedDao {
     int cancelReservation(@Param("reservationId") Long reservationId, @Param("memId") Long memId);					// 회원이 예약 취소하기 (예약->취소)
     Long getMedStaffIdByMemId(Long memId);																			// 해당 의사인지 확인
     int cancelReservationByDoctor(@Param("reservationId") Long reservationId, @Param("doctorId") Long doctorId);	// 의사가 예약 강제 취소하기 (예약->취소)
+    int completeReservation(@Param("reservationId") Long reservationId, @Param("doctorId") Long doctorId);			// 의사가 예약 완료하기 (예약->완료)
+    List<Long> findNoShowReservations();																			// 미방문 예약 찾기 (예약시간+30분)
+    int updateNoShowStatus(List<Long> ids);																			// 자동으로 예약 미방문으로 바꾸기 (예약->미방문)
     
     List<Map<String, Object>> getAllDoctors();						// 전체 의사 목록
     List<Map<String, Object>> getAllMedDepts();						// 전체 의료 부서 목록

@@ -1,4 +1,3 @@
-```vue
 <template>
   <div class="faq-container">
     <div class="faq-header">
@@ -61,11 +60,12 @@
           <div class="faq-answer">
             <span class="a-badge">A</span>
             <div class="a-content-box">
-              <textarea v-if="item.isEditing" v-model="editForm.content" class="edit-textarea"
-                placeholder="답변 입력"></textarea>
-              <div v-else class="a-text">
-                <pre>{{ item.content }}</pre>
+              <textarea v-if="item.isEditing" v-model="editForm.content" class="edit-textarea" placeholder="내용 입력"></textarea>
+              
+              <div v-else class="a-text" @click="handleLinkClick">
+                <div v-html="formatContent(item.content)"></div>
               </div>
+              <div class="admin-btns" v-if="canManageFaq"></div>
 
               <!-- 원무팀만 수정/삭제 가능 -->
               <div class="admin-btns" v-if="canManageFaq">
@@ -83,6 +83,7 @@
         </div>
       </div>
     </div>
+    
 
     <div class="load-more-area" v-if="visibleCount < filteredList.length">
       <button class="btn-more" @click="loadMore">
@@ -117,45 +118,74 @@
 
 <script setup>
 import { ref, computed, onMounted } from 'vue';
-import { getFaqsReq, addFaqReq, editFaqReq, delFaqReq, getAdminInfoReq } from '@/api/customer';
+import { useRouter } from 'vue-router';
+// API 파일 가져오기 (FAQ 목록, 등록, 수정, 삭제, 관리자 확인)
+import { 
+  getFaqsReq, addFaqReq, editFaqReq, delFaqReq, getAdminInfoReq 
+} from '@/api/customer';
 
-const currentCategory = ref('전체');
-const keyword = ref('');
-// 카테고리는 백엔드 데이터와 글자가 정확히 일치해야 합니다!
+const router = useRouter();
+
+// 1. 기본 설정 및 상태 변수 (Data)
+// 카테고리 및 검색
+const currentCategory = ref('전체'); // 현재 선택된 탭
+const keyword = ref(''); // 검색어
 const categories = ['전체', '병원이용', '증명서발급', '건강검진', '홈페이지 이용'];
 
-const loginInfo = ref({});
-const faqList = ref([]);
-const showWriteModal = ref(false);
+// 데이터 저장소
+const loginInfo = ref({}); // 로그인 사용자 정보
+const faqList = ref([]);   // FAQ 목록 데이터
+const showWriteModal = ref(false); // 글쓰기 모달창 표시 여부
 
-const visibleCount = ref(10);
-const increment = 5;
+// 더보기 기능 변수
+const visibleCount = ref(10); // 처음에 보여줄 개수
+const increment = 5;          // 더보기 누르면 늘어날 개수
 
+// 폼 데이터 (작성용 / 수정용)
 const writeForm = ref({ category: '', title: '', content: '' });
 const editForm = ref({ faqId: '', category: '', title: '', content: '' });
 
-// 1) "행정직/관리자 로그인" 여부
+// 권한 확인용 변수
+const isWonmuState = ref(false); // API로 확인된 원무과 여부
+
+
+
+// [추가] 링크 처리용 함수들
+// 1. 줄바꿈(\n)을 <br> 태그로 바꾸고 HTML 허용하기
+const formatContent = (text) => {
+  if (!text) return '';
+  // 엔터키(줄바꿈)를 <br>로 바꿔서 줄바꿈이 되게 함
+  return text.replace(/\n/g, '<br>');
+};
+
+// 2. 내용 안에 있는 링크 클릭 시, 새로고침 막고 라우터로 이동하기
+const handleLinkClick = (e) => {
+  // 클릭한 요소가 <a> 태그(링크)인지 확인
+  const target = e.target.closest('a');
+  if (target) {
+    const href = target.getAttribute('href');
+    // 내부 링크('/'로 시작)라면 SPA 방식으로 부드럽게 이동
+    if (href && href.startsWith('/')) {
+      e.preventDefault(); // 새로고침 방지
+      router.push(href);  // 페이지 이동
+    }
+  }
+};
+
+
+// 2. Computed (권한 및 필터링)
+// [권한 1] 관리자(ADMIN)인지 확인
 const isAdmin = computed(() => {
   const info = loginInfo.value || {};
   return String(info.loginType || info.role || '').toUpperCase() === 'ADMIN';
 });
 
-// 2) 원무팀 여부 (부서명 필드가 있어야 true)
-/*const isWonmuTeam = computed(() => {
-  const info = loginInfo.value || {};
-  const dept = String(
-    info.deptName ?? info.dept_name ?? info.adminDeptName ?? info.med_dept_name ?? ''
-  ).trim();
-  return dept.includes('원무');
-});*/
-
-// 상태 변수 추가
-const isWonmuState = ref(false); // 백엔드에서 확인받은 실제 원무과 여부
-
-// computed 수정: 세션 정보 OR 백엔드 확인 정보 둘 중 하나라도 참이면 OK
+// [권한 2] 원무팀 직원인지 확인
 const isWonmuTeam = computed(() => {
-  if (isWonmuState.value) return true; // API 확인 값 우선
+  // 1. API 확인 값 우선 사용
+  if (isWonmuState.value) return true; 
 
+  // 2. 로그인 세션 정보로 확인 (보조 수단)
   const info = loginInfo.value || {};
   const dept = String(
     info.deptName ?? info.dept_name ?? info.adminDeptName ?? info.med_dept_name ?? ''
@@ -163,10 +193,37 @@ const isWonmuTeam = computed(() => {
   return dept.includes('원무');
 });
 
-// 3) FAQ 관리 권한 = 원무팀 ADMIN만
+// [권한 3] FAQ 관리 권한 최종 확인 (관리자 + 원무팀)
 const canManageFaq = computed(() => isAdmin.value && isWonmuTeam.value);
 
-// 공통 가드
+// [필터링 1] 검색어로 목록 거르기
+const filteredList = computed(() => {
+  if (!keyword.value) return faqList.value;
+  return faqList.value.filter(item =>
+    item.title.includes(keyword.value) || item.content.includes(keyword.value)
+  );
+});
+
+// [필터링 2] '더보기' 기능 적용해서 화면에 보여줄 개수만큼 자르기
+const displayedList = computed(() => {
+  return filteredList.value.slice(0, visibleCount.value);
+});
+
+
+// 3. 유틸리티 및 가드 함수
+
+// 더보기 버튼 클릭 시 실행
+const loadMore = () => {
+  visibleCount.value += increment;
+};
+
+// 카테고리 탭 변경 시 실행
+const changeCategory = (cat) => {
+  currentCategory.value = cat;
+  getFaqList(); // 해당 카테고리 목록 다시 불러오기
+};
+
+// 원무팀 권한 가드 (작성/수정/삭제 전 체크)
 const guardWonmu = () => {
   if (!canManageFaq.value) {
     alert("FAQ 등록/수정/삭제는 원무팀만 가능합니다.");
@@ -175,35 +232,30 @@ const guardWonmu = () => {
   return true;
 };
 
-// 검색 필터링
-const filteredList = computed(() => {
-  if (!keyword.value) return faqList.value;
-  return faqList.value.filter(item =>
-    item.title.includes(keyword.value) || item.content.includes(keyword.value)
-  );
-});
-
-const displayedList = computed(() => {
-  return filteredList.value.slice(0, visibleCount.value);
-});
-
-const loadMore = () => visibleCount.value += increment;
-
-const changeCategory = (cat) => {
-  currentCategory.value = cat;
-  getFaqList();
+// 아코디언 토글 (질문 클릭 시 답변 열기/닫기)
+const toggleItem = (id) => {
+  const target = faqList.value.find(item => item.faqId === id);
+  // 수정 중이 아닐 때만 열고 닫음 (수정 중엔 닫히면 안 되니까)
+  if (target && !target.isEditing) {
+    target.isOpen = !target.isOpen;
+  }
 };
 
+
+// 4. 데이터 조회 함수
+
+// FAQ 목록 불러오기
 const getFaqList = async () => {
-  visibleCount.value = increment;
+  visibleCount.value = increment; // 개수 초기화
   try {
     const catParam = currentCategory.value === '전체' ? null : currentCategory.value;
     const res = await getFaqsReq(catParam);
 
+    // 받아온 데이터에 화면 제어용 변수(isOpen, isEditing) 추가해서 저장
     faqList.value = (res.data || []).map(item => ({
       ...item,
-      isOpen: false,
-      isEditing: false
+      isOpen: false,    // 닫힌 상태로 시작
+      isEditing: false  // 보기 모드로 시작
     }));
   } catch (err) {
     console.error("FAQ 로딩 실패", err);
@@ -211,23 +263,20 @@ const getFaqList = async () => {
   }
 };
 
-const toggleItem = (id) => {
-  const target = faqList.value.find(item => item.faqId === id);
-  if (target && !target.isEditing) {
-    target.isOpen = !target.isOpen;
-  }
-};
 
-// ========================
-// [원무팀] 등록 로직
-// ========================
+// 5. 관리자 기능 (등록)
+
+// 등록 모달 열기
 const openWriteModal = () => {
   if (!guardWonmu()) return;
   writeForm.value = { category: '', title: '', content: '' };
   showWriteModal.value = true;
 };
+
+// 등록 모달 닫기
 const closeWriteModal = () => showWriteModal.value = false;
 
+// 새 글 등록 완료
 const submitWrite = async () => {
   if (!guardWonmu()) return;
 
@@ -248,7 +297,7 @@ const submitWrite = async () => {
     if (res.data === 'success' || res.data === true) {
       alert("정상적으로 등록되었습니다.");
       closeWriteModal();
-      getFaqList();
+      getFaqList(); // 목록 새로고침
     } else {
       alert("등록 실패");
     }
@@ -257,29 +306,35 @@ const submitWrite = async () => {
   }
 };
 
-// ========================
-// [원무팀] 수정 로직
-// ========================
+
+// 6. 관리자 기능 (수정, 삭제)
+
+// 수정 모드 시작 (인라인 에디트)
 const startEdit = (item) => {
   if (!guardWonmu()) return;
 
+  // 다른 글 수정 중이면 다 끄기 (한 번에 하나만 수정)
   faqList.value.forEach(i => i.isEditing = false);
 
+  // 현재 글 내용을 수정 폼에 복사
   editForm.value = {
     faqId: item.faqId,
     category: item.category,
     title: item.title,
     content: item.content
   };
-  item.isEditing = true;
-  item.isOpen = true;
+  
+  item.isEditing = true; // 수정 모드 켜기
+  item.isOpen = true;    // 내용 보이게 열기
 };
 
+// 수정 취소
 const cancelEdit = (item) => {
   if (!guardWonmu()) return;
-  item.isEditing = false;
+  item.isEditing = false; // 그냥 닫기
 };
 
+// 수정 내용 저장
 const saveEdit = async (item) => {
   if (!guardWonmu()) return;
 
@@ -303,7 +358,7 @@ const saveEdit = async (item) => {
       alert("정상적으로 수정되었습니다.");
       item.isEditing = false;
 
-      // 화면 즉시 갱신
+      // 목록 다시 불러오지 않고, 화면 데이터만 싹 바꿔치기 (속도 향상)
       item.category = editForm.value.category;
       item.title = editForm.value.title;
       item.content = editForm.value.content;
@@ -315,6 +370,7 @@ const saveEdit = async (item) => {
   }
 };
 
+// 글 삭제
 const deleteFaq = async (id) => {
   if (!guardWonmu()) return;
 
@@ -323,7 +379,7 @@ const deleteFaq = async (id) => {
     const res = await delFaqReq(id);
     if (res.data === 'success' || res.data === true) {
       alert("정상적으로 삭제되었습니다.");
-      getFaqList();
+      getFaqList(); // 목록 새로고침
     } else {
       alert("삭제 실패");
     }
@@ -332,23 +388,17 @@ const deleteFaq = async (id) => {
   }
 };
 
-/*onMounted(() => {
-  const raw = sessionStorage.getItem('loginId');
-  if (raw) {
-    try { loginInfo.value = JSON.parse(raw); }
-    catch (e) { loginInfo.value = { id: raw }; }
-  }
-  getFaqList();
-});*/
 
+// 7. 페이지 시작 (Life Cycle)
 onMounted(async () => {
+  // 1. 로그인 정보 확인
   const raw = sessionStorage.getItem('loginId');
   if (raw) {
     try { loginInfo.value = JSON.parse(raw); }
     catch (e) { loginInfo.value = { id: raw }; }
   }
 
-  // [추가] 관리자 권한 재확인
+  // 2. 관리자라면 원무과 권한 한 번 더 체크 (보안)
   if (isAdmin.value) {
     try {
         const res = await getAdminInfoReq();
@@ -360,6 +410,7 @@ onMounted(async () => {
     }
   }
 
+  // 3. 목록 불러오기
   getFaqList();
 });
 </script>
@@ -740,5 +791,17 @@ onMounted(async () => {
   height: 36px;
   vertical-align: middle;
 }
+
+/* [추가] 답변 내용 안에 있는 링크 스타일 */
+/* v-html로 들어간 내용은 ::v-deep을 써야 먹힙니다 */
+.a-text :deep(a) {
+  color: #0171e9;
+  text-decoration: underline;
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.a-text :deep(a):hover {
+  color: #0056b3;
+}
 </style>
-```

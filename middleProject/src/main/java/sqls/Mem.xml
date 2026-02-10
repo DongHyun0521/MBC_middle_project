@@ -76,7 +76,7 @@
     <!-- 회원별 고객의소리 목록 (전체/미답변/답변완료) -->
     <select id="getMyVocList" parameterType="map" resultType="com.mbc.mid.dto.VocDto">
         SELECT v.voc_id, v.title, v.content, v.write_date, 
-            v.answer_status, v.answer_content, v.answer_write_date, v.del, 
+            v.upload_img,  v.answer_status, v.answer_content, v.answer_write_date, v.del, 
             m_writer.name AS writer_name, d.dept_name AS admin_dept_name
 		FROM voc v
 		JOIN mem m_writer ON v.mem_id = m_writer.mem_id
@@ -95,14 +95,17 @@
 
 	<!-- 고객의소리 작성 -->
     <insert id="addVoc" parameterType="com.mbc.mid.dto.VocDto">
-        INSERT INTO voc (mem_id, title, content)
-        VALUES (#{memId}, #{title}, #{content})
+        INSERT INTO voc (mem_id, title, content, upload_img)
+        VALUES (#{memId}, #{title}, #{content}, #{uploadImg})
     </insert>
 
 	<!-- 고객의소리 수정 (답변 없는 것만 수정 가능) -->
     <update id="updateVoc" parameterType="com.mbc.mid.dto.VocDto">
         UPDATE voc
-        SET title = #{title}, content = #{content} 
+        SET title = #{title}, content = #{content}
+        <if test="uploadImg != null and uploadImg != ''">
+            , upload_img = #{uploadImg}
+        </if>
         WHERE voc_id = #{vocId} AND mem_id = #{memId} AND answer_status = FALSE
 	</update>
 

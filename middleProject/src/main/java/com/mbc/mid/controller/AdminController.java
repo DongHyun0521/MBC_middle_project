@@ -9,6 +9,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import com.mbc.mid.dto.AdminStaffJoinDto;
 import com.mbc.mid.dto.FaqDto;
+import com.mbc.mid.dto.HealthStoryDto;
 import com.mbc.mid.dto.MemDto;
 import com.mbc.mid.dto.NoticeDto;
 import com.mbc.mid.dto.VocDto;
@@ -63,12 +64,14 @@ public class AdminController {
         // 부서명 조회
         String deptName = adminService.getAdminDeptName(member.getMemId());
         boolean isWonmu = (deptName != null && deptName.contains("원무"));
+        boolean isPr = (deptName != null && deptName.contains("홍보"));
 
         // 프론트엔드로 보낼 정보
         return Map.of(
             "isAdmin", true,
             "deptName", deptName != null ? deptName : "",
-            "isWonmu", isWonmu
+            "isWonmu", isWonmu,
+            "isPr", isPr
         );
     }
     
@@ -112,14 +115,16 @@ public class AdminController {
 
     // 공지사항 작성 (행정원무만 가능)
     @PostMapping("/notice/write")
-    public String writeNotice(@RequestBody NoticeDto noticeDto, HttpSession session) {
+    public String writeNotice(@ModelAttribute NoticeDto noticeDto, HttpSession session) {
     	System.out.println("=> AdminController: writeNotice | "+ new Date());
-    	// 로그인상태 & 회원 & 행정원무 인지 확인
         String loginId = (String) session.getAttribute("loginId");
         MemDto member = memService.getMemberInfo(loginId);
+        
+        // 권한 체크
         if (loginId == null || member == null || !adminService.isWonMu(member.getMemId())) return "fail";
         
         try {
+            // Service에서 파일 저장 처리함
             adminService.addNotice(noticeDto, member.getMemId());
             return "success";
         } catch (Exception e) {
@@ -129,12 +134,12 @@ public class AdminController {
     }
     
     // 공지사항 수정 (행정원무만 가능)
-    @PutMapping("/notice/update")
-    public String updateNotice(@RequestBody NoticeDto noticeDto, HttpSession session) {
+    @PostMapping("/notice/update") 
+    public String updateNotice(@ModelAttribute NoticeDto noticeDto, HttpSession session) {
         System.out.println("=> AdminController: updateNotice | "+ new Date());
-        // 로그인상태 & 회원 & 행정원무 인지 확인
         String loginId = (String) session.getAttribute("loginId");
         MemDto member = memService.getMemberInfo(loginId);
+        
         if (loginId == null || member == null || !adminService.isWonMu(member.getMemId())) return "fail";
         try {
             return adminService.updateNotice(noticeDto) > 0 ? "success" : "fail";
@@ -258,7 +263,7 @@ public class AdminController {
             if (vocDto.getDel() == 1 || !vocDto.getAnswerStatus())
             	return null;
         }
-        return vocDto;	// 행정 중 원무
+        return adminService.getVocDetail(vocId);	// 행정 중 원무
     }
     
     // 고객의소리 강제 삭제 (del=1) (행정원무만 가능)
@@ -332,13 +337,106 @@ public class AdminController {
     @DeleteMapping("/voc/reply/{vocId}")
     public String deleteReply(@PathVariable Long vocId, HttpSession session) {
         System.out.println("=> AdminController: deleteReply | "+ new Date());
-        // 로그인여부 & 회원 & 행정원무 인지 확인
+        // 로그인여부 & 회원 & 행정원무 확인
         String loginId = (String) session.getAttribute("loginId");
         MemDto member = memService.getMemberInfo(loginId);
         if (loginId == null || member == null || !adminService.isWonMu(member.getMemId())) return "fail";
 
         try {
             return adminService.deleteReply(vocId) > 0 ? "success" : "fail";
+        } catch (Exception e) {
+            e.printStackTrace();
+            return "fail";
+        }
+    }
+    
+    // ========== 건강이야기 ==========
+    
+    // 건강이야기 목록
+    @GetMapping("/health/list")
+    public List<HealthStoryDto> getHealthStoryList() {
+        System.out.println("=> AdminController: getHealthStoryList | " + new Date());
+        return adminService.getAllHealthStories();
+    }
+    
+    // 건강이야기 상세 보기
+    @GetMapping("/health/detail/{healthStoryId}")
+    public HealthStoryDto getHealthStoryDetail(@PathVariable Long healthStoryId, HttpServletRequest request, HttpServletResponse response) {
+        System.out.println("=> AdminController: getHealthStoryDetail | " + new Date());
+
+        // 쿠키 확인
+        Cookie oldCookie = null;
+        Cookie[] cookies = request.getCookies();
+
+        // 쿠키가 이미 있을 경우
+        if (cookies != null) {
+            for (Cookie cookie : cookies) {
+                if (cookie.getName().equals("viewed_health_" + healthStoryId)) {
+                    oldCookie = cookie;
+                    break;
+                }
+            }
+        }
+        // 쿠키가 없을 경우
+        if (oldCookie == null) {
+            adminService.increaseHealthStoryReadCount(healthStoryId);
+            Cookie newCookie = new Cookie("viewed_health_" + healthStoryId, "true");
+            newCookie.setPath("/");
+            newCookie.setMaxAge(24 * 60 * 60); // 24시간 유지
+            response.addCookie(newCookie);
+        }
+        return adminService.getHealthStoryDetail(healthStoryId);
+    }
+    
+    // 건강이야기 작성
+    @PostMapping("/health/write")
+    public String writeHealthStory(@ModelAttribute HealthStoryDto dto, HttpSession session) {
+        System.out.println("=> AdminController: writeHealthStory | " + new Date());
+        // 로그인여부 & 회원 & 행정원무 확인
+        String loginId = (String) session.getAttribute("loginId");
+        MemDto member = memService.getMemberInfo(loginId);
+        if (loginId == null || member == null || !adminService.isAdmin(member.getMemId()) || !adminService.isPr(member.getMemId())) return "fail";
+
+        try {
+            adminService.addHealthStory(dto, member.getMemId());
+            return "success";
+        } catch (Exception e) {
+            e.printStackTrace();
+            return "fail";
+        }
+    }
+    
+    // 건강이야기 수정
+    @PostMapping("/health/update")
+    public String updateHealthStory(@ModelAttribute HealthStoryDto dto, HttpSession session) {
+        System.out.println("=> AdminController: updateHealthStory | " + new Date());
+        
+        String loginId = (String) session.getAttribute("loginId");
+        MemDto member = memService.getMemberInfo(loginId);
+        
+        if (loginId == null || member == null || !adminService.isAdmin(member.getMemId()) || !adminService.isPr(member.getMemId())) return "fail";
+
+        try {
+            return adminService.updateHealthStory(dto) > 0 ? "success" : "fail";
+        } catch (Exception e) {
+            e.printStackTrace();
+            return "fail";
+        }
+    }
+    
+    // 건강이야기 삭제 (del=1)
+    @PutMapping("/health/delete/{healthStoryId}")
+    public String deleteHealthStory(@PathVariable Long healthStoryId, HttpSession session) {
+        System.out.println("=> AdminController: deleteHealthStory | " + new Date());
+        
+        String loginId = (String) session.getAttribute("loginId");
+        MemDto member = memService.getMemberInfo(loginId);
+        
+        if (loginId == null || member == null || !adminService.isAdmin(member.getMemId()) || !adminService.isPr(member.getMemId()))
+        	return "fail";
+
+        try {
+            return adminService.deleteHealthStory(healthStoryId) > 0 ? "success" : "fail";
         } catch (Exception e) {
             e.printStackTrace();
             return "fail";

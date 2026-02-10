@@ -51,6 +51,34 @@
           AND doctor_id = #{doctorId}
     </update>
     
+    <!-- 의사가 예약 완료하기 (예약->완료) -->
+    <update id="completeReservation">
+		UPDATE reservation 
+        SET reservation_status = '완료' 
+        WHERE reservation_id = #{reservationId} AND doctor_id = #{doctorId} AND reservation_status = '예약'
+    </update>
+    
+    <!-- 미방문 예약 찾기 (예약시간+30분) -->
+    <select id="findNoShowReservations" resultType="long">
+        SELECT reservation_id
+        FROM reservation
+        WHERE reservation_status = '예약'
+        AND TO_TIMESTAMP(reservation_date || ' ' || CAST(reservation_time AS TIME), 'YYYYMMDD HH24:MI:SS') 
+			&lt; (NOW() - INTERVAL '30 minutes')
+    </select>
+    
+    <!-- 자동으로 예약 미방문으로 바꾸기 (예약->미방문) -->
+    <update id="updateNoShowStatus" parameterType="list">
+        UPDATE reservation
+        SET reservation_status = '노쇼'
+        WHERE reservation_id IN
+        <foreach item="id" collection="list" open="(" separator="," close=")">
+			#{id}
+        </foreach>
+    </update>
+    
+    <!-- ========== 의료 관련 목록 ========== -->
+    
     <!-- 전체 의사 목록 -->
     <select id="getAllDoctors" resultType="map">
         SELECT 
@@ -81,6 +109,8 @@
 			AND (s.role = 'DOCTOR' OR s.role = '의사')
 			AND s.status = '재직'
     </select>
+    
+    <!-- ========== 예약 목록 ========== -->
 
 	<!-- 회원별 예약 목록 -->
     <select id="getReservationsByMember" parameterType="long" resultType="map">

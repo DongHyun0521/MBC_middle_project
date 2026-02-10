@@ -60,77 +60,112 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
+// [API] 차량 등록 요청 함수
 import { addVehiReq } from '@/api/vehicle' 
 
-const router = useRouter()
-const route = useRoute()
+// =========================================
+// 1. 기본 설정 및 상태 변수 (Data)
+// =========================================
+const router = useRouter() // 페이지 이동 도구
+const route = useRoute()   // 현재 주소 정보
 
+// 로그인 정보 저장용
 const memId = ref(null)
 const userId = ref('')
 
+// 차량 등록 폼 데이터
 const vehi = ref({
-  vehicleNum: '', 
-  vehicleType: '',
-  fuelType: '휘발유'
+  vehicleNum: '',      // 차량 번호 (예: 12가3456)
+  vehicleType: '',     // 차종 (소형, 중형 등)
+  fuelType: '휘발유'    // 유종 (기본값: 휘발유)
 })
+
+// 유효성 검사 메시지 (차량 번호 관련)
 const vehiMsg = ref('') 
 
+
+// =========================================
+// 2. 페이지 로드 시 실행 (Lifecycle)
+// =========================================
 onMounted(() => {
+  // 세션에서 로그인 정보 확인
   const loginData = sessionStorage.getItem('loginId') 
+  
   if (!loginData) {
+    // 로그인이 안 되어 있으면 로그인 페이지로 튕겨냄 (원래 보려던 페이지 주소 기억)
     alert("로그인이 필요한 서비스입니다")
     router.push({ path: '/login', query: { redirect: route.fullPath } })
   } else {
+    // 로그인 정보가 있으면 데이터 세팅
     const user = JSON.parse(loginData)
     memId.value = user.memId 
     userId.value = user.id
   }
 })
 
-/**
- * 차량 번호 유효성 검사
- */
+
+// =========================================
+// 3. 유효성 검사 및 입력 핸들러
+// =========================================
+
+/* [차량 번호] 입력 실시간 검사 */
 const checkVehiNum = () => {
+  // 1. 대문자 변환 & 공백 제거
   let val = vehi.value.vehicleNum.toUpperCase().replace(/\s/g, '')
+  
+  // 2. 한글, 영어, 숫자 외 특수문자 제거
   val = val.replace(/[^A-Z0-9가-힣]/g, '')
+  
+  // 3. 정제된 값 다시 입력창에 반영
   vehi.value.vehicleNum = val
+  
+  // 4. 차량 번호 형식 정규식 (숫자 2~3자리 + 한글 1자리 + 숫자 4자리)
   const vehiRegex = /^\d{2,3}[가-힣]{1}\d{4}$/
+  
+  // 5. 유효성 판별 및 메시지 출력
   if (!val) {
     vehiMsg.value = "차량 번호를 입력해 주세요"
   } else if (!vehiRegex.test(val)) {
     vehiMsg.value = "형식이 올바르지 않습니다 (예: 12가3456)"
   } else {
-    vehiMsg.value = ""
+    vehiMsg.value = "" // 통과 시 메시지 비움
   }
 }
 
+/* [등록 버튼] 활성화 조건 (계산된 속성) */
 const isReady = computed(() => { 
   const vehiRegex = /^\d{2,3}[가-힣]{1}\d{4}$/
+  // 차량 번호 형식이 맞고 && 차종이 선택되어 있어야 함
   return vehiRegex.test(vehi.value.vehicleNum) && vehi.value.vehicleType !== ''
 })
 
-/**
- * 차량 등록 핸들러
- */
+
+// =========================================
+// 4. API 통신 (서버 전송)
+// =========================================
+
+/* [차량 등록] 버튼 클릭 핸들러 */
 const handleVehiRegi = async () => {
+  // 유효성 통과 못했으면 함수 종료 (방어 코드)
   if (!isReady.value) return;
   
-  // memId는 있어도 그만 없어도 그만이지만, 깔끔하게 보내고 싶다면
-  // const saveData = { ...vehi.value } 이렇게만 해도 가능
+  // 전송할 데이터 복사
   const saveData = {
     ...vehi.value,
-    //memId: memId.value
   }
 
   try {
+    // API 요청 전송
     const res = await addVehiReq(saveData)
+    
     if (res.data === "success") {
       alert("차량 등록이 완료되었습니다")
-      router.push('/mypage')
+      router.push('/mypage') // 마이페이지로 이동
     } else {
       alert("등록에 실패했습니다. 정보를 다시 확인해 주세요")
     }
   } catch (err) {
+    // 500 에러는 보통 DB에서 중복 키(PK) 에러일 확률이 높음
     if (err.response && err.response.status === 500) {
       alert("이미 등록된 차량 번호입니다")
     } else {
@@ -250,7 +285,7 @@ const handleVehiRegi = async () => {
   background: #f0f7ff;
 }
 
-/* 라디오 체크 시 스타일 빡! */
+/* 라디오 체크 시 스타일 */
 .fuel-tile:has(.hide-radio:checked) {
   background: #0171e9;
   border-color: #0171e9;

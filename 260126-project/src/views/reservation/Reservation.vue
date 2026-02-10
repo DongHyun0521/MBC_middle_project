@@ -67,6 +67,11 @@
 
         <div class="input-section transition-box" v-if="isValidName && isValidPhone">
           <label>예약 날짜</label>
+
+          <p class="guide-text">
+            원활한 진료 진행을 위해 1시간 이내의 예약은 불가합니다.<br>너른 양해 부탁드리겠습니다.
+          </p>
+
           <div class="custom-calendar-container">
             <div class="date-display-box" @click="toggleCalendar" :class="{ active: showCalendar }">
               <span v-if="form.reservationDate" class="selected-date-txt">{{ form.reservationDate }}</span>
@@ -83,9 +88,19 @@
               <div class="cal-grid">
                 <div v-for="d in ['일', '월', '화', '수', '목', '금', '토']" :key="d" class="cal-day-name">{{ d }}</div>
                 <div v-for="n in startDayOfWeek" :key="'empty' + n" class="cal-day empty"></div>
-                <div v-for="date in daysInMonth" :key="date" class="cal-day"
-                  :class="{ 'selected': isSelected(date), 'disabled': isPastDate(date), 'today': isToday(date) }"
-                  @click="selectDate(date)">
+                <div v-for="date in daysInMonth" :key="date" class="cal-day" :class="{
+                  /* 1. 내가 '클릭한 날짜'라면? -> 파란색 배경 (.selected) */
+                  'selected': isSelected(date),
+
+                  /* 2. '지난 날짜'거나 '시간이 지난 오늘'이라면? -> 회색 글씨 (.disabled) */
+                  'disabled': isPastDate(date),
+
+                  /* 3. [핵심] '오늘 날짜' 스타일(.today)을 언제 줄 것인가? */
+                  /* 조건: 오늘 날짜이면서(AND) + 예약 마감이 안 된(!isPastDate) 상태여야 함 */
+                  /* 즉, 시간이 지나서 disabled가 되면 today 스타일은 벗겨버림 -> 회색만 남음! */
+                  'today': isToday(date) && !isPastDate(date)
+                }" @click="selectDate(date)">
+
                   {{ date }}
                 </div>
               </div>
@@ -96,18 +111,20 @@
         <div class="input-section transition-box" v-if="form.reservationDate">
           <label>예약 시간</label>
           <div class="time-grid">
-            <!-- [수정] label/radio 제거 + button disabled로 마감 처리 -->
             <button v-for="time in allTimeSlots" :key="time" type="button" class="time-btn"
-              :class="{ 'selected': form.reservationTime === time }" :disabled="isBooked(time)"
+              :class="{ 'selected': form.reservationTime === time }" :disabled="isBooked(time) || isPastOrSoon(time)"
               @click="form.reservationTime = time">
+
               <span class="time-txt">{{ time }}</span>
+
               <span v-if="isBooked(time)" class="booked-label">마감</span>
+              <span v-else-if="isPastOrSoon(time)" class="booked-label gray"></span>
             </button>
           </div>
         </div>
 
         <button v-if="form.reservationTime" @click="submitReservation" class="res-submit-btn"
-          :disabled="isBooked(form.reservationTime)">
+          :disabled="isBooked(form.reservationTime) || isPastOrSoon(form.reservationTime)">
           {{ isBooked(form.reservationTime) ? '이미 예약된 시간입니다' : '예약 확정하기' }}
         </button>
       </div>
@@ -122,163 +139,191 @@ import { getDeptsReq, getDoctorsReq, addResReq, getDocSchedReq } from '@/api/res
 
 const route = useRoute();
 const useRouterInstance = useRouter();
+
 const depts = ref([]);
 const doctors = ref([]);
-const bookedSlots = ref([])
-const isFixedDoc = ref(false)
+const bookedSlots = ref([]);
+const isFixedDoc = ref(false);
 
-const phonePart1 = ref('010')
-const phonePart2 = ref('')
-const phonePart3 = ref('')
-const phone2Ref = ref(null)
-const phone3Ref = ref(null)
+const phonePart1 = ref('010');
+const phonePart2 = ref('');
+const phonePart3 = ref('');
+const phone2Ref = ref(null);
+const phone3Ref = ref(null);
 
-const showCalendar = ref(false)
-const now = new Date()
-const currentYear = ref(now.getFullYear())
-const currentMonth = ref(now.getMonth() + 1)
+const showCalendar = ref(false);
+const now = new Date();
+const currentYear = ref(now.getFullYear());
+const currentMonth = ref(now.getMonth() + 1);
 
 const form = reactive({
-  memId: '', medDeptId: '', doctorId: '', patientName: '', patientPhone: '',
-  reservationDate: '', reservationTime: '', visitType: '초진', reservationStatus: '예약', reservationMemo: '홈페이지 예약'
-})
+  memId: '',
+  medDeptId: '',
+  doctorId: '',
+  patientName: '',
+  patientPhone: '',
+  reservationDate: '',
+  reservationTime: '',
+  visitType: '초진',
+  reservationStatus: '예약',
+  reservationMemo: '홈페이지 예약'
+});
 
-const todayStr = now.toISOString().split('T')[0]
+const getTodayStr = () => {
+  const d = new Date();
+  const year = d.getFullYear();
+  const month = String(d.getMonth() + 1).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+}
+const todayStr = getTodayStr();
 
-const daysInMonth = computed(() => new Date(currentYear.value, currentMonth.value, 0).getDate())
-const startDayOfWeek = computed(() => new Date(currentYear.value, currentMonth.value - 1, 1).getDay())
-const toggleCalendar = () => showCalendar.value = !showCalendar.value
-const prevMonth = () => { if (currentMonth.value === 1) { currentMonth.value = 12; currentYear.value--; } else { currentMonth.value--; } }
-const nextMonth = () => { if (currentMonth.value === 12) { currentMonth.value = 1; currentYear.value++; } else { currentMonth.value++; } }
-const formatDateString = (day) => { const m = currentMonth.value < 10 ? `0${currentMonth.value}` : currentMonth.value; const d = day < 10 ? `0${day}` : day; return `${currentYear.value}-${m}-${d}` }
-const isSelected = (day) => form.reservationDate === formatDateString(day)
-const isToday = (day) => formatDateString(day) === todayStr
-const isPastDate = (day) => formatDateString(day) < todayStr
-const selectDate = (day) => { if (isPastDate(day)) return; form.reservationDate = formatDateString(day); showCalendar.value = false; fetchBookedSlots(); }
+// =========================================
+// 2. Computed
+// =========================================
+const daysInMonth = computed(() => new Date(currentYear.value, currentMonth.value, 0).getDate());
+const startDayOfWeek = computed(() => new Date(currentYear.value, currentMonth.value - 1, 1).getDay());
 
 const allTimeSlots = computed(() => {
-  const slots = []; for (let h = 9; h < 19; h++) {
-    const hour = h < 10 ? `0${h}` : h
-    slots.push(`${hour}:00`, `${hour}:30`)
+  const slots = [];
+  for (let h = 9; h < 19; h++) {
+    const hour = h < 10 ? `0${h}` : h;
+    slots.push(`${hour}:00`, `${hour}:30`);
   }
-  return slots
-})
+  return slots;
+});
 
 const isValidName = computed(() => /^[가-힣]{2,}$/.test(form.patientName));
-const handleNameInput = (e) => form.patientName = e.target.value.replace(/[^가-힣]/g, '');
 const isValidPhone = computed(() => phonePart2.value.length >= 3 && phonePart3.value.length === 4);
-const handlePhonePart2 = (e) => { phonePart2.value = e.target.value.replace(/[^0-9]/g, ''); if (phonePart2.value.length === 4) phone3Ref.value.focus(); }
-const handlePhonePart3 = (e) => phonePart3.value = e.target.value.replace(/[^0-9]/g, '');
+
+// =========================================
+// 3. 달력 및 날짜 함수
+// =========================================
+const toggleCalendar = () => { showCalendar.value = !showCalendar.value; };
+const prevMonth = () => {
+  if (currentMonth.value === 1) { currentMonth.value = 12; currentYear.value--; } else { currentMonth.value--; }
+};
+const nextMonth = () => {
+  if (currentMonth.value === 12) { currentMonth.value = 1; currentYear.value++; } else { currentMonth.value++; }
+};
+const formatDateString = (day) => {
+  const m = currentMonth.value < 10 ? `0${currentMonth.value}` : currentMonth.value;
+  const d = day < 10 ? `0${day}` : day;
+  return `${currentYear.value}-${m}-${d}`;
+};
+const isSelected = (day) => form.reservationDate === formatDateString(day);
+const isToday = (day) => formatDateString(day) === todayStr;
+
+// [수정] 오늘 날짜라도 마감 시간(17:30) 지났으면 비활성화 처리
+const isPastDate = (day) => {
+  const dateStr = formatDateString(day);
+  if (dateStr < todayStr) return true; // 과거 날짜 비활성
+
+  if (dateStr === todayStr) {
+    const now = new Date();
+    // 17시 30분이 지났으면 오늘 날짜 예약 불가
+    if (now.getHours() > 17 || (now.getHours() === 17 && now.getMinutes() >= 30)) {
+      return true;
+    }
+  }
+  return false;
+};
+
+const selectDate = (day) => {
+  // 비활성 날짜는 클릭 방지
+  if (isPastDate(day)) return;
+
+  form.reservationDate = formatDateString(day);
+  showCalendar.value = false;
+  fetchBookedSlots();
+};
+
+// =========================================
+// 4. 입력 핸들러
+// =========================================
+const handleNameInput = (e) => { form.patientName = e.target.value.replace(/[^가-힣]/g, ''); };
+const handlePhonePart2 = (e) => {
+  phonePart2.value = e.target.value.replace(/[^0-9]/g, '');
+  if (phonePart2.value.length === 4) phone2Ref.value.blur();
+  if (phonePart2.value.length === 4) phone3Ref.value.focus();
+};
+const handlePhonePart3 = (e) => { phonePart3.value = e.target.value.replace(/[^0-9]/g, ''); };
+
+// =========================================
+// 5. 서버 통신 및 핵심 로직
+// =========================================
 
 const isBooked = (time) => {
   return bookedSlots.value.some(bookedTime => bookedTime.trim() === time.trim());
-}
+};
+
+const isPastOrSoon = (timeSlot) => {
+  if (!form.reservationDate) return true;
+
+  const now = new Date();
+  const [year, month, day] = form.reservationDate.split('-').map(Number);
+  const [hour, minute] = timeSlot.split(':').map(Number);
+
+  const targetDate = new Date(year, month - 1, day, hour, minute);
+  const minBookingTime = new Date(now.getTime() + (60 * 60 * 1000));
+
+  return targetDate < minBookingTime;
+};
 
 const fetchBookedSlots = async () => {
-  // 의사 선택 + 날짜 선택이 되어야만 "그 의사의 그 날짜" 예약 현황을 조회할 수 있음
-  // 둘 중 하나라도 없으면 조회 의미가 없어서 그냥 종료
-  if (!form.doctorId || !form.reservationDate) return
-
+  if (!form.doctorId || !form.reservationDate) return;
   try {
-    // 백엔드에 "이 의사의 전체 예약 스케줄" 요청
-    // (프론트는 여기서 받은 데이터로 "이미 예약된 시간"을 계산해서 버튼을 disable 처리함)
-    const res = await getDocSchedReq(form.doctorId)
+    const res = await getDocSchedReq(form.doctorId);
+    const data = Array.isArray(res.data) ? res.data : [];
+    const targetDate = form.reservationDate.replaceAll('-', '');
 
-    // null 방어
-    // 백엔드가 null을 주거나(세션 문제 등), 또는 예상치 못한 값이 올 수 있음
-    // .filter를 쓰려면 반드시 배열이어야 해서, 배열 아니면 빈 배열로 처리
-    const data = Array.isArray(res.data) ? res.data : []
-
-    // 프론트에서 선택한 날짜(YYYY-MM-DD)를
-    // 백엔드/DB 값이랑 비교하기 쉽게 YYYYMMDD 형태로 통일
-    const targetDate = form.reservationDate.replaceAll('-', '') // ex) 2026-02-04 -> 20260204
-
-    // bookedSlots.value에는 "그 날짜에 이미 예약된 시간(HH:mm)"만 담을 예정
     bookedSlots.value = data
       .filter(item => {
-        // [1] 예약 상태 필터링
-        // 취소된 예약까지 마감 처리하면 안 되니까
-        // 상태가 '예약'인 건만 "마감"으로 간주
-        // (백엔에서도 중복 체크할 때 '예약'만 중복으로 잡고 있음)
-        const status = String(item.reservation_status || item.reservationStatus || '예약').trim()
-        if (status !== '예약') return false
-
-        // [2] 날짜 정규화(핵심) -> 이 예약이 내가 고른 날짜인가를 걸러냄
-        // DB/백엔에서 오는 날짜는 형태가 제각각일 수 있음
-        // - "YYYY-MM-DD"
-        // - "YYYY-MM-DD 00:00:00"
-        // - "YYYY-MM-DDT00:00:00"
-        // - "YYYYMMDD"
-        // 그래서 "비교 가능한 형태(YYYYMMDD)"로 무조건 통일해줌
-
-        let dbDate = String(item.reservation_date || item.reservationDate || '').trim()
-
-        // "2026-02-04T00:00:00" 같은 ISO 문자열이면 T 앞부분만 날짜임
-        if (dbDate.includes('T')) dbDate = dbDate.split('T')[0]
-
-        // "2026-02-04 00:00:00" 같이 공백으로 datetime이 오면 공백 앞만 날짜임
-        if (dbDate.includes(' ')) dbDate = dbDate.split(' ')[0]
-
-        // 하이픈 제거해서 YYYYMMDD로 통일
-        dbDate = dbDate.replaceAll('-', '')
-
-        // 선택한 날짜(targetDate)와 DB 날짜(dbDate)가 같으면 그 항목만 통과
-        return dbDate === targetDate
+        const status = String(item.reservation_status || item.reservationStatus || '예약').trim();
+        if (status !== '예약') return false;
+        let dbDate = String(item.reservation_date || item.reservationDate || '').trim();
+        if (dbDate.includes('T')) dbDate = dbDate.split('T')[0];
+        if (dbDate.includes(' ')) dbDate = dbDate.split(' ')[0];
+        dbDate = dbDate.replaceAll('-', '');
+        return dbDate === targetDate;
       })
       .map(item => {
-        // [3] 시간 정규화(핵심) -> 남은 예약들에서 시간만 뽑아서 bookedSlots 배열 만들기
-        // DB/백엔에서 오는 시간도 형태가 제각각일 수 있음
-        // - "09:00:00"
-        // - "2026-02-04 09:00:00"
-        // - "2026-02-04T09:00:00"
-        // - "09:00"
-        // 그래서 결국 우리가 비교에 쓰는 "HH:mm" 으로 통일해서 뽑아냄
+        let t = String(item.reservation_time || item.reservationTime || '').trim();
+        if (t.includes('T')) t = t.split('T')[1];
+        if (t.includes(' ')) t = t.split(' ')[1];
+        return t.substring(0, 5);
+      });
+  } catch (err) { bookedSlots.value = []; }
+};
 
-        let t = String(item.reservation_time || item.reservationTime || '').trim()
+const fetchDoctors = async () => {
+  if (!form.medDeptId) return;
+  try { const res = await getDoctorsReq(form.medDeptId); doctors.value = res.data; } catch (err) { }
+};
 
-        // ISO 형식이면 T 뒤가 시간 파트임
-        if (t.includes('T')) t = t.split('T')[1]
+const resetDateTime = () => { form.reservationDate = ''; form.reservationTime = ''; };
 
-        // 공백 포함 datetime이면 공백 뒤가 시간 파트임
-        if (t.includes(' ')) t = t.split(' ')[1]
-
-        // "09:00:00" -> "09:00" 으로 맞추기 위해 앞 5글자만 자름
-        return t.substring(0, 5) // HH:mm
-      })
-
-    // 디버깅
-    // 여기 값이 ["09:00","09:30"] 이런 식으로 나오면 isBooked가 true가 됨
-    // → 버튼에 disabled가 붙음
-    // → :disabled CSS가 발동
-    console.log("bookedSlots:", bookedSlots.value)
-
-  } catch (err) {
-    // 에러가 나면 bookedSlots를 빈 배열로 초기화
-    // (이거 안 하면 이전 날짜에서 남아있던 마감 시간이 계속 남아있을 수 있음)
-    console.error('스케줄 에러', err)
-    bookedSlots.value = []
-  }
-}
-
-
-
-const fetchDoctors = async () => { if (!form.medDeptId) return; try { const res = await getDoctorsReq(form.medDeptId); doctors.value = res.data; } catch (err) { } }
-const resetDateTime = () => { form.reservationDate = ''; form.reservationTime = ''; }
-const resetToGeneral = () => { isFixedDoc.value = false; form.doctorId = ''; form.medDeptId = ''; useRouterInstance.replace('/reservation'); }
+const resetToGeneral = () => {
+  isFixedDoc.value = false;
+  form.doctorId = '';
+  form.medDeptId = '';
+  useRouterInstance.replace('/reservation');
+};
 
 const submitReservation = async () => {
   if (!isValidName.value || !isValidPhone.value) return;
 
-  // 1. 전송 데이터 준비
+  if (isPastOrSoon(form.reservationTime)) {
+    alert("현재 시간 기준 1시간 이후부터 예약이 가능합니다.");
+    return;
+  }
+
   form.patientPhone = `${phonePart1.value}-${phonePart2.value}-${phonePart3.value}`;
   const loginInfo = JSON.parse(sessionStorage.getItem('loginId') || '{}');
   const fullDateTime = `${form.reservationDate}T${form.reservationTime}:00`;
   const finalDeptId = Number(form.medDeptId || route.query.deptId);
 
-  if (!finalDeptId || finalDeptId === 0) {
-    alert("진료과 정보가 올바르지 않습니다. 다시 선택해 주세요.");
-    return;
-  }
+  if (!finalDeptId) { alert("진료과 정보 오류"); return; }
 
   const resDto = {
     memId: Number(loginInfo.memId || loginInfo.mem_id),
@@ -292,26 +337,29 @@ const submitReservation = async () => {
     visitType: form.visitType,
     reservationStatus: '예약',
     reservationMemo: form.reservationMemo
-  }
+  };
 
   try {
     const res = await addResReq(resDto);
 
-    // [수정 핵심] 백엔드 응답에 따른 메시지 분기
     if (res.data === 'success' || res.data === true) {
-      alert('예약이 완료되었습니다!');
+      alert('예약이 성공적으로 완료되었습니다');
       useRouterInstance.push('/checkreservation');
-    } else if (res.data === 'duplicate') {
+    }
+    else if (res.data === 'soon') {
+      alert('원활한 진료 준비를 위해, 당일 예약은 현재 시간 기준 1시간 이후부터 예약이 가능합니다.\n너른 양해 부탁드립니다');
+    }
+    else if (res.data === 'duplicate') {
       alert('이미 예약된 시간입니다. 다른 시간을 선택해 주세요.');
-      fetchBookedSlots(); // 최신 목록 새로고침
+      fetchBookedSlots();
     } else {
-      alert('예약에 실패했습니다. 입력 정보를 확인해주세요.');
+      alert('예약에 실패했습니다. 정보를 다시 확인해주세요.');
     }
   } catch (err) {
-    console.error("예약 실패 상세:", err);
-    alert('서버 통신 중 오류가 발생했습니다.');
+    console.error(err);
+    alert('오류가 발생했습니다.');
   }
-}
+};
 
 onMounted(async () => {
   const loginData = sessionStorage.getItem('loginId');
@@ -338,10 +386,19 @@ onMounted(async () => {
     isFixedDoc.value = true;
     fetchBookedSlots();
   }
-})
+});
 </script>
 
 <style scoped>
+/* [추가] 안내 문구 스타일 */
+.guide-text {
+  font-size: 13px;
+  color: #b72323;
+  margin-bottom: 12px;
+  font-weight: 500;
+  line-height: 1.4;
+}
+
 .reservation-page-wrap {
   display: flex;
   justify-content: center;
@@ -393,7 +450,6 @@ onMounted(async () => {
   gap: 30px;
 }
 
-/* [수정] 섹션 제목 label만 잡도록 범위 제한 */
 .input-section>label {
   display: block;
   font-size: 16px;
@@ -476,7 +532,7 @@ onMounted(async () => {
   margin-top: 5px;
 }
 
-/* 커스텀 달력 */
+/* 캘린더 */
 .custom-calendar-container {
   position: relative;
   width: 100%;
@@ -600,8 +656,10 @@ onMounted(async () => {
   box-shadow: 0 4px 10px rgba(1, 113, 233, 0.4);
 }
 
+/* [수정] 비활성 날짜: 회색 글씨만 적용 (박스 배경 X) */
 .cal-day.disabled {
-  color: #ddd;
+  color: #ccc;
+  background-color: transparent;
   cursor: not-allowed;
 }
 
@@ -611,18 +669,13 @@ onMounted(async () => {
   font-weight: 700;
 }
 
-/* [수정] 시간 선택 버튼 스타일 */
+/* 시간 버튼 그리드 */
 .time-grid {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
   gap: 10px;
 }
 
-.hide-radio {
-  display: none !important;
-}
-
-/* 기본 상태: 아주 연한 회색 테두리 (파란색 아님) */
 .time-btn {
   height: 50px;
   display: flex;
@@ -636,7 +689,6 @@ onMounted(async () => {
   transition: all 0.2s ease;
   position: relative;
   color: #555;
-  border-left: 1px solid #e0e0e0 !important;
 }
 
 .time-txt {
@@ -644,14 +696,12 @@ onMounted(async () => {
   font-weight: 500;
 }
 
-/* 마우스 올렸을 때 */
 .time-btn:hover:not(:disabled) {
   background: #f8f9fa;
   border-color: #aaa;
   color: #333;
 }
 
-/* 선택됨: 꽉 찬 남색/파란색 */
 .time-btn.selected {
   background: #0171e9;
   border-color: #0171e9 !important;
@@ -664,11 +714,10 @@ onMounted(async () => {
   font-weight: 700;
 }
 
-/* [수정 핵심] 예약 마감: 진짜 disabled + 회색 + 클릭 불가 */
+/* 예약 불가 (마감 or 시간 지남) */
 .time-btn:disabled {
   background: #f8f9fa !important;
   border: 1px solid #e9ecef !important;
-  border-left: 1px solid #e9ecef !important;
   color: #adb5bd !important;
   cursor: not-allowed !important;
   opacity: 0.7;
@@ -681,12 +730,6 @@ onMounted(async () => {
   text-decoration: line-through;
 }
 
-.time-btn:disabled:hover {
-  background: #f8f9fa !important;
-  box-shadow: none !important;
-  transform: none !important;
-}
-
 .booked-label {
   font-size: 10px;
   color: #ff6b6b;
@@ -694,6 +737,12 @@ onMounted(async () => {
   position: absolute;
   bottom: 4px;
 }
+
+.booked-label.gray {
+  color: #adb5bd;
+}
+
+/* 시간 지난 건 회색 글씨 */
 
 .fixed-doc-card {
   background: #f0f7ff;
@@ -760,6 +809,13 @@ onMounted(async () => {
   background-color: #0056b3;
   transform: translateY(-2px);
   box-shadow: 0 15px 25px rgba(1, 113, 233, 0.25);
+}
+
+.res-submit-btn:disabled {
+  background-color: #ccc;
+  cursor: not-allowed;
+  box-shadow: none;
+  transform: none;
 }
 
 .transition-box {

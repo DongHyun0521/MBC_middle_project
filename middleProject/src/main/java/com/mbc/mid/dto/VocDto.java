@@ -1,12 +1,16 @@
 // middleProject - com.mbc.mid.dto - VocDto.java
 package com.mbc.mid.dto;
 
+import org.springframework.web.multipart.MultipartFile;
+
 public class VocDto {
-    private Long vocId;			// PK
-    private Long memId;			// FK
-    private String title;		// 제목
-    private String content;		// 내용
-    private String writeDate;	// 작성일시
+    private Long vocId;					// PK
+    private Long memId;					// FK
+    private String title;				// 제목
+    private String content;				// 내용
+    private String uploadImg;			// DB에 저장될 이미지 경로 (/images/abc.jpg)
+    private String writeDate;			// 작성일시
+    private MultipartFile uploadFile;	// 프론트에서 보낸 파일을 받음 (DB 저장X)
     
     private Long adminStaffId;		// FK
     private String answerContent;	// 답변 내용
@@ -18,19 +22,20 @@ public class VocDto {
     
     private String writerName;		// JOIN 결과 담기용
     private String adminDeptName;	// JOIN 결과 담기용
-    
 	public VocDto() {
 		super();
 	}
-	public VocDto(Long vocId, Long memId, String title, String content, String writeDate, Long adminStaffId,
-			String answerContent, String answerWriteDate, boolean answerStatus, Integer del,
-			String deleteDate, String writerName, String adminDeptName) {
+	public VocDto(Long vocId, Long memId, String title, String content, String uploadImg, String writeDate,
+			MultipartFile uploadFile, Long adminStaffId, String answerContent, String answerWriteDate,
+			boolean answerStatus, Integer del, String deleteDate, String writerName, String adminDeptName) {
 		super();
 		this.vocId = vocId;
 		this.memId = memId;
 		this.title = title;
 		this.content = content;
+		this.uploadImg = uploadImg;
 		this.writeDate = writeDate;
+		this.uploadFile = uploadFile;
 		this.adminStaffId = adminStaffId;
 		this.answerContent = answerContent;
 		this.answerWriteDate = answerWriteDate;
@@ -64,11 +69,23 @@ public class VocDto {
 	public void setContent(String content) {
 		this.content = content;
 	}
+	public String getUploadImg() {
+		return uploadImg;
+	}
+	public void setUploadImg(String uploadImg) {
+		this.uploadImg = uploadImg;
+	}
 	public String getWriteDate() {
 		return writeDate;
 	}
 	public void setWriteDate(String writeDate) {
 		this.writeDate = writeDate;
+	}
+	public MultipartFile getUploadFile() {
+		return uploadFile;
+	}
+	public void setUploadFile(MultipartFile uploadFile) {
+		this.uploadFile = uploadFile;
 	}
 	public Long getAdminStaffId() {
 		return adminStaffId;

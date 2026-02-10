@@ -72,7 +72,7 @@ export const delFaqReq = (id) => {
 // [A. 일반 회원용] (MemController)
 // ------------------------------------------
 
-// 내 VOC 목록 조회 (이름을 getMyVocsReq로 변경하여 Voc.vue와 통일!)
+// 내 VOC 목록 조회
 export const getMyVocsReq = (filter) => {
     return url.get('/member/voc/list', { params: { filter } });
 }
@@ -101,12 +101,12 @@ export const getAdminVocListReq = (filter) => {
     return url.get('/admin/voc/list', { params: { filter } });
 }
 
-// 상세 조회 (삭제된 글 포함 확인용)
+// 상세 조회
 export const getAdminVocDetailReq = (id) => {
     return url.get(`/admin/voc/detail/${id}`);
 }
 
-// 답변 등록 (주석 해제!)
+// 답변 등록
 export const addVocReplyReq = (data) => {
     return url.post('/admin/voc/reply', data);
 }
@@ -121,7 +121,19 @@ export const restoreVocReq = (id) => {
     return url.put(`/admin/voc/restore/${id}`);
 }
 
-// 추가추가
+// 관리자 정보 확인 (원무과 여부 체크)
 export const getAdminInfoReq = () => {
-    return url.get('/admin/my-info'); // 백엔드 컨트롤러 URL
+    return url.get('/admin/my-info');
 };
+
+// 답변 수정 (PUT)
+export const editVocReplyReq = (data) => {
+    return url.put('/admin/voc/reply', data);
+}
+
+// 답변 삭제 (DELETE)
+export const delVocReplyReq = (vocId) => {
+    return url.delete(`/admin/voc/reply/${vocId}`);
+}
+
+export default url;

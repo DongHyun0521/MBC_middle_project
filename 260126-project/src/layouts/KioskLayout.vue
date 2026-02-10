@@ -35,7 +35,6 @@
     background: #fff;
 }
 
-/* 💡 배경색 흰색 빡! */
 .kiosk-footer {
     background: #f8f9fa;
     padding: 15px;

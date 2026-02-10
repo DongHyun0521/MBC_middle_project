@@ -142,6 +142,28 @@ public class MedController {
         }
     }
     
+    // 의사가 예약 완료하기 (예약->완료)
+    @PutMapping("/doctor/reservation/complete/{reservationId}")
+    public String completeReservation(@PathVariable Long reservationId, HttpSession session) {
+        System.out.println("=> MedController: completeReservation | " + new Date());
+        
+        String loginId = (String) session.getAttribute("loginId");
+        MemDto member = memService.getMemberInfo(loginId);
+        
+        // 의사 권한 체크
+        if (loginId == null || member == null || !medService.isDoctor(member.getMemId())) return "fail";
+
+        try {
+            int result = medService.completeReservation(reservationId, member.getMemId());
+            return result > 0 ? "success" : "fail";
+        } catch (Exception e) {
+            e.printStackTrace();
+            return "fail";
+        }
+    }
+    
+    // ========== 의료 관련 목록 ==========
+    
     // 전체 의사 목록
     @GetMapping("/doctors")
     public List<Map<String, Object>> getAllDoctors() {
@@ -162,6 +184,8 @@ public class MedController {
     	System.out.println("=> MedController: getDoctorByDept | "+ new Date());
     	return medService.getDoctorListByDept(deptId);
     }
+    
+    // ========== 예약 목록 ==========
     
     // 회원별 예약 목록
     @GetMapping("/my-reservations")

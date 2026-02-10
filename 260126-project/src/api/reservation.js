@@ -43,7 +43,7 @@ export const getMyResReq = () => {
 }
 
 // 6. 의사별 예약 스케줄 조회
-// 백엔드 주소: /med/doctor/schedule/{doctorId}
+// 백엔드 주소: /med/doctor/schedule/{doctorId}w
 export const getDocSchedReq = (staffId) => {
     return url.get(`/med/doctor/schedule/${staffId}`)
 }

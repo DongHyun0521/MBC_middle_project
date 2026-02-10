@@ -1,14 +1,16 @@
 import Reservation from "@/views/reservation/Reservation.vue";
-import DoctorSearch from "../../views/reservation/DoctorSearch.vue";
-import DeptSearch from "../../views/reservation/DeptSearch.vue";
-import CheckReservation from "../../views/reservation/CheckReservation.vue";
+import DoctorSearch from "@/views/reservation/DoctorSearch.vue";
+import DeptSearch from "@/views/reservation/DeptSearch.vue";
+import CheckReservation from "@/views/reservation/CheckReservation.vue";
+import Guide from "@/views/reservation/Guide.vue";
+import Process from "@/views/reservation/Process.vue";
 
 export default [
     {
         path: '/reservation',
         name: 'reservation',
         component: Reservation,
-        // [핵심] 예약 신청은 로그인 필수!
+        // 예약 신청 로그인 필수
         meta: { requiresAuth: true, title: '진료 예약' } 
     },
     {
@@ -29,7 +31,17 @@ export default [
         path: '/checkreservation',
         name: 'checkreservation',
         component: CheckReservation,
-        // [핵심] 내 예약 확인도 당연히 로그인이 필수!
+        // 내 예약 확인 로그인 필수
         meta: { requiresAuth: true, title: '예약 확인' }
+    },
+    {
+        path: '/guide',
+        name: 'guide',
+        component: Guide,
+    },
+    {
+        path: '/process',
+        name: 'proces',
+        component: Process,
     }
 ]

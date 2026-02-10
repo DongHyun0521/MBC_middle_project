@@ -20,7 +20,7 @@
       <div class="doctor-grid">
         <div v-for="doc in filteredDoctors" :key="doc.staff_id" class="doc-card">
           <div class="doc-img-area">
-            <div class="placeholder-icon">👨‍⚕️</div>
+            <div class="placeholder-icon"></div>
             <span>사진 준비중</span>
           </div>
           <div class="doc-info">
@@ -46,95 +46,281 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
+// API 파일 가져오기 (진료과 목록 조회, 의사 목록 조회)
 import { getDeptsReq, getDoctorsReq, getAllDoctorsReq } from '@/api/reservation'
 
-const router = useRouter()
-const route = useRoute()
-const selectedDeptId = ref('')
-const searchName = ref('')
-const depts = ref([])
-const allDoctors = ref([])
+// =========================================
+// 1. 기본 설정 및 상태 변수 (Data)
+// =========================================
+const router = useRouter() // 페이지 이동 도구
+const route = useRoute()   // 현재 주소 정보 (쿼리스트링 확인용)
 
-// 여기서 간호사를 걸러냅니다!
+// 검색 및 필터용 변수
+const selectedDeptId = ref('') // 선택된 진료과 ID
+const searchName = ref('')     // 검색창에 입력한 의사 이름
+
+// 서버에서 받아올 데이터 저장소
+const depts = ref([])      // 진료과 목록 (드롭다운용)
+const allDoctors = ref([]) // 전체(혹은 해당 과) 의사 목록
+
+
+// =========================================
+// 2. Computed (자동 필터링 로직)
+// =========================================
+
+// 화면에 보여줄 진짜 의사만 걸러내는 필터
 const filteredDoctors = computed(() => {
   return allDoctors.value.filter(doc => {
-    // 1. 이름 검색어 필터
-    const nameMatch = (doc.staff_name || '').includes(searchName.value);
     
-    // 2. 직업 필터: '의사' 또는 'DOCTOR'만 통과! (간호사 제외)
-    const role = (doc.role || '').toUpperCase(); // 대소문자 무시를 위해 변환
+    // (1) 이름 검색어 필터: 검색어가 없으면 무조건 통과, 있으면 포함 여부 확인
+    const nameMatch = (doc.staff_name || '').includes(searchName.value);
+
+    // (2) 직업 필터: '간호사' 등은 제외하고 '의사'만 통과시킴
+    const role = (doc.role || '').toUpperCase(); // 대소문자 무시 (Doctor, doctor 다 통과)
     const isDoctor = role === '의사' || role === 'DOCTOR';
 
-    // 이름도 맞고 + 의사여야만 화면에 나옴
+    // 두 조건(이름도 맞고 && 의사여야 함)을 모두 만족해야 화면에 나옴
     return nameMatch && isDoctor;
   })
 })
 
+
+// =========================================
+// 3. 페이지 이동 함수
+// =========================================
+
+// '예약하기' 버튼 클릭 시 실행
 const goToReserve = (doc) => {
+  // 예약 페이지(/reservation)로 이동하면서, 선택한 의사 정보를 쿼리로 넘겨줌
   router.push({
     path: '/reservation',
     query: {
-      docId: doc.staff_id, 
+      docId: doc.staff_id,
       docName: doc.staff_name,
-      deptId: doc.med_dept_id || selectedDeptId.value, 
+      deptId: doc.med_dept_id || selectedDeptId.value,
       deptName: doc.dept_name
     }
   })
 }
 
+
+// =========================================
+// 4. 서버 데이터 조회 함수
+// =========================================
+
+// (A) 초기 데이터 로딩 (진료과 목록 + 의사 목록)
 const fetchData = async () => {
   try {
+    // 1. 진료과 목록 가져오기 (드롭다운 채우기)
     const resDept = await getDeptsReq()
     depts.value = resDept.data
 
+    // 2. 만약 주소창에 특정 진료과 ID가 있다면? (예: ?deptId=3)
     if (route.query.deptId) {
-      selectedDeptId.value = Number(route.query.deptId)
-      await fetchDoctors()
+      selectedDeptId.value = Number(route.query.deptId) // 드롭다운 값 세팅
+      await fetchDoctors() // 그 과의 의사만 가져옴
     } else {
-      await fetchDoctors()
+      await fetchDoctors() // 전체 의사 가져옴
     }
-  } catch (err) { console.error('데이터 로드 실패') }
-}
-
-const fetchDoctors = async () => {
-  try {
-    let res;
-    if (selectedDeptId.value) {
-      res = await getDoctorsReq(selectedDeptId.value)
-    } else {
-      res = await getAllDoctorsReq()
-    }
-    // 일단 다 담아두고, 위의 computed(filteredDoctors)에서 간호사를 숨깁니다.
-    allDoctors.value = res.data
-  } catch (err) {
-    console.error('의료진 로드 실패')
-    allDoctors.value = []
+  } catch (err) { 
+    console.error('데이터 로드 실패') 
   }
 }
 
+// (B) 의사 목록 가져오기 (진료과 선택 변경 시에도 실행됨)
+const fetchDoctors = async () => {
+  try {
+    let res;
+    // 진료과가 선택되어 있으면 -> 그 과 의사만 조회
+    if (selectedDeptId.value) {
+      res = await getDoctorsReq(selectedDeptId.value)
+    } 
+    // 선택 안 되어 있으면 -> 전체 의사 조회
+    else {
+      res = await getAllDoctorsReq()
+    }
+    allDoctors.value = res.data // 받아온 데이터를 변수에 저장
+  } catch (err) {
+    console.error('의료진 로드 실패')
+    allDoctors.value = [] // 에러나면 빈 목록으로 초기화
+  }
+}
+
+
+// =========================================
+// 5. 페이지 시작 (Life Cycle)
+// =========================================
+
+// 화면이 다 그려지자마자 fetchData 함수 실행!
 onMounted(fetchData)
 </script>
 
 <style scoped>
-.search-wrap { background-color: #f4f7fa; min-height: 100vh; padding: 60px 20px; }
-.search-container { max-width: 1000px; margin: 0 auto; }
-.page-header { text-align: center; margin-bottom: 50px; }
-.page-header h2 { font-size: 28px; color: #404347; margin-bottom: 15px; font-weight: 700; }
-.title-bar { width: 40px; height: 3px; background: #0171e9; margin: 0 auto 15px; }
-.page-desc { color: #888; font-size: 15px; }
-.filter-box { display: flex; gap: 15px; margin-bottom: 40px; background: #fff; padding: 25px; border-radius: 8px; box-shadow: 0 5px 15px rgba(0, 0, 0, 0.03); border: 1px solid #eee; }
-.search-input { flex: 1; padding: 15px; border: 1px solid #ddd; border-radius: 4px; font-size: 15px; color: #4e4e4e; transition: 0.3s; background-color: #f9f9f9; }
-.search-input:focus { border-color: #0171e9; outline: none; background-color: #fff; }
-.doctor-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(450px, 1fr)); gap: 25px; }
-.doc-card { background: #fff; border: 1px solid #eee; padding: 25px; display: flex; gap: 25px; border-radius: 12px; box-shadow: 0 5px 15px rgba(0, 0, 0, 0.02); transition: all 0.3s ease; align-items: center; }
-.doc-card:hover { transform: translateY(-5px); box-shadow: 0 15px 30px rgba(1, 113, 233, 0.08); }
-.doc-img-area { width: 110px; height: 130px; background: #f0f2f5; border-radius: 8px; display: flex; flex-direction: column; align-items: center; justify-content: center; color: #aaa; font-size: 13px; flex-shrink: 0; }
-.placeholder-icon { font-size: 30px; margin-bottom: 5px; opacity: 0.5; }
-.doc-info { flex: 1; display: flex; flex-direction: column; gap: 12px; }
-.doc-header h4 { font-size: 20px; color: #333; margin: 0; font-weight: 700; display: flex; align-items: center; gap: 8px; }
-.doc-role { font-size: 13px; color: #0171e9; background: #e0f2fe; padding: 3px 8px; border-radius: 4px; font-weight: 600; }
-.doc-details p { margin: 0; font-size: 15px; color: #555; line-height: 1.5; }
-.doc-details .label { color: #0171e9; font-weight: 600; margin-right: 8px; display: inline-block; width: 60px; }
-.btn-reserve { margin-top: 10px; padding: 12px; width: 100%; background: #0171e9; color: #fff; border: none; border-radius: 4px; font-size: 15px; font-weight: 600; cursor: pointer; transition: 0.3s; }
-.no-result { grid-column: 1 / -1; text-align: center; padding: 80px 20px; color: #999; }
+.search-wrap {
+  background-color: #f4f7fa;
+  min-height: 100vh;
+  padding: 60px 20px;
+}
+
+.search-container {
+  max-width: 1000px;
+  margin: 0 auto;
+}
+
+.page-header {
+  text-align: center;
+  margin-bottom: 50px;
+}
+
+.page-header h2 {
+  font-size: 28px;
+  color: #404347;
+  margin-bottom: 15px;
+  font-weight: 700;
+}
+
+.title-bar {
+  width: 40px;
+  height: 3px;
+  background: #0171e9;
+  margin: 0 auto 15px;
+}
+
+.page-desc {
+  color: #888;
+  font-size: 15px;
+}
+
+.filter-box {
+  display: flex;
+  gap: 15px;
+  margin-bottom: 40px;
+  background: #fff;
+  padding: 25px;
+  border-radius: 8px;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.03);
+  border: 1px solid #eee;
+}
+
+.search-input {
+  flex: 1;
+  padding: 15px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 15px;
+  color: #4e4e4e;
+  transition: 0.3s;
+  background-color: #f9f9f9;
+}
+
+.search-input:focus {
+  border-color: #0171e9;
+  outline: none;
+  background-color: #fff;
+}
+
+.doctor-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(450px, 1fr));
+  gap: 25px;
+}
+
+.doc-card {
+  background: #fff;
+  border: 1px solid #eee;
+  padding: 25px;
+  display: flex;
+  gap: 25px;
+  border-radius: 12px;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.02);
+  transition: all 0.3s ease;
+  align-items: center;
+}
+
+.doc-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 15px 30px rgba(1, 113, 233, 0.08);
+}
+
+.doc-img-area {
+  width: 110px;
+  height: 130px;
+  background: #f0f2f5;
+  border-radius: 8px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  color: #aaa;
+  font-size: 13px;
+  flex-shrink: 0;
+}
+
+.placeholder-icon {
+  font-size: 30px;
+  margin-bottom: 5px;
+  opacity: 0.5;
+}
+
+.doc-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.doc-header h4 {
+  font-size: 20px;
+  color: #333;
+  margin: 0;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.doc-role {
+  font-size: 13px;
+  color: #0171e9;
+  background: #e0f2fe;
+  padding: 3px 8px;
+  border-radius: 4px;
+  font-weight: 600;
+}
+
+.doc-details p {
+  margin: 0;
+  font-size: 15px;
+  color: #555;
+  line-height: 1.5;
+}
+
+.doc-details .label {
+  color: #0171e9;
+  font-weight: 600;
+  margin-right: 8px;
+  display: inline-block;
+  width: 60px;
+}
+
+.btn-reserve {
+  margin-top: 10px;
+  padding: 12px;
+  width: 100%;
+  background: #0171e9;
+  color: #fff;
+  border: none;
+  border-radius: 4px;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: 0.3s;
+}
+
+.no-result {
+  grid-column: 1 / -1;
+  text-align: center;
+  padding: 80px 20px;
+  color: #999;
+}
 </style>

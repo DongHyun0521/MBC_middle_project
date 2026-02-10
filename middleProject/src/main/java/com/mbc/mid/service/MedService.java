@@ -70,10 +70,29 @@ public class MedService {
     // 의사가 예약 강제 취소하기 (예약->취소)
     public int cancelReservationByDoctor(Long reservationId, Long memId) {
         Long doctorId = medDao.getMedStaffIdByMemId(memId);
-        if (doctorId == null) return 0; 
+        if (doctorId == null)
+        	return 0; 
 
         return medDao.cancelReservationByDoctor(reservationId, doctorId);
     }
+    
+    // 의사가 예약 완료하기 (예약->완료)
+    public int completeReservation(Long reservationId, Long memId) {
+        Long doctorId = medDao.getMedStaffIdByMemId(memId);
+        if (doctorId == null)
+        	return 0;
+        return medDao.completeReservation(reservationId, doctorId);
+    }
+
+    // 자동으로 예약 미방문으로 바꾸기 (예약->미방문)
+    public int processNoShowReservations() {
+        List<Long> noShowIds = medDao.findNoShowReservations();
+        if (noShowIds != null && !noShowIds.isEmpty())
+            return medDao.updateNoShowStatus(noShowIds);
+        return 0;
+    }
+    
+    // ========== 의료 관련 목록 ==========
     
     // 전체 의사 목록
     public List<Map<String, Object>> getAllDoctors() {
@@ -89,6 +108,8 @@ public class MedService {
     public List<Map<String, Object>> getDoctorListByDept(Long medDeptId) {
     	return medDao.getDoctorListByDept(medDeptId);
     }
+    
+    // ========== 예약 목록 ==========
     
     // 회원별 예약 목록
     public List<Map<String, Object>> getReservationsByMember(Long memId) {

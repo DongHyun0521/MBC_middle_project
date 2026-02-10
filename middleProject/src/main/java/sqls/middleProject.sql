@@ -1,4 +1,5 @@
 
+
 DROP TABLE IF EXISTS member_vehicle;	-- 
 DROP TABLE IF EXISTS reservation;		-- 
 DROP TABLE IF EXISTS payment;			-- 
@@ -140,6 +141,7 @@ CREATE TABLE voc (
 		REFERENCES mem(mem_id),						-- FK(mem.mem_id)
 	title VARCHAR(200) NOT NULL,					-- 제목
 	content VARCHAR(4000) NOT NULL,					-- 내용
+	thumbnail_img VARCHAR(500),						-- DB에 저장될 이미지 경로 (/images/abc.jpg)
 	write_date TIMESTAMP NOT NULL DEFAULT now(),	-- 작성일시
 	
 	admin_staff_id INTEGER
@@ -160,6 +162,7 @@ CREATE TABLE notice (
 	top_fix BOOLEAN NOT NULL DEFAULT FALSE,			-- 상단고정 여부
 	title VARCHAR(200) NOT NULL,					-- 제목
 	content VARCHAR(4000) NOT NULL,					-- 내용
+	thumbnail_img VARCHAR(500),						-- DB에 저장될 이미지 경로 (/images/abc.jpg)
 	write_date TIMESTAMP NOT NULL DEFAULT now(),	-- 작성일시
 	read_count INTEGER NOT NULL DEFAULT 0,			-- 조회수
 	del INTEGER NOT NULL DEFAULT 0					-- 공지사항 삭제 여부
@@ -173,7 +176,19 @@ CREATE TABLE faq (
 	title VARCHAR(200) NOT NULL,					-- 제목
 	content VARCHAR(4000) NOT NULL,					-- 내용
 	write_date TIMESTAMP NOT NULL DEFAULT now(),	-- 작성일시
-	del INTEGER NOT NULL DEFAULT 0					-- FAQ 삭제 여부
+	del INTEGER NOT NULL DEFAULT 0					-- 삭제 여부
+);
+-- 건강이야기
+CREATE TABLE health_story (
+	health_story_id SERIAL PRIMARY KEY,				-- PK
+	admin_staff_id INTEGER NOT NULL
+		REFERENCES admin_staff(admin_staff_id),		-- FK(admin_staff.admin_staff_id)
+	title VARCHAR(200) NOT NULL,					-- 제목
+	content VARCHAR(4000) NOT NULL,					-- 내용
+	thumbnail_img VARCHAR(500),						-- DB에 저장될 이미지 경로 (/images/abc.jpg)
+	read_count INTEGER NOT NULL DEFAULT 0,			-- 조회수
+	write_date TIMESTAMP NOT NULL DEFAULT now(),	-- 작성일시
+	del INTEGER NOT NULL DEFAULT 0					-- 삭제 여부
 );
 
 DELETE FROM reservation;

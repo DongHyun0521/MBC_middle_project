@@ -8,6 +8,7 @@ import org.apache.ibatis.annotations.Mapper;
 import org.springframework.stereotype.Repository;
 import com.mbc.mid.dto.AdminStaffDto;
 import com.mbc.mid.dto.FaqDto;
+import com.mbc.mid.dto.HealthStoryDto;
 import com.mbc.mid.dto.NoticeDto;
 import com.mbc.mid.dto.VocDto;
 
@@ -32,8 +33,9 @@ public interface AdminDao {
     int updateFaq(FaqDto faqDto);						// FAQ 수정
     int deleteFaq(Long faqId);							// FAQ 삭제
     
-    String getAdminDeptName(Long memId);	// 무슨 부서(원무)인지 확인
-
+    public String getAdminDeptName(Long memId);	// 부서 이름 확인
+    
+    public boolean isWonMu(Long memId);			// 무슨 부서(원무)인지 확인
     List<VocDto> getAllVocList(String filter);	// 고객의소리 목록 (전체/미답변/답변완료/삭제)
     VocDto getVocDetail(Long vocId);			// 고객의소리 상세 보기
     int deleteVocByAdmin(Long vocId);			// 고객의소리 강제 삭제 (del=1)
@@ -42,4 +44,12 @@ public interface AdminDao {
     int addReply(VocDto vocDto);				// 고객의소리 답변 작성
     int updateReply(VocDto vocDto);				// 고객의소리 답변 수정
     int deleteReply(Long vocId);				// 고객의소리 답변 삭제
+    
+    public boolean isPr(Long memId);							// 무슨 부서(홍보)인지 확인
+    List<HealthStoryDto> getAllHealthStories();					// 건강이야기 목록
+    void insertHealthStory(HealthStoryDto dto);					// 건강이야기 작성
+    HealthStoryDto getHealthStoryDetail(Long healthStoryId);	// 건강이야기 상세 보기
+    void increaseHealthStoryReadCount(Long healthStoryId);		// 건강이야기 조회수 증가
+    int updateHealthStory(HealthStoryDto dto);					// 건강이야기 수정
+    int deleteHealthStory(Long healthStoryId);					// 건강이야기 삭제 (del=1)
 }

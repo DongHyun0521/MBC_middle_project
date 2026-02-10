@@ -8,7 +8,7 @@ public class FaqDto {
     private String title;           // 제목
     private String content;         // 내용
     private String writeDate;       // 작성일
-    private Integer del;			// FAQ 삭제 여부
+    private Integer del;			// 삭제 여부
     
 	public FaqDto() {
 		super();

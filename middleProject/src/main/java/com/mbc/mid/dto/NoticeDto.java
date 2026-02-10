@@ -1,30 +1,28 @@
 // middleProject - com.mbc.mid.dto - NoticeDto.java
 package com.mbc.mid.dto;
 
+import org.springframework.web.multipart.MultipartFile;
+
 public class NoticeDto {
     private Long noticeId;          // PK
     private Long adminStaffId;      // FK
     private Boolean topFix;         // 상단 고정 여부
     private String title;           // 제목
     private String content;         // 내용
+    private String thumbnailImg;	// DB에 저장될 이미지 경로 (/images/abc.jpg)
     private String writeDate;       // 작성일시
     private Integer readCount;      // 조회수
-    private Integer del;			// 공지사항 삭제 여부
+    private Integer del;			// 삭제 여부
+    private MultipartFile uploadFile;	// 프론트에서 보낸 파일을 받음 (DB 저장X)
     
 	public NoticeDto() {
 		super();
 	}
-	public NoticeDto(Long noticeId, Long adminStaffId, Boolean topFix, String title, String content, String writeDate,
-			Integer readCount, Integer del) {
-		super();
-		this.noticeId = noticeId;
-		this.adminStaffId = adminStaffId;
-		this.topFix = topFix;
-		this.title = title;
-		this.content = content;
-		this.writeDate = writeDate;
-		this.readCount = readCount;
-		this.del = del;
+	@Override
+	public String toString() {
+		return "NoticeDto [noticeId=" + noticeId + ", adminStaffId=" + adminStaffId + ", topFix=" + topFix + ", title="
+				+ title + ", content=" + content + ", thumbnailImg=" + thumbnailImg + ", writeDate=" + writeDate
+				+ ", readCount=" + readCount + ", del=" + del + ", uploadFile=" + uploadFile + "]";
 	}
 	public Long getNoticeId() {
 		return noticeId;
@@ -56,6 +54,12 @@ public class NoticeDto {
 	public void setContent(String content) {
 		this.content = content;
 	}
+	public String getThumbnailImg() {
+		return thumbnailImg;
+	}
+	public void setThumbnailImg(String thumbnailImg) {
+		this.thumbnailImg = thumbnailImg;
+	}
 	public String getWriteDate() {
 		return writeDate;
 	}
@@ -73,5 +77,11 @@ public class NoticeDto {
 	}
 	public void setDel(Integer del) {
 		this.del = del;
+	}
+	public MultipartFile getUploadFile() {
+		return uploadFile;
+	}
+	public void setUploadFile(MultipartFile uploadFile) {
+		this.uploadFile = uploadFile;
 	}
 }

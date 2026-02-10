@@ -1,12 +1,16 @@
 // middleProject - com.mbc.mid.service - AdminService.java
 package com.mbc.mid.service;
 
+import java.io.File;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
+
 import com.mbc.mid.dao.AdminDao;
 import com.mbc.mid.dao.MemDao;
 import com.mbc.mid.dto.*;
@@ -58,6 +62,43 @@ public class AdminService {
         return adminDao.getAllAdminDepts();
     }
     
+    // 부서 이름 확인
+    public String getAdminDeptName(Long memId) {
+        return adminDao.getAdminDeptName(memId);
+    }
+    
+    // 무슨 부서(원무)인지 확인
+    public boolean isWonMu(Long memId) {
+        String deptName = adminDao.getAdminDeptName(memId);
+        return deptName != null && deptName.contains("원무");
+    }
+    
+    // 무슨 부서(홍보)인지 확인
+    public boolean isPr(Long memId) {
+        String deptName = adminDao.getAdminDeptName(memId);
+        return deptName != null && deptName.contains("홍보");
+    }
+    
+    // 파일 저장
+    private String saveFile(MultipartFile file) throws Exception {
+        if (file == null || file.isEmpty()) {
+            return null; // 파일이 없으면 null 반환
+        }
+        
+        // 프로젝트 루트/images/ 폴더에 저장
+        String uploadDir = "images/";
+        File folder = new File(uploadDir);
+        if (!folder.exists()) folder.mkdirs();
+
+        String uuid = UUID.randomUUID().toString();
+        String saveName = uuid + "_" + file.getOriginalFilename();
+        
+        file.transferTo(new File(folder.getAbsolutePath() + "/" + saveName));
+        
+        // DB에 저장할 경로 (/images/...)
+        return "/images/" + saveName;
+    }
+    
     // ========== 공지사항 ==========
     
     // 공지사항 전체 목록
@@ -76,14 +117,23 @@ public class AdminService {
     }
     
     // 공지사항 작성
-    public void addNotice(NoticeDto noticeDto, Long memId) {
+    public void addNotice(NoticeDto noticeDto, Long memId) throws Exception {
         Long adminStaffId = adminDao.getAdminStaffIdByMemId(memId);
         noticeDto.setAdminStaffId(adminStaffId);
+        
+        // 공통 파일 저장 로직 사용
+        String savedPath = saveFile(noticeDto.getUploadFile());
+        noticeDto.setThumbnailImg(savedPath); // DTO 필드명에 맞춤
+        
         adminDao.addNotice(noticeDto);
     }
     
     // 공지사항 수정
-    public int updateNotice(NoticeDto noticeDto) {
+    public int updateNotice(NoticeDto noticeDto) throws Exception {
+        // 새 파일이 있으면 저장, 없으면 null 리턴
+        String savedPath = saveFile(noticeDto.getUploadFile());
+        noticeDto.setThumbnailImg(savedPath); // XML에서 null이면 업데이트 안함
+        
         return adminDao.updateNotice(noticeDto);
     }
     
@@ -118,17 +168,6 @@ public class AdminService {
     }
     
     // ========== 고객의소리 ==========
-    
-    // 행정의 부서 이름 확인
-    public String getAdminDeptName(Long memId) {
-        return adminDao.getAdminDeptName(memId);
-    }
-    
-    // 무슨 부서(원무)인지 확인
-    public boolean isWonMu(Long memId) {
-        String deptName = adminDao.getAdminDeptName(memId);
-        return deptName != null && deptName.contains("원무");
-    }
     
     // 고객의소리 목록 (전체/미답변/답변완료/삭제)
     public List<VocDto> getAllVocList(String filter) {
@@ -168,5 +207,46 @@ public class AdminService {
     // 고객의소리 답글 삭제 (NULL)
     public int deleteReply(Long vocId) {
         return adminDao.deleteReply(vocId);
+    }
+    
+    // ========== 건강이야기 ==========
+    
+    // 건강이야기 목록
+    public List<HealthStoryDto> getAllHealthStories() {
+        return adminDao.getAllHealthStories();
+    }
+
+    // 건강이야기 작성
+    public void addHealthStory(HealthStoryDto dto, Long memId) throws Exception {
+        Long staffId = adminDao.getAdminStaffIdByMemId(memId);
+        dto.setAdminStaffId(staffId);
+
+        String savedPath = saveFile(dto.getUploadFile());
+        dto.setThumbnailImg(savedPath);
+
+        adminDao.insertHealthStory(dto);
+    }
+    
+    // 건강이야기 상세 보기
+    public HealthStoryDto getHealthStoryDetail(Long healthStoryId) {
+        return adminDao.getHealthStoryDetail(healthStoryId);
+    }
+    
+    // 건강이야기 조회수 증가
+    public void increaseHealthStoryReadCount(Long healthStoryId) {
+        adminDao.increaseHealthStoryReadCount(healthStoryId);
+    }
+    
+    // 건강이야기 수정
+    public int updateHealthStory(HealthStoryDto dto) throws Exception {
+        String savedPath = saveFile(dto.getUploadFile());
+        dto.setThumbnailImg(savedPath);
+
+        return adminDao.updateHealthStory(dto);
+    }
+    
+    // 건강이야기 삭제 (del=1)
+    public int deleteHealthStory(Long healthStoryId) {
+        return adminDao.deleteHealthStory(healthStoryId);
     }
 }

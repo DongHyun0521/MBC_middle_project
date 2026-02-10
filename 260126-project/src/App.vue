@@ -3,7 +3,6 @@
 </template>
 
 <script setup>
-// 공통 설정 외엔 비워둡니다.
 </script>
 
 <style>
