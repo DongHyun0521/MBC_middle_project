@@ -2,37 +2,42 @@ import { createRouter, createWebHistory } from 'vue-router'
 
 // 1. 레이아웃 (틀) 불러오기
 import MainLayout from '@/layouts/MainLayout.vue'   // 헤더+푸터 있는 일반 화면
-import KioskLayout from '@/layouts/KioskLayout.vue' // 헤더+푸터 없는 키오스크 화면
+// import KioskLayout from '@/layouts/KioskLayout.vue' // 헤더+푸터 없는 키오스크 화면
+// import ParkingSystem from '@/layouts/ParkingSystem.vue'
 
-// 2. 페이지(View) 파일 불러오기
+// 페이지(View) 파일 불러오기
 import MainHome from '@/views/MainHome.vue'             // 메인 홈페이지
 import SearchResult from '@/components/SearchResult.vue' // 통합검색 결과창
 
 // [병원소개] About 폴더
 import Greeting from '@/views/about/Greeting.vue'
-import Mission from '@/views/about/Mission.vue'    
-import History from '@/views/about/History.vue' 
+import Mission from '@/views/about/Mission.vue'
+import History from '@/views/about/History.vue'
 
 // [의료진/진료과] Medical 폴더
-import CenterClinic from '@/views/medical/CenterClinic.vue' 
+import CenterClinic from '@/views/medical/CenterClinic.vue'
 
 // [건강정보] heath 폴더
 import Disease from '@/views/health/Disease.vue'
-import Checkup from '@/views/health/Checkup.vue'    
-import Story from '@/views/health/Story.vue' 
+import Checkup from '@/views/health/Checkup.vue'
+import Story from '@/views/health/Story.vue'
 
 // [오시는 길 / 주차안내]
 import Location from '@/views/location/Location.vue'
 import ParkingInfo from '@/views/location/ParkingInfo.vue'
 
-// 3. 기능별로 쪼개놓은 라우터 파일 합치기
-import member from '@/router/member/member.js'        
-import vehicle from '@/router/vehicle/vehicle.js'      
-import reservation from '@/router/reservation/reservation.js' 
-import customer from '@/router/customer/customer.js'   
+// 기능별로 쪼개놓은 라우터 파일 합치기
+import member from '@/router/member/member.js'
+import vehicle from '@/router/vehicle/vehicle.js'
+import reservation from '@/router/reservation/reservation.js'
+import customer from '@/router/customer/customer.js'
 
+// 담당자가 준 파일들 불러오기
+import parkingspot from '@/router/parkingspot/parkingspot.js'
+import entry from '@/router/entry/entry.js'
+import exit from '@/router/exit/exit.js'
 
-// 4. 라우터 설정 시작
+// 라우터 설정 시작
 const router = createRouter({
     history: createWebHistory(),
     routes: [
@@ -96,6 +101,11 @@ const router = createRouter({
                     name: 'story',
                     component: Story
                 },
+                {
+                    path: '/story/:id',
+                    name: 'story-detail',
+                    component: Story
+                },
 
                 // 추가. 위치/주차 안내 연결
                 {
@@ -117,24 +127,53 @@ const router = createRouter({
             ]
         },
 
-        // [B] 키오스크 그룹 (KioskLayout 사용)
-        {
-            path: '/kiosk',
-            component: KioskLayout,
-            children: [
-                { path: '', redirect: '/kiosk/entry' }, // /kiosk 치면 입차화면으로
-                {
-                    path: 'entry',
-                    component: () => import('@/views/parkingLog/Entry.vue'),
-                    meta: { title: '입차 시스템' }
-                },
-                {
-                    path: 'exit',
-                    component: () => import('@/views/parkingLog/Exit.vue'),
-                    meta: { title: '출차 시스템' }
-                },
-            ]
-        }
+        // [B & C] 주차장/키오스크 파일들
+        ...entry,
+        ...exit,
+        ...parkingspot
+
+        // // [B] 키오스크 그룹 (KioskLayout 사용)
+        // {
+        //     path: '/kiosk',
+        //     component: KioskLayout,
+        //     children: [
+        //         { path: '', redirect: '/kiosk/entry' }, // /kiosk 치면 입차화면으로
+        //         {
+        //             path: 'entry',
+        //             component: () => import('@/views/parkingLog/Entry.vue'),
+        //             meta: { title: '입차 시스템' }
+        //         },
+        //         {
+        //             path: 'exit',
+        //             component: () => import('@/views/parkingLog/Exit.vue'),
+        //             meta: { title: '출차 시스템' }
+        //         },
+        //     ]
+        // },
+
+        // // [C] 주차장 현황 그룹 (ParkingSystem 레이아웃 사용)
+        // {
+        //     path: '/parking-system',
+        //     component: ParkingSystem,
+        //     children: [
+        //         {
+        //             path: '',
+        //             redirect: '/parking-system/status'
+        //         },
+        //         {
+        //             path: 'status',
+        //             name: 'ParkingStatus',
+        //             component: () => import('@/views/parkingSpot/ParkingStatus.vue'),
+        //             meta: { title: '주차 현황 모니터링' }
+        //         },
+        //         {
+        //             path: 'search',
+        //             name: 'VehicleSearch',
+        //             component: () => import('@/views/parkingSpot/VehicleSearch.vue'),
+        //             meta: { title: '차량 위치 조회' }
+        //         }
+        //     ]
+        // }
     ]
 })
 
@@ -142,7 +181,7 @@ const router = createRouter({
 router.beforeEach((to, from, next) => {
     // 이동하려는 페이지에 '로그인 필요(requiresAuth)' 딱지가 붙어있는지 확인
     if (to.meta.requiresAuth) {
-        
+
         // 세션 스토리지에서 로그인 정보 확인
         const isLoggedIn = sessionStorage.getItem('loginId');
 

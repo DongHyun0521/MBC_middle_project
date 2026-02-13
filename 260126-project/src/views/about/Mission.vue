@@ -17,17 +17,17 @@
       <div class="label">VISION</div>
       <div class="vision-grid">
         <div class="v-card">
-          <div class="v-icon">🏥</div>
+          <div class="v-icon"></div>
           <h4>환자 중심 병원</h4>
           <p>환자의 안전과 편의를<br>최우선 가치로 삼는 병원</p>
         </div>
         <div class="v-card">
-          <div class="v-icon">🔬</div>
+          <div class="v-icon"></div>
           <h4>연구 중심 병원</h4>
           <p>끊임없는 연구로<br>의학 발전을 선도하는 병원</p>
         </div>
         <div class="v-card">
-          <div class="v-icon">🌏</div>
+          <div class="v-icon"></div>
           <h4>글로벌 리더</h4>
           <p>세계적 수준의 의료로<br>신뢰받는 글로벌 병원</p>
         </div>
@@ -53,16 +53,16 @@
 .page-header p { font-size: 16px; color: #666; margin-top: 10px; }
 
 .mv-section { margin-bottom: 80px; text-align: center; }
-.label { font-size: 14px; font-weight: 800; color: #0171e9; letter-spacing: 2px; margin-bottom: 15px; }
+.label { font-size: 14px; font-weight: 800; color: #005baa; letter-spacing: 2px; margin-bottom: 15px; }
 
 .content-box { background: #f8f9fa; padding: 60px; border-radius: 8px; }
-.mission-bg { background: linear-gradient(135deg, #0171e9 0%, #004b9e 100%); color: #fff; }
+.mission-bg { background: linear-gradient(135deg, #005baa 0%, #004b9e 100%); color: #fff; }
 .mission-bg h3 { font-size: 32px; margin-bottom: 15px; font-weight: 700; }
 .mission-bg p { font-size: 18px; opacity: 0.9; font-weight: 300; }
 
 .vision-grid { display: flex; gap: 20px; }
 .v-card { flex: 1; border: 1px solid #eee; padding: 40px 20px; border-radius: 8px; transition: 0.3s; background: #fff; }
-.v-card:hover { transform: translateY(-5px); box-shadow: 0 10px 30px rgba(0,0,0,0.05); border-color: #0171e9; }
+.v-card:hover { transform: translateY(-5px); box-shadow: 0 10px 30px rgba(0,0,0,0.05); border-color: #005baa; }
 .v-icon { font-size: 40px; margin-bottom: 20px; }
 .v-card h4 { font-size: 20px; font-weight: 700; color: #333; margin-bottom: 10px; }
 .v-card p { font-size: 15px; color: #666; line-height: 1.5; }

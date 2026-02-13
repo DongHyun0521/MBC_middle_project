@@ -10,17 +10,23 @@
     
     <!-- 행정직인지 확인 -->
     <select id="checkAdminCount" parameterType="long" resultType="int">
-        SELECT COUNT(*) FROM admin_staff WHERE mem_id = #{memId}
+        SELECT COUNT(*) 
+        FROM admin_staff 
+        WHERE mem_id = #{memId}
     </select>
     
     <!-- 회원ID로 행정직인지 확인 -->
     <select id="getAdminStaffIdByMemId" parameterType="long" resultType="long">
-        SELECT admin_staff_id FROM admin_staff WHERE mem_id = #{memId}
+        SELECT admin_staff_id 
+        FROM admin_staff 
+        WHERE mem_id = #{memId}
     </select>
     
     <!-- 행정 부서 전체 목록 -->
     <select id="getAllAdminDepts" resultType="java.util.Map">
-        SELECT admin_dept_id, dept_name FROM admin_dept ORDER BY admin_dept_id
+        SELECT admin_dept_id, admin_dept_name 
+        FROM admin_dept 
+        ORDER BY admin_dept_id
     </select>
     
     <!-- ========== 공지사항 ========== -->
@@ -32,7 +38,7 @@
         ORDER BY top_fix DESC, write_date DESC
     </select>-->
     <select id="getAllNoticeList" resultType="com.mbc.mid.dto.NoticeDto">
-        SELECT n.*, d.dept_name AS deptName
+        SELECT n.*, d.admin_dept_name AS adminDeptName
         FROM notice n
         JOIN admin_staff s ON n.admin_staff_id = s.admin_staff_id
         JOIN admin_dept d ON s.admin_dept_id = d.admin_dept_id
@@ -46,7 +52,7 @@
         WHERE notice_id = #{noticeId}
     </select>-->
     <select id="getNoticeDetail" parameterType="long" resultType="com.mbc.mid.dto.NoticeDto">
-        SELECT n.*, d.dept_name AS deptName
+        SELECT n.*, d.admin_dept_name AS adminDeptName
         FROM notice n
         JOIN admin_staff s ON n.admin_staff_id = s.admin_staff_id
         JOIN admin_dept d ON s.admin_dept_id = d.admin_dept_id
@@ -124,7 +130,7 @@
     
     <!-- 무슨 부서(원무)인지 확인 -->
     <select id="getAdminDeptName" parameterType="long" resultType="String">
-        SELECT d.dept_name 
+        SELECT d.admin_dept_name 
         FROM admin_staff s 
         JOIN admin_dept d ON s.admin_dept_id = d.admin_dept_id
         WHERE s.mem_id = #{memId}
@@ -133,7 +139,7 @@
     <!-- 고객의소리 목록 (전체/미답변/답변완료/삭제) -->
     <select id="getAllVocList" parameterType="String" resultType="com.mbc.mid.dto.VocDto">
         SELECT v.*, 
-            m_writer.name AS writer_name, d.dept_name AS admin_dept_name
+            m_writer.name AS writer_name, d.admin_dept_name AS admin_dept_name
         FROM voc v
         JOIN mem m_writer ON v.mem_id = m_writer.mem_id
         LEFT JOIN admin_staff s ON v.admin_staff_id = s.admin_staff_id
@@ -159,7 +165,7 @@
     <!-- 고객의소리 상세 보기 -->
     <select id="getVocDetail" parameterType="long" resultType="com.mbc.mid.dto.VocDto">
         SELECT v.*, 
-            m_writer.name AS writer_name, d.dept_name AS admin_dept_name
+            m_writer.name AS writer_name, d.admin_dept_name AS admin_dept_name
         FROM voc v
         JOIN mem m_writer ON v.mem_id = m_writer.mem_id
         LEFT JOIN admin_staff s ON v.admin_staff_id = s.admin_staff_id
@@ -222,7 +228,7 @@
         ORDER BY h.health_story_id DESC
     </select>-->
     <select id="getAllHealthStories" resultType="com.mbc.mid.dto.HealthStoryDto">
-        SELECT h.*, d.dept_name AS deptName
+        SELECT h.*, d.admin_dept_name AS adminDeptName
         FROM health_story h
         JOIN admin_staff s ON h.admin_staff_id = s.admin_staff_id
         JOIN admin_dept d ON s.admin_dept_id = d.admin_dept_id
@@ -245,7 +251,7 @@
         WHERE h.health_story_id = #{healthStoryId}
     </select>-->
     <select id="getHealthStoryDetail" parameterType="long" resultType="com.mbc.mid.dto.HealthStoryDto">
-        SELECT h.*, d.dept_name AS deptName
+        SELECT h.*, d.admin_dept_name AS adminDeptName
         FROM health_story h
         JOIN admin_staff s ON h.admin_staff_id = s.admin_staff_id
         JOIN admin_dept d ON s.admin_dept_id = d.admin_dept_id

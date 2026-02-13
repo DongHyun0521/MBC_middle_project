@@ -10,9 +10,7 @@
       <div class="filter-box">
         <select v-model="selectedDeptId" class="search-input select-icon" @change="fetchDoctors">
           <option value="">진료과 전체 보기</option>
-          <option v-for="dept in depts" :key="dept.med_dept_id" :value="dept.med_dept_id">
-            {{ dept.dept_name }}
-          </option>
+          <option v-for="dept in depts" :key="dept.med_dept_id" :value="dept.med_dept_id"> {{ dept.med_dept_name }}</option>
         </select>
         <input type="text" v-model="searchName" placeholder="의사 성함 입력" class="search-input name-input">
       </div>
@@ -28,7 +26,7 @@
               <h4>{{ doc.staff_name }} <span class="doc-role">{{ doc.role }}</span></h4>
             </div>
             <div class="doc-details">
-              <p><span class="label">진료과</span> {{ doc.dept_name }}</p>
+              <p><span class="label">진료과</span> {{ doc.med_dept_name }}</p>
               <p><span class="label">상태</span> {{ doc.status || '진료가능' }}</p>
             </div>
             <button @click="goToReserve(doc)" class="btn-reserve">진료 예약하기</button>
@@ -98,7 +96,7 @@ const goToReserve = (doc) => {
       docId: doc.staff_id,
       docName: doc.staff_name,
       deptId: doc.med_dept_id || selectedDeptId.value,
-      deptName: doc.dept_name
+      deptName: doc.med_dept_name
     }
   })
 }
@@ -157,7 +155,7 @@ onMounted(fetchData)
 
 <style scoped>
 .search-wrap {
-  background-color: #f4f7fa;
+  background-color: #ffffff;
   min-height: 100vh;
   padding: 60px 20px;
 }
@@ -182,7 +180,7 @@ onMounted(fetchData)
 .title-bar {
   width: 40px;
   height: 3px;
-  background: #0171e9;
+  background: #005baa;
   margin: 0 auto 15px;
 }
 
@@ -214,7 +212,7 @@ onMounted(fetchData)
 }
 
 .search-input:focus {
-  border-color: #0171e9;
+  border-color: #005baa;
   outline: none;
   background-color: #fff;
 }
@@ -281,7 +279,7 @@ onMounted(fetchData)
 
 .doc-role {
   font-size: 13px;
-  color: #0171e9;
+  color: #005baa;
   background: #e0f2fe;
   padding: 3px 8px;
   border-radius: 4px;
@@ -296,7 +294,7 @@ onMounted(fetchData)
 }
 
 .doc-details .label {
-  color: #0171e9;
+  color: #005baa;
   font-weight: 600;
   margin-right: 8px;
   display: inline-block;
@@ -307,7 +305,7 @@ onMounted(fetchData)
   margin-top: 10px;
   padding: 12px;
   width: 100%;
-  background: #0171e9;
+  background: #005baa;
   color: #fff;
   border: none;
   border-radius: 4px;

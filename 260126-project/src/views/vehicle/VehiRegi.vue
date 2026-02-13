@@ -181,7 +181,7 @@ const handleVehiRegi = async () => {
   justify-content: center;
   align-items: center;
   min-height: 80vh;
-  background-color: #f4f7fa;
+  background-color: #ffffff;
   padding: 60px 20px;
 }
 
@@ -210,7 +210,7 @@ const handleVehiRegi = async () => {
 .title-bar {
   width: 40px;
   height: 3px;
-  background: #0171e9;
+  background: #005baa;
   margin: 0 auto 20px;
 }
 
@@ -246,7 +246,7 @@ const handleVehiRegi = async () => {
 }
 
 .res-input:focus, .res-select:focus {
-  border-color: #0171e9;
+  border-color: #005baa;
   outline: none;
   background: #fff;
 }
@@ -281,14 +281,14 @@ const handleVehiRegi = async () => {
 }
 
 .fuel-tile:hover {
-  border-color: #0171e9;
+  border-color: #005baa;
   background: #f0f7ff;
 }
 
 /* 라디오 체크 시 스타일 */
 .fuel-tile:has(.hide-radio:checked) {
-  background: #0171e9;
-  border-color: #0171e9;
+  background: #005baa;
+  border-color: #005baa;
 }
 
 .fuel-tile:has(.hide-radio:checked) .fuel-txt {
@@ -310,7 +310,7 @@ const handleVehiRegi = async () => {
 .regi-submit-btn {
   width: 100%;
   padding: 18px;
-  background: #0171e9;
+  background: #005baa;
   color: #fff;
   border: none;
   border-radius: 4px;
@@ -321,7 +321,7 @@ const handleVehiRegi = async () => {
 }
 
 .regi-submit-btn:hover:not(:disabled) {
-  background: #0056b3;
+  background: #005baa;
   transform: translateY(-3px);
   box-shadow: 0 10px 20px rgba(1, 113, 233, 0.2);
 }

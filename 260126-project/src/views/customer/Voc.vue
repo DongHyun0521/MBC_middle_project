@@ -25,15 +25,20 @@
         <div class="voc-header" @click="toggleItem(item)">
           <div class="vh-left">
             <span :class="['status-badge', getStatusClass(item)]">{{ getStatusText(item) }}</span>
-            <span class="vh-title">
-              {{ item.title }}
-              <span v-if="item.hasFile" class="clip-icon">📎</span>
+            <span class="vh-title">{{ item.title }}
+              <span v-if="item.uploadImg" class="clip-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" viewBox="0 0 24 24" fill="none"
+                  stroke="#666" stroke-width="1" stroke-linecap="round" stroke-linejoin="round">
+                  <path
+                    d="m21.44 11.05-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48" />
+                </svg>
+              </span>
             </span>
           </div>
 
           <div class="vh-right">
             <span class="vh-writer">{{ getWriterName(item) }}</span>
-            <span class="vh-date">{{ formatDate(item.writeDate || item.write_date) }}</span>
+            <span class="vh-date">{{ formatDate(item.writeDate) }}</span>
             <span class="vh-arrow">
               <svg v-if="openItemId === item.vocId" xmlns="http://www.w3.org/2000/svg" width="12" height="12"
                 viewBox="0 0 24 24" fill="none" stroke="#999" stroke-width="2" stroke-linecap="round"
@@ -56,13 +61,19 @@
               <div class="content-box">
                 <pre class="content-text">{{ item.content }}</pre>
 
-                <div v-if="item.fileName" class="file-download-area">
-                  <span class="file-label">첨부파일:</span>
-                  <a :href="item.fileUrl" download class="file-link">
-                    📄 {{ item.fileName }}
-                  </a>
-                  <div v-if="isImage(item.fileName)" class="img-preview-box">
-                    <img :src="item.fileUrl" alt="첨부이미지" class="attached-img">
+                <div v-if="item.uploadImg" class="file-download-area">
+                  <div v-if="isImage(item.uploadImg)" class="img-preview-box">
+                    <img :src="getImageUrl(item.uploadImg)" alt="첨부이미지" class="attached-img"
+                      @click.stop="openImgModal(item.uploadImg)" style="cursor: pointer" title="클릭해서 크게 보기">
+                    <!-- <div style="margin-top: 5px;">
+                      <a :href="getImageUrl(item.uploadImg)" download class="file-link">{{
+                        item.uploadImg.split('/').pop() }}</a>
+                    </div> -->
+                  </div>
+                  <div v-else class="doc-preview-box" style="margin-top: 5px;">
+                    <a :href="getImageUrl(item.uploadImg)" download class="file-link">
+                      {{ item.uploadImg?.split('/').pop() || '' }}
+                    </a>
                   </div>
                 </div>
 
@@ -87,11 +98,11 @@
                 <div v-if="item.answerStatus" class="answer-view-box">
                   <div class="ans-meta">
                     <span class="admin-name">서울에스병원 원무팀</span>
-                    <span class="ans-date">{{ formatDate(item.answerWriteDate || item.answer_write_date) }}</span>
+                    <span class="ans-date">{{ formatDate(item.answerWriteDate) }}</span>
                   </div>
 
                   <div v-if="editingReplyId !== item.vocId" class="ans-content">
-                    <pre>{{ item.answerContent || item.answer_content }}</pre>
+                    <pre>{{ item.answerContent }}</pre>
                   </div>
 
                   <div v-else class="reply-edit-area">
@@ -112,7 +123,6 @@
                 <div v-else-if="canReply && item.del === 0" class="reply-write-box">
                   <div class="write-header">
                     <span class="guide-txt">답변 작성</span>
-                    <!-- <button @click="applyTemplate" class="btn-template">기본 서식 적용</button> -->
                   </div>
 
                   <textarea v-model="replyText" class="common-textarea" placeholder="답변 내용을 입력해 주세요."></textarea>
@@ -163,7 +173,7 @@
 
               <div v-if="previewUrl" class="preview-container">
                 <img v-if="isImageFile" :src="previewUrl" class="preview-img">
-                <div v-else class="file-info-tag">📄 {{ selectedFile.name }}</div>
+                <div v-else class="file-info-tag">{{ selectedFile ? selectedFile.name : (writeForm.uploadImg?.split('/').pop() || '') }}</div>
                 <button class="btn-remove-file" @click="removeFile">X</button>
               </div>
             </div>
@@ -176,12 +186,18 @@
         </div>
       </div>
     </div>
+
+    <div v-if="showImgModal" class="img-modal-overlay" @click="closeImgModal">
+      <div class="img-modal-content" @click.stop>
+        <img :src="currentImgUrl" alt="확대 이미지">
+        <button class="btn-close-img" @click="closeImgModal">×</button>
+      </div>
+    </div>
   </div>
 </template>
 
 <script setup>
 import { ref, computed, onMounted } from 'vue';
-// API 함수들은 그대로 가져옵니다.
 import {
   getMyVocsReq, addVocReq, editVocReq, delVocReq,
   getAdminVocListReq,
@@ -189,9 +205,7 @@ import {
   delVocByAdminReq, restoreVocReq, getAdminInfoReq
 } from '@/api/customer';
 
-// =========================================
 // 1. 상태 변수 (State)
-// =========================================
 const filterStatus = ref('all');
 const openItemId = ref(null);
 const editingReplyId = ref(null);
@@ -200,47 +214,67 @@ const showModal = ref(false);
 const isEditing = ref(false);
 const loginInfo = ref({});
 const vocList = ref([]);
-const writeForm = ref({ vocId: '', title: '', content: '' });
+const writeForm = ref({ vocId: '', title: '', content: '', uploadImg: ''});
 const isWonmuState = ref(false);
 
-// ★ [신규] 파일 업로드를 위한 변수들 ★
-// 1. input 태그를 직접 제어하기 위해 만듦 (파일 선택 후 초기화할 때 필요)
-const fileInput = ref(null);      
+// [신규] 파일 업로드를 위한 변수들
+const fileInput = ref(null);
+const selectedFile = ref(null);
+const previewUrl = ref(null);
+const isImageFile = ref(false);
 
-// 2. 사용자가 선택한 '진짜 파일 객체'를 담을 곳
-const selectedFile = ref(null);   
 
-// 3. 사진을 선택했을 때 화면에 미리 보여주기 위한 '가짜 주소(Blob URL)'
-const previewUrl = ref(null);     
+// [추가] 이미지 확대 모달 제어 변수
+const showImgModal = ref(false);
+const currentImgUrl = ref('');
 
-// 4. 선택한 파일이 그림 파일인지 확인하는 스위치 (true면 그림, false면 문서)
-const isImageFile = ref(false);   
+// [추가] 이미지 클릭 시 실행 (확대 창 열기)
+const openImgModal = (path) => {
+  // getImageUrl 함수를 통해 전체 주소로 변환해서 저장
+  currentImgUrl.value = getImageUrl(path);
+  showImgModal.value = true;
+};
+
+// [추가] 확대 창 닫기
+const closeImgModal = () => {
+  showImgModal.value = false;
+  currentImgUrl.value = '';
+};
 
 const replyHeader = "안녕하십니까, 서울에스병원 원무과입니다.\n고객님의 소중한 의견에 깊이 감사드립니다.\n\n";
 const replyFooter = "\n\n추가로 궁금하신 점이 있으시면 언제든 문의해주시기 바랍니다.\n항상 고객님의 건강과 행복을 기원합니다.\n감사합니다.";
 
 
-// 2. 권한 및 설정 (기존과 동일)
+// 2. 권한 및 설정
 const isAdmin = computed(() => String(loginInfo.value.loginType || loginInfo.value.role || '').toUpperCase() === 'ADMIN');
 const isWonmu = computed(() => {
   if (!isAdmin.value) return false;
   if (isWonmuState.value) return true;
   const info = loginInfo.value || {};
-  const dept = String(info.deptName ?? info.dept_name ?? info.adminDeptName ?? '').trim();
+  const dept = String(info.admin_dept_name || '').trim();
   return dept.includes('원무');
 });
 const canReply = computed(() => isAdmin.value && isWonmu.value);
 const canManageDeleted = computed(() => isAdmin.value && isWonmu.value);
 const currentTabs = computed(() => {
-  const tabs = [{ id: 'all', label: '전체' }, { id: 'unanswered', label: '미답변' }, { id: 'answered', label: '답변완료' }];
-  if (isWonmu.value) tabs.push({ id: 'deleted', label: '휴지통' });
+  const tabs = [{ id: 'all', label: '전체' }];
+
+  // 원무팀일 때만 '미답변' 탭과 '휴지통' 탭을 줌
+  if (isWonmu.value) {
+    tabs.push({ id: 'unanswered', label: '미답변' });
+  }
+  tabs.push({ id: 'answered', label: '답변완료' });
+
+  if (isWonmu.value) {
+    tabs.push({ id: 'deleted', label: '휴지통' });
+  }
   return tabs;
 });
 
 // 3. 유틸리티 함수
 const getWriterName = (item) => {
-  if (item.writerName || item.writer_name || item.name) {
-    return item.writerName || item.writer_name || item.name;
+  if (item.writerName || item.name) {
+    return item.writerName || item.name;
   }
   if (!isAdmin.value && loginInfo.value.name) return loginInfo.value.name;
   return '익명';
@@ -249,12 +283,17 @@ const getStatusText = (item) => item.del === 1 ? '삭제됨' : (item.answerStatu
 const getStatusClass = (item) => item.del === 1 ? 'badge-del' : (item.answerStatus ? 'badge-done' : 'badge-wait');
 const formatDate = (d) => d ? String(d).substring(0, 10) : '';
 
+// [추가] 서버 이미지 경로(/images/...)를 전체 URL(http://...)로 변환
+const getImageUrl = (path) => {
+  if (!path) return '';
+  if (path.startsWith('http')) return path;
+  return `http://localhost:8080${path}`;
+};
+
 // [신규] 파일 이름(abc.jpg)을 보고 이미지인지 아닌지 판단하는 함수
 const isImage = (fileName) => {
   if (!fileName) return false;
-  // 파일명 뒤에서부터 점(.)을 찾아 확장자를 자름 (예: jpg)
   const ext = fileName.split('.').pop().toLowerCase();
-  // 아래 확장자 목록에 포함되면 이미지라고 판단!
   return ['jpg', 'jpeg', 'png', 'gif', 'bmp', 'webp'].includes(ext);
 };
 
@@ -268,7 +307,15 @@ const fetchList = async () => {
     } else {
       res = await getMyVocsReq(filterStatus.value);
     }
-    vocList.value = res.data || [];
+
+    let list = res.data || [];
+
+    // 관리자인데 원무팀이 아닐 경우, 답변 목록 제외하고 접근 x
+    if (isAdmin.value && !isWonmu.value) {
+      list = list.filter(item => item.answerStatus === true);
+    }
+    vocList.value = list;
+
   } catch (e) { vocList.value = []; }
 };
 
@@ -279,10 +326,10 @@ const changeFilter = (id) => {
 };
 
 const toggleItem = (item) => {
-  // 1. 이미 열린 글을 또 누르면? -> 닫기
+  // [정답] 카멜케이스 사용
   if (openItemId.value === item.vocId) {
     openItemId.value = null;
-  } 
+  }
   // 2. 닫힌 글을 누르면? -> 열기
   else {
     openItemId.value = item.vocId;
@@ -290,10 +337,10 @@ const toggleItem = (item) => {
 
     // [핵심] 관리자이고(canReply), 아직 답변이 안 달린 글이면 자동으로 기본 서식 채우기
     if (canReply.value && !item.answerStatus) {
-      replyText.value = replyHeader + replyFooter; 
+      replyText.value = replyHeader + replyFooter;
     } else {
       // 그 외(일반 유저거나 이미 답변이 있는 경우)는 빈칸으로 시작
-      replyText.value = ''; 
+      replyText.value = '';
     }
   }
 };
@@ -301,19 +348,32 @@ const toggleItem = (item) => {
 // 5. [핵심] 글쓰기 & 파일 업로드 로직 
 
 // 모달 열 때 (초기화)
-const openWriteModal = () => { 
-  isEditing.value = false; 
-  writeForm.value = { title: '', content: '' }; 
+const openWriteModal = () => {
+  isEditing.value = false;
+  writeForm.value = { title: '', content: '', uploadImg: '' };
   removeFile(); // 모달 열 때 기존에 선택했던 파일 정보 싹 지우기
-  showModal.value = true; 
+  showModal.value = true;
 };
 
 // 수정 모달 열 때
-const openEditModal = (item) => { 
-  isEditing.value = true; 
-  writeForm.value = { ...item }; 
-  removeFile(); // ★ 수정할 때도 새 파일을 올릴 수 있으니 일단 초기화
-  showModal.value = true; 
+const openEditModal = (item) => {
+  isEditing.value = true;
+  // [정답] 카멜케이스 매칭
+  writeForm.value = { 
+    vocId: item.vocId, 
+    title: item.title, 
+    content: item.content,
+    uploadImg: item.uploadImg
+  };
+  // 추가
+  if (item.uploadImg) {
+    previewUrl.value = getImageUrl(item.uploadImg); // 기존 파일 주소를 미리보기에 연결
+    isImageFile.value = isImage(item.uploadImg); // 이미지 여부 체크
+    selectedFile.value = null; // 아직 새로 고른 파일은 없다는 뜻
+  } else {
+    removeFile(); // 원래 파일이 없었다면 깔끔하게 초기화
+  }
+  showModal.value = true;
 };
 
 // [신규] 사용자가 파일을 선택했을 때 실행되는 함수
@@ -322,12 +382,13 @@ const handleFileChange = (e) => {
   if (!file) return; // 취소 눌러서 파일이 없으면 그냥 종료
 
   selectedFile.value = file; // 파일 변수에 저장
-  
+
+
   // 파일 타입이 'image/...' 로 시작하면 이미지임
   if (file.type.startsWith('image/')) {
     isImageFile.value = true;
     // URL.createObjectURL: 브라우저가 이 파일을 임시 주소로 만들어줌 (미리보기에 사용)
-    previewUrl.value = URL.createObjectURL(file); 
+    previewUrl.value = URL.createObjectURL(file);
   } else {
     isImageFile.value = false;
     previewUrl.value = 'doc'; // 이미지가 아니면 그냥 문서 아이콘 보여주려고
@@ -339,9 +400,10 @@ const removeFile = () => {
   selectedFile.value = null;
   previewUrl.value = null;
   isImageFile.value = false;
+  writeForm.value.uploadImg = '';
   // <input type="file"> 태그 안에 남아있는 값도 비워줘야, 
   // 똑같은 파일을 다시 선택했을 때 'change' 이벤트가 다시 발생함
-  if (fileInput.value) fileInput.value.value = ''; 
+  if (fileInput.value) fileInput.value.value = '';
 };
 
 // [수정됨] 글 저장 함수
@@ -355,31 +417,32 @@ const submitWrite = async () => {
     // 일반 편지(JSON)에는 파일(택배)을 넣을 수 x
     // 그래서 'FormData'라는 택배 박스를 만들어서 글자랑 파일을 같이 담아야 함
     const formData = new FormData();
-    
+
     // 1. 글자 정보 담기 (append: 박스에 넣기)
     formData.append('title', writeForm.value.title);
     formData.append('content', writeForm.value.content);
     formData.append('memId', memId);
-    
+
     if (isEditing.value) {
-        // 수정일 때는 ID도 필요함
-        formData.append('vocId', writeForm.value.vocId);
+      formData.append('vocId', writeForm.value.vocId);
+
+      // 기존 파일 경로도 같이 보냄(새 파일 없으면 이걸 유지!)
+      formData.append('uploadImg', writeForm.value.uploadImg || '');
     } else {
-        // 신규일 때는 초기값 설정
-        formData.append('del', 0);
-        formData.append('answerStatus', false);
+      // 신규일 때는 초기값 설정
+      formData.append('del', 0);
+      formData.append('answerStatus', false);
     }
 
     // 2. 파일이 있으면 박스에 담기
     if (selectedFile.value) {
-      // 'file'이라는 이름표를 붙여서 넣음 (백엔드에서도 이 이름으로 찾음)
-      formData.append('file', selectedFile.value);
+      formData.append('uploadFile', selectedFile.value);
     }
 
     // 3. API 호출 (택배 박스째로 보냄)
     let res;
-    if (isEditing.value) res = await editVocReq(formData); 
-    else res = await addVocReq(formData); 
+    if (isEditing.value) res = await editVocReq(formData);
+    else res = await addVocReq(formData);
 
     if (res.data === 'success' || res.data === true) {
       alert("완료되었습니다.");
@@ -403,17 +466,19 @@ const submitReply = async (item) => {
   if (!replyText.value) return alert("답변 내용을 입력하세요.");
   const memId = Number(loginInfo.value.memId || loginInfo.value.id);
   try {
+    // [정답] 카멜케이스 vocId
     const payload = { vocId: Number(item.vocId), answerContent: replyText.value, answerStatus: true, del: 0, memId };
     await addVocReplyReq(payload);
     alert("답변이 등록되었습니다.");
     fetchList();
   } catch (e) { alert("등록 실패"); }
 };
-const startEditReply = (item) => { replyText.value = item.answerContent || item.answer_content; editingReplyId.value = item.vocId; };
+const startEditReply = (item) => { replyText.value = item.answerContent; editingReplyId.value = item.vocId; };
 const cancelEditReply = () => { editingReplyId.value = null; replyText.value = ''; };
 const updateReply = async (item) => {
   if (!replyText.value) return alert("내용을 입력하세요.");
   try {
+    // [정답] 카멜케이스 vocId
     const payload = { vocId: Number(item.vocId), answerContent: replyText.value, answerStatus: true, memId: Number(loginInfo.value.memId || loginInfo.value.id) };
     await editVocReplyReq(payload);
     alert("수정되었습니다.");
@@ -421,27 +486,28 @@ const updateReply = async (item) => {
     editingReplyId.value = null;
   } catch (e) { alert("오류가 발생했습니다."); }
 };
-const deleteReply = async (item) => { 
-  if (!confirm("답변을 삭제하시겠습니까?")) 
-  return; 
-try { 
-  await delVocReplyReq(item.vocId); 
-  alert("삭제되었습니다."); 
-  fetchList(); 
-} catch (e) {
- } };
-
-const deleteVocAdmin = async (id) => { 
-  if (confirm("보관함(휴지통)으로 이동하시겠습니까?")) {
-     await delVocByAdminReq(id); fetchList(); 
-    } 
+const deleteReply = async (item) => {
+  if (!confirm("답변을 삭제하시겠습니까?"))
+    return;
+  try {
+    await delVocReplyReq(item.vocId);
+    alert("삭제되었습니다.");
+    fetchList();
+  } catch (e) {
+  }
 };
 
-const restoreVoc = async (id) => { 
-  if (confirm("글을 복구하시겠습니까?")) { 
-    await restoreVocReq(id); 
-    fetchList(); 
-  } 
+const deleteVocAdmin = async (id) => {
+  if (confirm("보관함(휴지통)으로 이동하시겠습니까?")) {
+    await delVocByAdminReq(id); fetchList();
+  }
+};
+
+const restoreVoc = async (id) => {
+  if (confirm("글을 복구하시겠습니까?")) {
+    await restoreVocReq(id);
+    fetchList();
+  }
 };
 
 
@@ -512,7 +578,7 @@ onMounted(async () => {
 }
 
 .btn-write {
-  background: #0171e9;
+  background: #005baa;
   color: #fff;
   border: none;
   padding: 10px 24px;
@@ -522,7 +588,7 @@ onMounted(async () => {
 }
 
 .btn-write:hover {
-  background: #0056b3;
+  background: #005baa;
 }
 
 .voc-list {
@@ -572,7 +638,7 @@ onMounted(async () => {
 }
 
 .badge-done {
-  background: #0171e9;
+  background: #005baa;
 }
 
 .badge-del {
@@ -644,8 +710,8 @@ onMounted(async () => {
 }
 
 .a-label {
-  color: #0171e9;
-  border-color: #0171e9;
+  color: #005baa;
+  border-color: #005baa;
 }
 
 .a-label.waiting {
@@ -718,7 +784,7 @@ onMounted(async () => {
 
 .admin-name {
   font-weight: 700;
-  color: #0171e9;
+  color: #005baa;
   font-size: 14px;
 }
 
@@ -778,8 +844,8 @@ onMounted(async () => {
 }
 
 .btn-template:hover {
-  border-color: #0171e9;
-  color: #0171e9;
+  border-color: #005baa;
+  color: #005baa;
 }
 
 .common-textarea {
@@ -908,7 +974,7 @@ onMounted(async () => {
 }
 
 .btn-confirm {
-  background: #0171e9;
+  background: #005baa;
   border: none;
   color: #fff;
   padding: 10px 24px;
@@ -923,7 +989,6 @@ onMounted(async () => {
   border-bottom: 1px solid #eee;
 }
 
-/* [추가] 파일 첨부 스타일 */
 .file-upload-box {
   border: 1px dashed #ddd;
   padding: 15px;
@@ -974,14 +1039,13 @@ onMounted(async () => {
   justify-content: center;
 }
 
-/* [추가] 파일 다운로드/보기 영역 */
 .file-download-area {
   margin-top: 15px;
   margin-bottom: 15px;
   padding: 15px;
   background: #f5f5f5;
   border-radius: 4px;
-  border-left: 3px solid #0171e9;
+  border-left: 3px solid #005baa;
 }
 
 .file-label {
@@ -992,7 +1056,7 @@ onMounted(async () => {
 }
 
 .file-link {
-  color: #0171e9;
+  color: #005baa;
   text-decoration: underline;
   font-size: 14px;
   cursor: pointer;
@@ -1003,7 +1067,7 @@ onMounted(async () => {
 }
 
 .attached-img {
-  max-width: 100%;
+  max-width: 30%;
   max-height: 400px;
   border: 1px solid #ddd;
   border-radius: 4px;
@@ -1012,5 +1076,43 @@ onMounted(async () => {
 .clip-icon {
   font-size: 14px;
   margin-left: 5px;
+}
+
+/*  이미지 확대 모달 스타일 */
+.img-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.8);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 9999;
+}
+
+.img-modal-content {
+  position: relative;
+  max-width: 90%;
+  max-height: 90%;
+}
+
+.img-modal-content img {
+  max-width: 100%;
+  max-height: 90vh;
+  object-fit: contain;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
+}
+
+.btn-close-img {
+  position: absolute;
+  top: -40px;
+  right: 0;
+  background: none;
+  border: none;
+  color: #fff;
+  font-size: 40px;
+  cursor: pointer;
 }
 </style>

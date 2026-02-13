@@ -6,31 +6,33 @@
     </div>
 
     <div v-if="mode === 'list'" class="list-wrap">
-
       <div class="top-controls">
         <div class="video-search">
           <input type="text" v-model="keyword" placeholder="검색어를 입력하세요" @keyup.enter="fetchList">
           <button class="s-btn" @click="fetchList">검색</button>
         </div>
-        <button v-if="canManageStory" class="btn-write" @click="goWrite">콘텐츠 등록</button>
+        <button v-if="canManageStory" class="btn-write" @click="goWrite">글쓰기</button>
       </div>
 
       <div v-if="storyList.length > 0" class="video-grid">
         <div class="video-card" v-for="item in paginatedList" :key="item.healthStoryId" @click="goDetail(item)">
           <div class="thumb-box">
             <img v-if="item.fileUrl && isImage(item.fileName)" :src="item.fileUrl" class="thumb-img" alt="썸네일">
-            <div v-else class="placeholder-thumb" :style="{ backgroundColor: getRandomColor() }">
-              <span class="play-icon">▶</span>
+            <video v-else-if="item.fileUrl && isVideo(item.fileName)" :src="item.fileUrl" class="thumb-img"
+              muted></video>
+            <div v-else class="placeholder-thumb" style="background-color: #f1f1f1;">
+               <span class="play-icon">✚</span>
             </div>
           </div>
+
           <div class="video-info">
             <p class="v-title">{{ item.title }}</p>
-            <p class="v-author">{{ item.deptName || '홍보팀' }} | {{ item.writerName || '관리자' }}</p>
+            <p class="v-author">{{ item.writerName || '서울에스병원' }}</p>
           </div>
         </div>
       </div>
 
-      <div v-else class="no-data">등록된 콘텐츠가 없습니다.</div>
+      <div v-else class="no-data">등록된 건강정보 컨텐츠가 없습니다.</div>
 
       <div class="pagination-area" v-if="storyList.length > 0">
         <button class="page-btn prev" :disabled="currentPage === 1" @click="currentPage--">&lt;</button>
@@ -44,11 +46,11 @@
       <div class="detail-header">
         <div class="dh-title">{{ selectedItem.title }}</div>
         <div class="dh-info">
-          <span><strong>등록일</strong> {{ formatDate(selectedItem.writeDate) }}</span>
+          <span><strong>등록일</strong> | {{ formatDate(selectedItem.writeDate) }}</span>
           <span class="bar">|</span>
-          <span><strong>작성자</strong> {{ selectedItem.writerName || '홍보팀' }}</span>
+          <span><strong>작성자</strong> | {{ selectedItem.writerName }}</span>
           <span class="bar">|</span>
-          <span><strong>조회수</strong> {{ selectedItem.readCount }}</span>
+          <span><strong>조회수</strong> | {{ selectedItem.readCount }}</span>
         </div>
       </div>
 
@@ -57,16 +59,15 @@
 
         <div v-if="selectedItem.fileUrl" class="media-view">
           <img v-if="isImage(selectedItem.fileName)" :src="selectedItem.fileUrl" class="detail-media">
-          <video v-else-if="isVideo(selectedItem.fileName)" :src="selectedItem.fileUrl" controls class="detail-media"></video>
+          <video v-else-if="isVideo(selectedItem.fileName)" :src="selectedItem.fileUrl" controls
+            class="detail-media"></video>
         </div>
       </div>
 
       <div class="file-attach-area">
         <span class="fa-label">첨부파일</span>
         <div class="fa-content">
-          <a v-if="selectedItem.fileName" :href="selectedItem.fileUrl" download class="file-link">
-             {{ selectedItem.fileName }}
-          </a>
+          <a v-if="selectedItem.fileName" :href="selectedItem.fileUrl" download class="file-link">{{ selectedItem.fileName }}</a>
           <span v-else class="no-file">첨부된 파일이 없습니다.</span>
         </div>
       </div>
@@ -81,7 +82,7 @@
     </div>
 
     <div v-else-if="mode === 'write' || mode === 'edit'" class="write-wrap">
-      <h3 class="write-title">{{ mode === 'write' ? '콘텐츠 등록' : '콘텐츠 수정' }}</h3>
+      <h3 class="write-title">{{ mode === 'write' ? '컨텐츠 등록' : '컨텐츠 수정' }}</h3>
       <div class="write-form">
         <div class="form-row">
           <label>제목</label>
@@ -91,7 +92,7 @@
         </div>
 
         <div class="form-row">
-          <label>썸네일/영상</label>
+          <label>파일/이미지</label>
           <div class="input-wrap file-wrap">
             <input type="file" ref="fileInput" @change="handleFileChange" accept="image/*, video/*">
             <div v-if="previewUrl" class="preview-box">
@@ -106,8 +107,7 @@
         <div class="form-row">
           <label>내용</label>
           <div class="input-wrap">
-            <textarea v-model="writeForm.content" placeholder="내용을 입력하세요 (URL 입력 시 링크로 변환됩니다)"
-              class="full-textarea"></textarea>
+            <textarea v-model="writeForm.content" placeholder="내용을 입력하세요" class="full-textarea"></textarea>
           </div>
         </div>
       </div>
@@ -121,16 +121,19 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue';
-import { useRouter } from 'vue-router';
-// [API] health.js API 임포트
-import { 
-  getStoriesReq, getStoryDetailReq, 
-  addStoryReq, editStoryReq, delStoryReq, 
-  getAdminInfoReq 
+// [중요] watch를 꼭 import 해야 뒤로가기가 됩니다!
+import { ref, computed, onMounted, watch } from 'vue';
+import { useRouter, useRoute } from 'vue-router';
+
+// [API]
+import {
+  getStoriesReq, getStoryDetailReq,
+  addStoryReq, editStoryReq, delStoryReq,
+  getAdminInfoReq
 } from '@/api/health';
 
 const router = useRouter();
+const route = useRoute();
 
 // ==========================================
 // 1. 상태 변수
@@ -140,11 +143,11 @@ const keyword = ref('');
 const loginInfo = ref({});
 const selectedItem = ref({});
 const currentPage = ref(1);
-const itemsPerPage = 9; 
+const itemsPerPage = 9;
 const maxPageBtn = 5;
 const storyList = ref([]);
-const writeForm = ref({ healthStoryId: '', title: '', content: '' }); // PK: healthStoryId
-const isPrTeamState = ref(false); 
+const writeForm = ref({ healthStoryId: '', title: '', content: '' });
+const isPrTeamState = ref(false);
 
 // 파일 관련
 const fileInput = ref(null);
@@ -154,42 +157,47 @@ const isImageFile = ref(false);
 const isVideoFile = ref(false);
 
 
-// 2. 권한 체크 (홍보팀 & 관리자)
-
-// [1] isAdmin: 관리자 여부
+// ==========================================
+// 2. 권한 체크
+// ==========================================
 const isAdmin = computed(() => String(loginInfo.value.loginType || loginInfo.value.role || '').toUpperCase() === 'ADMIN');
 
-// [2] isPrTeam: 홍보팀 여부
 const isPrTeam = computed(() => {
-  if (!isAdmin.value) return false;      // 관리자 아니면 탈락
-  if (isPrTeamState.value) return true;  // 서버(API)에서 확인된 상태면 통과
-
+  if (!isAdmin.value) return false;
+  if (isPrTeamState.value === true) return true;
   const info = loginInfo.value || {};
-  // 부서명 체크 (deptName, dept_name, adminDeptName 싹 다 확인)
-  const dept = String(info.deptName ?? info.dept_name ?? info.adminDeptName ?? '').trim();
-
-  return dept.includes('홍보');
+  return info.isPr === true;
 });
 
-// [3] 최종 권한 (글쓰기 버튼용)
 const canManageStory = computed(() => {
-  return isPrTeam.value; // 홍보팀이면(관리자 포함) 권한 있음
+  return isPrTeam.value;
 });
 
 
 // ==========================================
-// 3. 리스트 데이터 가공
+// 3. 리스트 데이터 가공 (Seq 부여)
 // ==========================================
 const paginatedList = computed(() => {
   let list = storyList.value;
+
   if (keyword.value) {
     list = list.filter(item => item.title.includes(keyword.value));
   }
-  // [정렬] 최신순 (healthStoryId 내림차순)
+
+  // 최신순 (ID 내림차순)
   list.sort((a, b) => b.healthStoryId - a.healthStoryId);
 
+  // 번호 부여를 위한 전체 개수
+  const totalCount = list.length;
+
   const start = (currentPage.value - 1) * itemsPerPage;
-  return list.slice(start, start + itemsPerPage);
+  const sliced = list.slice(start, start + itemsPerPage);
+
+  // 화면에 보여줄 가짜 번호(seq) 계산해서 넣기
+  return sliced.map((item, index) => ({
+    ...item,
+    seq: totalCount - start - index
+  }));
 });
 
 const totalPages = computed(() => {
@@ -213,17 +221,10 @@ const visiblePages = computed(() => {
 // ==========================================
 const formatDate = (d) => d ? String(d).substring(0, 10) : '';
 
-const getRandomColor = () => {
-  const colors = ['#eef2f3', '#f1f1f1', '#e8f0fe', '#f0f4f8', '#fff5f5', '#f6ffed'];
-  return colors[Math.floor(Math.random() * colors.length)];
-};
-
-// [이미지 경로 처리] 백엔드 포트(8080) 명시
 const getImageUrl = (path) => {
   if (!path) return '';
   if (path.startsWith('http')) return path;
-  // 백엔드 주소 붙이기 (프론트가 5173, 백엔드가 8080일 때 필수)
-  return `http://localhost:8080${path}`; 
+  return `http://localhost:8080${path}`;
 };
 
 const isImage = (fileName) => {
@@ -254,13 +255,13 @@ const handleLinkClick = (e) => {
 
 
 // ==========================================
-// 5. 기능 로직 (파일, 화면이동)
+// 5. 기능 로직 (상세보기, 글쓰기 등)
 // ==========================================
 const handleFileChange = (e) => {
   const file = e.target.files[0];
   if (!file) return;
   selectedFile.value = file;
-  
+
   if (file.type.startsWith('image/')) {
     isImageFile.value = true;
     isVideoFile.value = false;
@@ -282,52 +283,103 @@ const removeFile = () => {
   if (fileInput.value) fileInput.value.value = '';
 };
 
-// [상세 보기]
-const goDetail = async (item) => { 
+// [상세 보기] - 클릭 시 & URL 접속 시 공용
+const goDetail = async (item) => {
   try {
-    const res = await getStoryDetailReq(item.healthStoryId);
-    selectedItem.value = res.data;
-    
-    // 이미지/파일명 매핑
-    selectedItem.value.fileUrl = getImageUrl(res.data.thumbnailImg);
-    if(res.data.thumbnailImg) {
-        // 경로에서 순수 파일명만 추출
-        selectedItem.value.fileName = res.data.thumbnailImg.split('/').pop().split('_').pop(); 
+    // 1. 주소창 URL 변경 (클릭으로 들어온 경우만)
+    // item.healthStoryId가 있으면 URL을 바꿈. 이미 URL이 맞으면(watch 등) 패스
+    if (item.healthStoryId && route.params.id != item.healthStoryId) {
+        router.push(`/story/${item.healthStoryId}`);
+        return; // URL을 바꾸면 어차피 watch가 실행돼서 아래 로직 다시 함
     }
-    
+
+    // 2. 데이터 가져오기 (item은 객체일 수도 있고, 그냥 ID만 있는 껍데기일 수도 있음)
+    const targetId = item.healthStoryId || route.params.id;
+    if (!targetId) return;
+
+    const res = await getStoryDetailReq(targetId);
+    const data = res.data;
+
+    selectedItem.value = {
+      healthStoryId: data.healthStoryId,
+      title: data.title,
+      content: data.content,
+      writeDate: data.writeDate,
+      readCount: data.readCount,
+      writerName: data.writerName || data.adminName || '관리자',
+      fileUrl: getImageUrl(data.thumbnailImg),
+      fileName: data.thumbnailImg ? data.thumbnailImg.split('/').pop() : '',
+      
+      // 리스트에서 클릭했을 때만 seq가 있음. URL 접속 시엔 0 처리 (화면에 안 보여주면 상관없음)
+      seq: item.seq || 0 
+    };
+
     mode.value = 'detail';
     window.scrollTo(0, 0);
-  } catch(e) { console.error(e); }
+  } catch (e) { 
+    console.error("상세보기 실패:", e);
+    // 실패하면 리스트로
+    mode.value = 'list'; 
+  }
 };
 
-const goList = () => { mode.value = 'list'; selectedItem.value = {}; fetchList(); };
+// 목록으로 가기 (뒤로가기 처리 포함)
+const goList = () => { 
+    // 주소창을 일단 목록 주소로 바꿈
+    router.push('/story'); 
 
-const goWrite = () => { 
+    mode.value = 'list'; 
+    
+    selectedItem.value = {};
+    writeForm.value = { healthStoryId: '', title: '', content: '' };
+    removeFile(); 
+
+    fetchList();
+};
+
+const goWrite = () => {
   if (!canManageStory.value) return alert("권한이 없습니다.");
   writeForm.value = { title: '', content: '' };
   removeFile();
   mode.value = 'write';
 };
 
+// [수정] 수정 모드 진입
 const goEdit = (item) => {
   if (!canManageStory.value) return alert("권한이 없습니다.");
   writeForm.value = { ...item };
-  removeFile();
+  
+  if (item.fileUrl) {
+    previewUrl.value = item.fileUrl;
+    selectedFile.value = null; 
+    if (isImage(item.fileName)) {
+      isImageFile.value = true;
+      isVideoFile.value = false;
+    } else if (isVideo(item.fileName)) {
+      isImageFile.value = false;
+      isVideoFile.value = true;
+    }
+  } else {
+    removeFile();
+  }
   mode.value = 'edit';
 };
 
 
 // ==========================================
-// 6. 서버 통신 (CRUD)
+// 6. 서버 통신
 // ==========================================
 const fetchList = async () => {
   try {
     const res = await getStoriesReq(keyword.value ? { keyword: keyword.value } : null);
-    // 리스트 데이터 가공 (이미지 경로 등)
     storyList.value = res.data.map(item => ({
-        ...item,
-        fileUrl: getImageUrl(item.thumbnailImg),
-        fileName: item.thumbnailImg 
+      ...item,
+      healthStoryId: item.healthStoryId,
+      title: item.title,
+      writeDate: item.writeDate,
+      writerName: item.writerName || item.adminName,
+      fileUrl: getImageUrl(item.thumbnailImg),
+      fileName: item.thumbnailImg
     })) || [];
   } catch (e) { storyList.value = []; }
 };
@@ -348,12 +400,11 @@ const submitStory = async () => {
     }
 
     if (selectedFile.value) {
-      // [중요] DTO 변수명 'uploadFile'과 일치
-      formData.append('uploadFile', selectedFile.value); 
+      formData.append('uploadFile', selectedFile.value);
     }
 
     let res = mode.value === 'write' ? await addStoryReq(formData) : await editStoryReq(formData);
-    
+
     if (res.data === 'success') {
       alert("완료되었습니다.");
       goList();
@@ -372,43 +423,47 @@ const deleteItem = async (id) => {
   } catch (e) { alert("오류 발생"); }
 };
 
+
+// ==========================================
+// 7. 라이프사이클 & 감시자 (★ 핵심)
+// ==========================================
+
+// [Watch] URL이 변하면 화면도 바꾼다! (뒤로가기 해결사)
+watch(() => route.params.id, (newId) => {
+    if (newId) {
+        // 주소에 ID가 있으면 상세보기 실행
+        goDetail({ healthStoryId: newId });
+    } else {
+        // 주소에 ID가 없으면 리스트 실행
+        mode.value = 'list';
+        selectedItem.value = {};
+        fetchList();
+    }
+});
+
 onMounted(async () => {
+  // 로그인 정보 확인
   const raw = sessionStorage.getItem('loginId');
   if (raw) loginInfo.value = JSON.parse(raw);
 
-  // [디버깅] 로그인 정보 확인 1
-  console.log(" - loginType:", loginInfo.value.loginType);
-  console.log(" - 세션 부서명:", loginInfo.value.deptName, loginInfo.value.adminDeptName);
-
   if (isAdmin.value) {
     try {
-      // 서버에 내 정보 다시 물어보기
       const res = await getAdminInfoReq();
-      
-      // [디버깅] 서버 응답 확인 2
-      console.log(" - 전체 데이터:", res.data);
-      
       if (res && res.data) {
-        // 서버에서 준 부서명 확인
-        const remoteDept = String(res.data.deptName ?? res.data.dept_name ?? '').trim();
-        console.log(" - 서버 부서명:", remoteDept);
-        
-        // 홍보팀이면 상태값 true로 변경
-        if (remoteDept.includes('홍보')) {
-          console.log("홍보팀 확인 완료");
+        if (res.data.isPr === true) {
           isPrTeamState.value = true;
-        } else {
-          console.log("홍보팀 아님");
         }
       }
-    } catch (e) { 
-      console.log("관리자 정보 확인 실패:", e);
-    }
-  } else {
-    console.log("관리자(ADMIN) 권한이 아닙니다.");
+    } catch (e) { console.log(e); }
   }
 
+  // 초기 로딩
   fetchList();
+
+  // 외부(메인화면 등)에서 ID를 달고 들어왔을 때 바로 실행
+  if (route.params.id) {
+      goDetail({ healthStoryId: route.params.id });
+  }
 });
 </script>
 
@@ -477,7 +532,7 @@ onMounted(async () => {
   position: absolute;
   right: 0;
   bottom: 0;
-  background: #0171e9;
+  background: #005baa;
   color: #fff;
   border: none;
   padding: 10px 20px;
@@ -602,7 +657,7 @@ onMounted(async () => {
 }
 
 .view-text :deep(a) {
-  color: #0171e9;
+  color: #005baa;
   text-decoration: underline;
   cursor: pointer;
   font-weight: 600;
@@ -639,7 +694,7 @@ onMounted(async () => {
 }
 
 .file-link:hover {
-  color: #0171e9;
+  color: #005baa;
   text-decoration: underline;
 }
 
@@ -760,7 +815,7 @@ onMounted(async () => {
 
 .btn-save {
   padding: 12px 40px;
-  background: #0171e9;
+  background: #005baa;
   color: #fff;
   border: none;
   cursor: pointer;
@@ -826,9 +881,9 @@ onMounted(async () => {
 }
 
 .page-btn.active {
-  background: #0171e9;
+  background: #005baa;
   color: #fff;
-  border-color: #0171e9;
+  border-color: #005baa;
 }
 
 .no-data {

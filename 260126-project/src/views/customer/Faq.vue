@@ -188,8 +188,8 @@ const isWonmuTeam = computed(() => {
   // 2. 로그인 세션 정보로 확인 (보조 수단)
   const info = loginInfo.value || {};
   const dept = String(
-    info.deptName ?? info.dept_name ?? info.adminDeptName ?? info.med_dept_name ?? ''
-  ).trim();
+  info.admin_dept_name || info.dept_name || ''
+).trim();
   return dept.includes('원무');
 });
 
@@ -461,15 +461,15 @@ onMounted(async () => {
 
 .tab-btn:hover {
   background: #f8f9fa;
-  color: #0171e9;
+  color: #005baa;
   z-index: 1;
-  border-color: #0171e9;
+  border-color: #005baa;
 }
 
 .tab-btn.active {
-  background: #0171e9;
+  background: #005baa;
   color: #fff;
-  border-color: #0171e9;
+  border-color: #005baa;
   font-weight: 600;
   z-index: 2;
 }
@@ -492,12 +492,12 @@ onMounted(async () => {
 }
 
 .search-box input:focus {
-  border-color: #0171e9;
+  border-color: #005baa;
 }
 
 .btn-search {
   width: 60px;
-  background: #0171e9;
+  background: #005baa;
   color: #fff;
   border: none;
   cursor: pointer;
@@ -508,7 +508,7 @@ onMounted(async () => {
 }
 
 .btn-search:hover {
-  background: #0056b3;
+  background: #005baa;
 }
 
 .admin-action-bar {
@@ -565,7 +565,7 @@ onMounted(async () => {
 .q-badge {
   font-size: 20px;
   font-weight: 800;
-  color: #0171e9;
+  color: #005baa;
 }
 
 .q-cat {
@@ -589,7 +589,7 @@ onMounted(async () => {
 
 .faq-item.open .toggle-icon {
   transform: rotate(180deg);
-  color: #0171e9;
+  color: #005baa;
 }
 
 .faq-answer-wrap {
@@ -659,9 +659,9 @@ onMounted(async () => {
 }
 
 .admin-btns .btn-save {
-  background: #0171e9;
+  background: #005baa;
   color: #fff;
-  border-color: #0171e9;
+  border-color: #005baa;
 }
 
 .load-more-area {
@@ -763,7 +763,7 @@ onMounted(async () => {
 }
 
 .btn-confirm {
-  background: #0171e9;
+  background: #005baa;
   color: #fff;
   border: none;
   padding: 10px 20px;
@@ -795,13 +795,13 @@ onMounted(async () => {
 /* [추가] 답변 내용 안에 있는 링크 스타일 */
 /* v-html로 들어간 내용은 ::v-deep을 써야 먹힙니다 */
 .a-text :deep(a) {
-  color: #0171e9;
+  color: #005baa;
   text-decoration: underline;
   cursor: pointer;
   font-weight: 600;
 }
 
 .a-text :deep(a):hover {
-  color: #0056b3;
+  color: #005baa;
 }
 </style>

@@ -53,7 +53,7 @@
               <label>진료과 <span class="req">*</span></label>
               <select v-model="user.med_dept_id">
                 <option value="">선택</option>
-                <option v-for="d in medDepts" :key="d.med_dept_id" :value="d.med_dept_id">{{ d.dept_name }}</option>
+                <option v-for="d in medDepts" :key="d.med_dept_id" :value="d.med_dept_id">{{ d.med_dept_name }}</option>
               </select>
             </div>
           </div>
@@ -71,7 +71,7 @@
               <label>행정 부서 <span class="req">*</span></label>
               <select v-model="user.admin_dept_id">
                 <option value="">선택</option>
-                <option v-for="a in adminDepts" :key="a.admin_dept_id" :value="a.admin_dept_id">{{ a.dept_name }}</option>
+                <option v-for="a in adminDepts" :key="a.admin_dept_id" :value="a.admin_dept_id">{{ a.admin_dept_name }}</option>
               </select>
             </div>
           </div>
@@ -150,10 +150,7 @@
         <div class="input-section">
           <label>생년월일 <span class="req">*</span></label>
           <input type="text" v-model="user.birthday" placeholder="YYYYMMDD" maxlength="8" @input="checkBirthInput" class="ime-en" />
-          <p class="guide-msg"
-            :class="{ 'success': isBirthValid, 'error': !isBirthValid && user.birthday.length > 0 }">
-            {{ birthMsg || '' }}
-          </p>
+          <p class="guide-msg" :class="{ 'success': isBirthValid, 'error': !isBirthValid && user.birthday.length > 0 }">{{ birthMsg || '' }}</p>
         </div>
 
         <div class="input-section">
@@ -309,26 +306,37 @@ const checkName = (e) => {
 
 // [생년월일] 숫자만 + 날짜 유효성 검사
 const checkBirthInput = (e) => {
+  // 1. 숫자만 남기기
   user.value.birthday = e.target.value.replace(/[^0-9]/g, '');
   const val = user.value.birthday;
   
+  // 2. 8자리가 아니면 에러
   if (val.length !== 8) { 
     isBirthValid.value = false; 
     birthMsg.value = "8자리 숫자로 입력해 주세요"; 
     return; 
   }
 
-  // 날짜 계산 (유효한 날짜인지, 미래 날짜 아닌지)
+  // 3. 날짜 분해
   const y = parseInt(val.substring(0, 4));
   const m = parseInt(val.substring(4, 6));
   const d = parseInt(val.substring(6, 8));
+  
   const date = new Date(y, m - 1, d);
   const today = new Date();
 
+  // 과거 데이터 방지
+  if (y < 1900) {
+    isBirthValid.value = false;
+    birthMsg.value = "정확한 생년월일을 입력해 주세요.";
+    return;
+  }
+
+  // 4. 유효성 검사 (월/일 범위 초과 or 미래 날짜)
   if (m < 1 || m > 12 || d < 1 || d > 31 || date.getMonth() + 1 !== m || date.getDate() !== d) {
     isBirthValid.value = false; birthMsg.value = "존재하지 않는 날짜입니다.";
   } else if (date > today) {
-    isBirthValid.value = false; birthMsg.value = "유효하지 않은 생년월일입니다.";
+    isBirthValid.value = false; birthMsg.value = "미래 날짜는 입력할 수 없습니다.";
   } else {
     isBirthValid.value = true; birthMsg.value = "";
   }
@@ -562,7 +570,7 @@ input::-ms-clear {
   justify-content: center;
   align-items: center;
   min-height: 100vh;
-  background-color: #f9f9f9;
+  background-color: #ffffff;
   padding: 60px 20px;
 }
 
@@ -595,9 +603,9 @@ input::-ms-clear {
 }
 
 .tab-btn.active {
-  background: #0171e9;
+  background: #005baa;
   color: #fff;
-  border-color: #0171e9;
+  border-color: #005baa;
 }
 
 .regi-header {
@@ -615,7 +623,7 @@ input::-ms-clear {
 .title-bar {
   width: 40px;
   height: 3px;
-  background: #0171e9;
+  background: #005baa;
   margin: 0 auto 20px;
 }
 
@@ -650,7 +658,7 @@ select {
 }
 
 input:focus {
-  border-color: #0171e9;
+  border-color: #005baa;
   background: #fff;
   outline: none;
 }
@@ -711,10 +719,10 @@ input:focus {
 }
 
 .staff-special-fields {
-  background: #f0f7ff;
+  background: #005baa10;
   padding: 25px;
   border-radius: 4px;
-  border: 1px dashed #a1d8f3;
+  border: 1px dashed #ccc;
   margin-bottom: 10px;
 }
 
@@ -752,7 +760,7 @@ input:focus {
 }
 
 .hide-radio:checked+label {
-  background: #0171e9;
+  background: #005baa;
   color: #fff;
   font-weight: 600;
 }
@@ -823,7 +831,7 @@ input:focus {
 .regi-submit-btn {
   width: 100%;
   padding: 18px;
-  background: #0171e9;
+  background: #005baa;
   color: #fff;
   border: none;
   border-radius: 4px;
@@ -835,7 +843,7 @@ input:focus {
 }
 
 .regi-submit-btn:hover {
-  background: #0056b3;
+  background: #005baa;
   transform: translateY(-3px);
   box-shadow: 0 10px 20px rgba(1, 113, 233, 0.2);
 }

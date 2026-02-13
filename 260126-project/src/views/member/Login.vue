@@ -315,7 +315,7 @@ const handleLogin = async () => {
         userRole = 'MED'; // 의료진 권한
         // 의사 정보(과 이름, 직원 번호 등) 추가 저장
         loginData.role = myStaffInfo.role;
-        loginData.deptName = myStaffInfo.dept_name;
+        loginData.deptName = myStaffInfo.med_dept_name;
         loginData.medStaffId = myStaffInfo.staff_id;
       } else {
         userRole = 'ADMIN'; // 행정직 권한
@@ -363,7 +363,7 @@ onMounted(() => {
   justify-content: center;
   align-items: center;
   min-height: 100vh;
-  background-color: #f9f9f9;
+  background-color: #ffffff;
   padding: 50px 20px;
 }
 
@@ -401,13 +401,13 @@ onMounted(() => {
 .brand-name {
   font-size: 20px;
   font-weight: 700;
-  color: #043264;
+  color: #005baa;
 }
 
 .intro-main {
   font-size: 28px;
   font-weight: 600;
-  color: #404347;
+  color: #005baa;
   line-height: 1.4;
   margin: 0px 0 20px;
 }
@@ -434,7 +434,7 @@ onMounted(() => {
 .cs-tel {
   font-size: 20px;
   font-weight: 600;
-  color: #404347;
+  color: #005baa;
 }
 
 .portal-form-panel {
@@ -462,9 +462,9 @@ onMounted(() => {
 }
 
 .tab-btn.active {
-  background: #043264;
+  background: #005baa;
   color: #fff;
-  border-color: #043264;
+  border-color: #005baa;
 }
 
 .form-title-group {
@@ -473,7 +473,7 @@ onMounted(() => {
 
 .form-title-group h3 {
   font-size: 22px;
-  color: #404347;
+  color: #005baa;
   font-weight: 600;
   margin-bottom: 10px;
 }
@@ -481,7 +481,7 @@ onMounted(() => {
 .title-bar {
   width: 30px;
   height: 3px;
-  background-color: #043264;
+  background-color: #005baa;
 }
 
 .sub-role-toggle-wrap {
@@ -527,7 +527,7 @@ onMounted(() => {
   top: 4px;
   width: calc(50% - 8px);
   height: calc(100% - 8px);
-  background-color: #043264;
+  background-color: #005baa;
   border-radius: 18px;
   box-shadow: 0 2px 8px rgba(1, 113, 233, 0.3);
   transition: left 0.3s cubic-bezier(0.4, 0.0, 0.2, 1);
@@ -559,7 +559,7 @@ input[type="password"] {
 }
 
 input:focus {
-  border-bottom-color: #043264;
+  border-bottom-color: #005baa;
   outline: none;
 }
 
@@ -608,7 +608,7 @@ input:focus {
 .btn-login-submit {
   width: 100%;
   padding: 18px;
-  background-color: #043264;
+  background-color: #005baa;
   color: #fff;
   border: none;
   border-radius: 4px;
@@ -619,7 +619,7 @@ input:focus {
 }
 
 .btn-login-submit:hover {
-  background-color: #0056b3;
+  background-color: #005baa;
   box-shadow: 0 5px 15px rgba(1, 113, 233, 0.2);
 }
 
@@ -642,7 +642,7 @@ input:focus {
 }
 
 .regi-footer a {
-  color: #043264;
+  color: #005baa;
   font-weight: 600;
   font-size: 14px;
   text-decoration: none;
@@ -651,7 +651,7 @@ input:focus {
 }
 
 .regi-footer a:hover {
-  border-bottom: 1px solid #043264;
+  border-bottom: 1px solid #005baa;
 }
 
 .divider {

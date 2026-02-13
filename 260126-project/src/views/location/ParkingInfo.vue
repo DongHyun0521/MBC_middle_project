@@ -6,7 +6,7 @@
     </div>
 
     <section class="parking-sec">
-      <h3 class="sec-title">📌 주차 요금 안내</h3>
+      <h3 class="sec-title"> 주차 요금 안내</h3>
       <table class="parking-tbl">
         <thead>
           <tr>
@@ -28,7 +28,7 @@
     </section>
 
     <section class="parking-sec">
-      <h3 class="sec-title">💡 무료 주차 안내 (환자 및 내원객)</h3>
+      <h3 class="sec-title"> 무료 주차 안내 (환자 및 내원객)</h3>
       <table class="parking-tbl">
         <thead>
           <tr>

@@ -22,9 +22,7 @@
           <div class="grid-row">
             <select v-model="form.medDeptId" @change="fetchDoctors" class="res-select">
               <option value="">진료과 선택</option>
-              <option v-for="d in depts" :key="d.med_dept_id" :value="d.med_dept_id">
-                {{ d.dept_name }}
-              </option>
+              <option v-for="d in depts" :key="d.med_dept_id" :value="d.med_dept_id"> {{ d.med_dept_name }}</option>
             </select>
 
             <select v-if="form.medDeptId" v-model="form.doctorId" @change="resetDateTime" class="res-select">
@@ -373,7 +371,7 @@ onMounted(async () => {
     const res = await getDeptsReq();
     depts.value = res.data;
     if (!route.query.deptId && route.query.deptName) {
-      const found = depts.value.find(d => d.dept_name === route.query.deptName);
+      const found = depts.value.find(d => d.med_dept_name === route.query.deptName);
       if (found) form.medDeptId = found.med_dept_id;
     } else if (route.query.deptId) {
       form.medDeptId = Number(route.query.deptId);

@@ -42,7 +42,7 @@
 .placeholder-img { width: 100%; height: 500px; background-color: #f4f4f4; display: flex; align-items: center; justify-content: center; color: #aaa; border-radius: 4px; }
 
 .text-box { flex: 1.5; padding-top: 20px; }
-.slogan { font-size: 32px; font-weight: 300; line-height: 1.4; color: #0171e9; margin-bottom: 30px; border-left: 5px solid #333; padding-left: 20px; }
+.slogan { font-size: 32px; font-weight: 300; line-height: 1.4; color: #005baa; margin-bottom: 30px; border-left: 5px solid #333; padding-left: 20px; }
 .desc { font-size: 16px; line-height: 1.8; color: #444; text-align: justify; margin-bottom: 50px; }
 .sign-area { text-align: right; border-top: 1px solid #ddd; padding-top: 20px; }
 .position { font-size: 15px; color: #666; margin-right: 15px; }

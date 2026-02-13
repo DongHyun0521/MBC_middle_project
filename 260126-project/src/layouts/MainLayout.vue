@@ -472,9 +472,9 @@ onMounted(() => {
 }
 
 .nav-item {
-  font-size: 22px;
+  font-size: 19px;
   font-weight: 600;
-  color: #222;
+  color: #444;
   cursor: pointer;
   transition: 0.2s;
 }
@@ -657,7 +657,7 @@ onMounted(() => {
   background-color: #f9f9f9;
   border-top: 1px solid #eee;
   padding: 40px 0 40px;
-  margin-top: 100px;
+  margin-top: 30px;
   width: 100%;
 }
 
@@ -767,7 +767,7 @@ onMounted(() => {
   justify-content: center;
   cursor: pointer;
   background: #fff;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.156);
   transition: transform 0.2s, box-shadow 0.2s;
 }
 
@@ -778,7 +778,7 @@ onMounted(() => {
 
 .top-btn { color: #555; }
 .chat-btn { background: #6a7c86 !important; color: #fff; border: none; }
-.car-btn { background: #005baa !important; color: #fff; border: none; }
+.car-btn { background: #053e71 !important; color: #fff; border: none; }
 
 .f-text {
   font-size: 12px;

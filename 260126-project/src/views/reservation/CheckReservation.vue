@@ -37,7 +37,7 @@
               </td>
               <td class="w-info">
                 <div class="cell-content res-doc-info">
-                  <strong class="dept-name">{{ res.dept_name }}</strong>
+                  <strong class="dept-name">{{ res.med_dept_name }}</strong>
                   <span class="staff-name">{{ res.doctor_name }} 의사</span>
                 </div>
               </td>
@@ -71,7 +71,7 @@
         </table>
 
         <div v-if="filteredReservations.length === 0" class="empty-state">
-          <div class="empty-icon">📂</div>
+          <div class="empty-icon"></div>
           <p>{{ currentFilter === '전체' ? '예약된 내역이 존재하지 않습니다.' : '해당 상태의 예약 내역이 없습니다.' }}</p>
         </div>
       </div>
@@ -189,7 +189,7 @@ onMounted(fetchMyReservations)
 }
 
 .filter-btn.active {
-  color: #0171e9; /* 활성화되면 파란색 */
+  color: #005baa; /* 활성화되면 파란색 */
 }
 
 .filter-btn.active::after {
@@ -199,12 +199,11 @@ onMounted(fetchMyReservations)
   left: 0;
   width: 100%;
   height: 3px;
-  background-color: #0171e9;
+  background-color: #005baa;
 }
 
-/* 기존 스타일 그대로 유지 */
 .check-res-wrap {
-  background-color: #f4f7fa;
+  background-color: #ffffff;
   min-height: 100vh;
   padding: 80px 20px;
 }
@@ -229,7 +228,7 @@ onMounted(fetchMyReservations)
 .title-bar {
   width: 45px;
   height: 4px;
-  background: #0171e9;
+  background: #005baa;
   margin: 0 auto 20px;
 }
 
@@ -313,7 +312,7 @@ onMounted(fetchMyReservations)
 }
 
 .dept-name {
-  color: #0171e9;
+  color: #005baa;
   font-size: 17px;
   font-weight: 700;
   margin-bottom: 5px;
@@ -358,7 +357,7 @@ onMounted(fetchMyReservations)
 
 .status-badge.is-pending {
   background-color: #e0f2fe;
-  color: #0171e9;
+  color: #005baa;
 }
 
 .status-badge.is-success {

@@ -55,7 +55,9 @@
     <update id="completeReservation">
 		UPDATE reservation 
         SET reservation_status = '완료' 
-        WHERE reservation_id = #{reservationId} AND doctor_id = #{doctorId} AND reservation_status = '예약'
+        WHERE reservation_id = #{reservationId} 
+        	AND doctor_id = #{doctorId} 
+        	AND reservation_status = '예약'
     </update>
     
     <!-- 미방문 예약 찾기 (예약시간+30분) -->
@@ -70,7 +72,7 @@
     <!-- 자동으로 예약 미방문으로 바꾸기 (예약->미방문) -->
     <update id="updateNoShowStatus" parameterType="list">
         UPDATE reservation
-        SET reservation_status = '노쇼'
+        SET reservation_status = '미방문'
         WHERE reservation_id IN
         <foreach item="id" collection="list" open="(" separator="," close=")">
 			#{id}
@@ -85,20 +87,21 @@
             s.med_staff_id AS staff_id, 
             m.name AS staff_name,
             m.id AS user_id,
-            d.dept_name,
+            d.med_dept_name,
             s.role
         FROM med_staff s
         JOIN mem m ON s.mem_id = m.mem_id
         JOIN med_dept d ON s.med_dept_id = d.med_dept_id
         WHERE (s.role IN ('DOCTOR', 'NURSE', '의사', '간호사'))
 			AND s.status = '재직'
-        ORDER BY d.dept_name ASC, m.name ASC
+        ORDER BY d.med_dept_name ASC, m.name ASC
     </select>
     
     <!-- 전체 의료 부서 목록 -->
     <select id="getAllMedDepts" resultType="map">
-        SELECT med_dept_id, dept_name, dept_location, dept_phone_number 
-        FROM med_dept ORDER BY dept_name ASC
+        SELECT med_dept_id, med_dept_name, dept_location, dept_phone_number 
+        FROM med_dept 
+        ORDER BY med_dept_name ASC
     </select>
     
     <!-- 의료 부서별 의사 목록-->
@@ -114,7 +117,7 @@
 
 	<!-- 회원별 예약 목록 -->
     <select id="getReservationsByMember" parameterType="long" resultType="map">
-        SELECT r.reservation_id, r.reservation_date, r.reservation_time, r.reservation_status, d.dept_name, m.name AS doctor_name    
+        SELECT r.reservation_id, r.reservation_date, r.reservation_time, r.reservation_status, d.med_dept_name, m.name AS doctor_name    
         FROM reservation r
         JOIN med_dept d ON r.med_dept_id = d.med_dept_id
         JOIN med_staff s ON r.doctor_id = s.med_staff_id

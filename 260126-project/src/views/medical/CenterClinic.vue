@@ -42,8 +42,8 @@ const clinicList = [
 
 .group-sec { margin-bottom: 80px; }
 .sec-title { 
-  font-size: 22px; font-weight: 700; color: #0171e9; 
-  border-left: 4px solid #0171e9; padding-left: 15px; margin-bottom: 20px; 
+  font-size: 22px; font-weight: 700; color: #005baa; 
+  border-left: 4px solid #005baa; padding-left: 15px; margin-bottom: 20px; 
 }
 
 .grid-box { 
@@ -57,6 +57,6 @@ const clinicList = [
 }
 
 .item-card:hover { 
-  border-color: #0171e9; color: #0171e9; box-shadow: 0 5px 15px rgba(1, 113, 233, 0.1); transform: translateY(-3px); 
+  border-color: #005baa; color: #005baa; box-shadow: 0 5px 15px rgba(1, 113, 233, 0.1); transform: translateY(-3px); 
 }
 </style>

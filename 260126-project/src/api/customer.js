@@ -9,28 +9,30 @@ const url = axios.create({
     }
 });
 
-// ==========================================
 // 1. 공지사항 (Notice) API - AdminController
-// ==========================================
 
 // 공지사항 목록 조회
 export const getNoticesReq = (params) => {
     return url.get('/admin/notice/list', { params });
 }
 
-// 공지사항 상세 조회 (경로에 detail 확인!)
+// 공지사항 상세 조회 (경로에 detail 확인)
 export const getNoticeDetailReq = (id) => {
     return url.get(`/admin/notice/detail/${id}`);
 }
 
-// [관리자] 공지사항 등록
+// [관리자] 공지사항 등록 (수정: 헤더 추가)
 export const addNoticeReq = (data) => {
-    return url.post('/admin/notice/write', data);
+    return url.post('/admin/notice/write', data, {
+        headers: { 'Content-Type': 'multipart/form-data' }
+    });
 }
 
-// [관리자] 공지사항 수정
+// [관리자] 공지사항 수정 (수정: put->post 변경, 헤더 추가)
 export const editNoticeReq = (data) => {
-    return url.put('/admin/notice/update', data);
+    return url.post('/admin/notice/update', data, {
+        headers: { 'Content-Type': 'multipart/form-data' }
+    });
 }
 
 // [관리자] 공지사항 삭제
@@ -39,9 +41,7 @@ export const delNoticeReq = (id) => {
 }
 
 
-// ==========================================
 // 2. 자주 묻는 질문 (FAQ) API - AdminController
-// ==========================================
 
 // FAQ 목록 조회
 export const getFaqsReq = (category) => {
@@ -64,13 +64,9 @@ export const delFaqReq = (id) => {
 }
 
 
-// ==========================================
 // 3. 고객의 소리 (VOC) API 
-// ==========================================
 
-// ------------------------------------------
 // [A. 일반 회원용] (MemController)
-// ------------------------------------------
 
 // 내 VOC 목록 조회
 export const getMyVocsReq = (filter) => {
@@ -79,12 +75,17 @@ export const getMyVocsReq = (filter) => {
 
 // 글 작성
 export const addVocReq = (data) => {
-    return url.post('/member/voc/write', data);
+    return url.post('/member/voc/write', data, {
+        headers: { 'Content-Type': 'multipart/form-data' },
+        timeout: 60000
+    });
 }
 
-// 글 수정
+// 글 수정 
 export const editVocReq = (data) => {
-    return url.put('/member/voc/update', data);
+    return url.post('/member/voc/update', data, {
+        headers: { 'Content-Type': 'multipart/form-data' }
+    });
 }
 
 // 글 삭제 (회원 본인 삭제)
@@ -92,10 +93,8 @@ export const delVocReq = (id) => {
     return url.delete(`/member/voc/delete/${id}`);
 }
 
-// ------------------------------------------
-// [B. 원무팀 관리자용] (AdminController)
-// ------------------------------------------
 
+// [B. 원무팀 관리자용] (AdminController)
 // 전체 목록 조회 (필터 포함)
 export const getAdminVocListReq = (filter) => {
     return url.get('/admin/voc/list', { params: { filter } });

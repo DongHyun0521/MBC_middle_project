@@ -21,17 +21,15 @@
         <div v-for="dept in filteredDepts" :key="dept.med_dept_id" class="dept-card">
           <div class="dept-info">
             <div class="dept-main">
-              <h3>{{ dept.dept_name }}</h3>
+              <h3>{{ dept.med_dept_name }}</h3>
               <div class="dept-tags">
-                <span class="tag location">📍 {{ dept.dept_location }}</span>
-                <span class="tag phone">📞 {{ dept.dept_phone_number }}</span>
+                <span class="tag location">{{ dept.dept_location }}</span>
+                <span class="tag phone">{{ dept.dept_phone_number }}</span>
               </div>
             </div>
-            <p class="desc">{{ dept.dept_name }}에서 최상의 진료 서비스를 제공합니다.</p>
+            <p class="desc">{{ dept.med_dept_name }}에서 최상의 진료 서비스를 제공합니다.</p>
           </div>
-          <button class="view-doc-btn" @click="goToDoctorSearch(dept.med_dept_id)">
-            의료진 상세정보 〉
-          </button>
+          <button class="view-doc-btn" @click="goToDoctorSearch(dept.med_dept_id)"> 의료진 상세정보 〉</button>
         </div>
 
         <div v-if="filteredDepts.length === 0" class="no-result">
@@ -74,7 +72,7 @@ const filteredDepts = computed(() => {
     
     // (2) 이름 필터
     // 검색어가 이름에 포함되는지 확인
-    const matchName = (dept.dept_name || '').includes(searchDeptName.value)
+    const matchName = (dept.med_dept_name || '').includes(searchDeptName.value)
     
     // 두 조건이 다 맞아야 화면에 보여줌
     return matchLocation && matchName
@@ -120,7 +118,7 @@ onMounted(fetchDepts)
 
 <style scoped>
 .search-wrap {
-  background-color: #f4f7fa;
+  background-color: #ffffff;
   min-height: 100vh;
   padding: 60px 20px;
 }
@@ -145,7 +143,7 @@ onMounted(fetchDepts)
 .title-bar {
   width: 40px;
   height: 3px;
-  background: #0171e9;
+  background: #005baa;
   margin: 0 auto 15px;
 }
 
@@ -191,7 +189,7 @@ select.search-input {
 }
 
 .search-input:focus {
-  border-color: #0171e9;
+  border-color: #005baa;
   outline: none;
   background-color: #fff;
   box-shadow: 0 0 0 3px rgba(1, 113, 233, 0.1);
@@ -223,7 +221,7 @@ select.search-input {
 
 .dept-info h3 {
   font-size: 22px;
-  color: #0171e9;
+  color: #005baa;
   margin: 0 0 15px 0;
   font-weight: 700;
 }
@@ -243,7 +241,7 @@ select.search-input {
 
 .location {
   background: #f0f7ff;
-  color: #0171e9;
+  color: #005baa;
 }
 
 .phone {
@@ -274,7 +272,7 @@ select.search-input {
 }
 
 .view-doc-btn:hover {
-  background: #0171e9;
+  background: #005baa;
 }
 
 .no-result {

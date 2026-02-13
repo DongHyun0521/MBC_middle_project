@@ -1,6 +1,7 @@
 <template>
   <div class="full-dashboard">
     <aside class="sidebar">
+      <!-- [공통 영역] 사이드바 프로필 영역 -->
       <div class="profile-area">
         <div class="avatar">{{ userRoleIcon }}</div>
         <p class="user-id">{{ userInfo.name }} 님</p>
@@ -9,16 +10,23 @@
           {{ userType === 'MEMBER' ? '가입일' : '입사일' }}: {{ formatDate(userInfo.createTime || userInfo.create_time) }}
         </p>
       </div>
+
+      <!-- [공통 영역] 사이드바 메뉴 네비게이션 -->
       <nav class="side-nav">
         <ul>
+          <!-- [공통 메뉴] 대시보드 홈 -->
           <li :class="{ active: currentView === 'dash' }" @click="changeView('dash')">대시보드 홈</li>
+
+          <!--[공통 메뉴] 내 진료 예약 내역(개인) -->
           <li :class="{ active: currentView === 'res' }" @click="changeView('res')">내 진료 예약 내역</li>
 
+          <!--[의사 화면 메뉴]-->
           <template v-if="isDoctor">
             <li :class="{ active: currentView === 'doc_res' }" @click="changeView('doc_res')">진료 업무 일정</li>
             <li :class="{ active: currentView === 'doc_history' }" @click="changeView('doc_history')">담당 환자 조회</li>
           </template>
 
+          <!-- [간호사 화면 메뉴] -->
           <template v-if="isNurse">
             <li :class="{ active: currentView === 'nur_work' }" @click="changeView('nur_work')">진료 업무 일정</li>
             <li :class="{ active: currentView === 'nur_schedule' }" @click="changeView('nur_schedule')">근무 일정 (Shift)
@@ -26,18 +34,23 @@
             <li :class="{ active: currentView === 'nur_ward' }" @click="changeView('nur_ward')">병동 현황</li>
           </template>
 
+          <!-- 행정직원(ADMIN) 화면 메뉴] -->
           <template v-if="userType === 'ADMIN'">
             <li :class="{ active: currentView === 'admin_voc' }" @click="changeView('admin_voc')">고객의 소리 (VOC)</li>
             <li :class="{ active: currentView === 'admin_todo' }" @click="changeView('admin_todo')">업무 관리 (To-Do)</li>
           </template>
 
+          <!-- [공통 메뉴] 차량 관리 -->
           <li :class="{ active: currentView === 'vehi' }" @click="changeView('vehi')">차량 관리</li>
+
+          <!-- [공통 메뉴] 개인 정보 수정= -->
           <li :class="{ active: currentView === 'edit' }" @click="changeView('edit')">개인 정보 수정</li>
         </ul>
       </nav>
     </aside>
 
     <main class="main-content">
+      <!-- [공통 영역] 상단 헤더(인사/현재시간)-->
       <header class="dashboard-header">
         <div class="welcome-text">
           <h2>{{ getTimeGreeting() }}, <span class="blue-txt">{{ userInfo.name }}</span>님</h2>
@@ -45,10 +58,12 @@
         </div>
       </header>
 
+      <!--[공통 화면] 대시보드 홈 (currentView === 'dash')-->
       <div v-if="currentView === 'dash'" class="dash-home-grid">
+        <!-- [공통 카드] 내 정보 요약-->
         <section class="dash-card profile-card">
           <div class="card-head">
-            <h3>👤 내 정보 요약</h3>
+            <h3>내 정보 요약</h3>
           </div>
           <div class="info-list">
             <div class="info-item">
@@ -73,6 +88,7 @@
           </div>
         </section>
 
+        <!--[의사/간호사 전용 카드] 오늘 진료 현황-->
         <template v-if="isDoctor || isNurse">
           <section class="dash-card">
             <div class="card-head">
@@ -89,6 +105,7 @@
           </section>
         </template>
 
+        <!--[행정직원(ADMIN) 전용 카드] 긴급 업무-->
         <template v-if="userType === 'ADMIN'">
           <section class="dash-card">
             <div class="card-head">
@@ -105,6 +122,7 @@
           </section>
         </template>
 
+        <!--[공통 카드] 나의 병원 예약-->
         <section class="dash-card">
           <div class="card-head">
             <h3>나의 병원 예약</h3>
@@ -112,12 +130,13 @@
           <div v-if="upcomingRes" class="res-highlight">
             <span class="d-day">D-{{ calculateDday(upcomingRes.reservation_date) }}</span>
             <p class="res-time-txt">{{ upcomingRes.reservation_date }} ({{ upcomingRes.reservation_time }})</p>
-            <p class="res-doc-txt">{{ upcomingRes.dept_name }} | {{ upcomingRes.doctor_name }} 의사</p>
+            <p class="res-doc-txt">{{ upcomingRes.med_dept_name }} | {{ upcomingRes.doctor_name }} 의사</p>
           </div>
           <div v-else class="empty-res">예정된 예약이 없습니다</div>
         </section>
       </div>
 
+      <!--[의사/간호사 화면] 진료 업무 일정 (공용 섹션)-->
       <div v-if="currentView === 'doc_res' || currentView === 'nur_work'" class="view-section">
         <div class="section-card">
           <div class="card-head">
@@ -165,12 +184,10 @@
                   <tr v-for="sc in selectedDateSchedules" :key="sc.reservation_id">
                     <td>{{ String(sc.reservation_time).substring(11, 16) }}</td>
                     <td class="bold-blue">{{ sc.patient_name }}</td>
-                    <td><span :class="['status-badge', getBadgeClass(sc.reservation_status)]">{{ sc.reservation_status
-                    }}</span></td>
+                    <td><span :class="['status-badge', getBadgeClass(sc.reservation_status)]">{{ sc.reservation_status}}</span></td>
                     <td class="txt-center">
                       <div v-if="isDoctor && sc.reservation_status === '예약'" class="btn-group">
                         <button class="btn-action complete" @click="completeTreatment(sc)">완료</button>
-                        <button class="btn-action noshow" @click="handleNoShow(sc)">미방문</button>
                         <button class="btn-action cancel" @click="handleForceCancel(sc)">취소</button>
                       </div>
                       <span v-else>-</span>
@@ -186,10 +203,7 @@
 
           <div v-else>
             <div class="filter-tabs">
-              <button v-for="st in ['전체', '예약', '완료', '취소', '미방문']" :key="st"
-                :class="['filter-btn', { active: docFilter === st }]" @click="docFilter = st">
-                {{ st }}
-              </button>
+              <button v-for="st in ['전체', '예약', '완료', '취소', '미방문']" :key="st" :class="['filter-btn', { active: docFilter === st }]" @click="docFilter = st">{{ st }}</button>
             </div>
             <table class="hospital-tbl">
               <thead>
@@ -216,7 +230,6 @@
                   <td class="txt-center">
                     <div v-if="isDoctor && sc.reservation_status === '예약'" class="btn-group">
                       <button class="btn-action complete" @click="completeTreatment(sc)">완료</button>
-                      <button class="btn-action noshow" @click="handleNoShow(sc)">미방문</button>
                       <button class="btn-action cancel" @click="handleForceCancel(sc)">취소</button>
                     </div>
                     <span v-else>-</span>
@@ -229,6 +242,7 @@
         </div>
       </div>
 
+      <!-- [간호사 화면] 근무 일정표(Shift) -->
       <div v-if="currentView === 'nur_schedule'" class="view-section">
         <div class="section-card">
           <div class="card-head">
@@ -258,6 +272,7 @@
         </div>
       </div>
 
+      <!-- [행정직원(ADMIN) 화면] 업무 관리(To-Do)-->
       <div v-if="currentView === 'admin_todo'" class="view-section">
         <div class="split-view">
           <div class="section-card flex-1">
@@ -297,6 +312,7 @@
         </div>
       </div>
 
+      <!--[행정직원(ADMIN) 화면] VOC 관리-->
       <div v-if="currentView === 'admin_voc'" class="view-section">
         <div class="section-card">
           <div class="card-head">
@@ -327,6 +343,7 @@
         </div>
       </div>
 
+      <!--[의사 화면] 담당 환자 조회-->
       <div v-if="currentView === 'doc_history'" class="view-section">
         <div class="section-card">
           <div class="card-head">
@@ -335,6 +352,8 @@
           <div class="empty-msg">준비중입니다.</div>
         </div>
       </div>
+
+      <!--[간호사 화면] 병동 현황-->
       <div v-if="currentView === 'nur_ward'" class="view-section">
         <div class="section-card">
           <div class="card-head">
@@ -344,6 +363,7 @@
         </div>
       </div>
 
+      <!--[공통 화면] 차량 관리-->
       <div v-if="currentView === 'vehi'" class="view-section">
         <div class="section-card">
           <div class="card-head">
@@ -370,6 +390,7 @@
         </div>
       </div>
 
+      <!--[일반회원 화면] 내 진료 예약 내역(개인) -->
       <div v-if="currentView === 'res'" class="view-section">
         <div class="section-card">
           <div class="card-head">
@@ -391,11 +412,10 @@
             </thead>
             <tbody>
               <tr v-for="res in filteredMyReservations" :key="res.reservation_id">
-                <td class="bold-blue">{{ res.dept_name }}</td>
+                <td class="bold-blue">{{ res.med_dept_name }}</td>
                 <td class="bold-blue">{{ res.doctor_name }}</td>
                 <td>{{ formatDate(res.reservation_date) }} {{ res.reservation_time }}</td>
-                <td><span :class="['status-badge', res.reservation_status === '예약' ? 'active' : 'done']">{{
-                  res.reservation_status }}</span></td>
+                <td><span :class="['status-badge', res.reservation_status === '예약' ? 'active' : 'done']">{{res.reservation_status }}</span></td>
                 <td class="txt-center"><button v-if="res.reservation_status === '예약'" class="btn-cancel-table"
                     @click="cancelRes(res.reservation_id)">예약취소</button><span v-else>-</span></td>
               </tr>
@@ -407,6 +427,7 @@
         </div>
       </div>
 
+      <!-- [공통 화면] 개인 정보 수정 (내부에서 회원/직원 폼이 분기됨)-->
       <div v-if="currentView === 'edit'" class="view-section centered">
         <div class="edit-card-wrap">
           <div class="section-card">
@@ -461,6 +482,7 @@
             </div>
           </div>
 
+          <!--[공통 화면] 비밀번호 변경 (개인정보수정 화면 내부 섹션)-->
           <div class="section-card mt-50">
             <div class="card-head">
               <h3>비밀번호 변경</h3>
@@ -507,6 +529,7 @@
             </div>
           </div>
 
+          <!-- [일반회원 화면 성격] 회원 탈퇴 (개인정보수정 화면 내부 링크)-->
           <div class="withdraw-container">
             <span class="withdraw-link" @click="startWithdraw">회원 탈퇴</span>
           </div>
@@ -514,6 +537,7 @@
       </div>
     </main>
 
+    <!--[공통 모달] 보안 비밀번호 재확인 모달-->
     <div v-if="isAuthModalOpen" class="modal-overlay">
       <div class="modal-card auth-modal">
         <h3>보안을 위해 비밀번호를 입력해 주세요</h3>
@@ -542,6 +566,7 @@
     </div>
   </div>
 </template>
+
 
 <script setup>
 // ref: 데이터와 화면을 연결해서, 데이터만 바꾸면 화면도 알아서 변하도록 하는 프레임워크
@@ -952,8 +977,8 @@ const fetchDoctorSchedules = async () => {
         const schedRes = await getDocSchedReq(myInfo.staff_id);
         doctorSchedules.value = schedRes.data || [];
       } else if (myInfo.role === '간호사' || myInfo.role === 'NURSE') {
-        const myDeptName = myInfo.dept_name;
-        const ourDeptDoctors = allStaff.filter(s => s.dept_name === myDeptName && (s.role === '의사' || s.role === 'DOCTOR'));
+        const myDeptName = myInfo.med_dept_name;
+        const ourDeptDoctors = allStaff.filter(s => s.med_dept_name === myDeptName && (s.role === '의사' || s.role === 'DOCTOR'));
         let allSchedules = [];
         const promises = ourDeptDoctors.map(doc => getDocSchedReq(doc.staff_id));
         const results = await Promise.all(promises);
@@ -1004,20 +1029,6 @@ const completeTreatment = (scheduleItem) => {
   if (confirm(`${scheduleItem.patient_name} 님 진료를 완료 처리하시겠습니까?`)) {
     scheduleItem.reservation_status = '완료';
     alert("진료 완료 처리되었습니다.");
-  }
-};
-
-// [미방문 처리]
-const handleNoShow = (scheduleItem) => {
-  // 1. 시간 체크
-  if (isFutureTime(scheduleItem)) {
-    alert("아직 예약 시간이 지나지 않았습니다.\n시간이 지난 후에 처리해 주세요.");
-    return;
-  }
-  // 2. 실행
-  if (confirm(`${scheduleItem.patient_name} 님을 [미방문] 처리하시겠습니까?`)) {
-    scheduleItem.reservation_status = '미방문';
-    alert("미방문 처리되었습니다.");
   }
 };
 
@@ -1098,7 +1109,7 @@ input::-ms-clear {
 }
 
 .success-msg {
-  color: #0171e9; /* 성공 시 파란색 */
+  color: #005baa; /* 성공 시 파란색 */
 }
 
 .pw-field-box {
@@ -1190,7 +1201,7 @@ input::-ms-clear {
 .btn-action-submit {
   width: 300px;
   padding: 15px;
-  background: #0171e9;
+  background: #005baa;
   color: #fff;
   border: none;
   border-radius: 4px;
@@ -1206,7 +1217,7 @@ input::-ms-clear {
 .btn-blue-full {
   width: 300px;
   padding: 15px;
-  background: #0171e9;
+  background: #005baa;
   color: #fff;
   border: none;
   border-radius: 4px;
@@ -1396,7 +1407,7 @@ input::-ms-clear {
 }
 
 .stat-box.blue span {
-  color: #0171e9;
+  color: #005baa;
 }
 
 .stat-box.red span {
@@ -1442,7 +1453,7 @@ input::-ms-clear {
 }
 
 .btn-add-sm {
-  background: #0171e9;
+  background: #005baa;
   color: #fff;
   border: none;
   padding: 8px 16px;
@@ -1465,9 +1476,9 @@ input::-ms-clear {
 
 .btn-complete {
   padding: 4px 8px;
-  border: 1px solid #0171e9;
+  border: 1px solid #005baa;
   background: #fff;
-  color: #0171e9;
+  color: #005baa;
   border-radius: 4px;
   cursor: pointer;
   font-size: 12px;
@@ -1475,7 +1486,7 @@ input::-ms-clear {
 }
 
 .btn-complete:hover {
-  background: #0171e9;
+  background: #005baa;
   color: #fff;
 }
 
@@ -1487,12 +1498,18 @@ input::-ms-clear {
 
 .status-badge.active {
   background: #e3f2fd;
-  color: #0171e9;
+  color: #005baa;
 }
 
 .status-badge.done {
   background: #f1f3f5;
   color: #868e96;
+}
+
+.status-badge.noshow-badge {
+  background-color: #f5f5f5; 
+  color: #757575;           
+  border: 1px solid #bdbdbd;
 }
 
 .status-badge.cancel {
@@ -1531,7 +1548,7 @@ input::-ms-clear {
 }
 
 .btn-modal-confirm {
-  background: #0171e9;
+  background: #005baa;
   color: #fff;
 }
 
@@ -1602,8 +1619,8 @@ input::-ms-clear {
 }
 
 .filter-btn.active {
-  color: #0171e9;
-  border-bottom: 2px solid #0171e9;
+  color: #005baa;
+  border-bottom: 2px solid #005baa;
 }
 
 .calendar-wrap {
@@ -1705,7 +1722,7 @@ input::-ms-clear {
 
 .cal-dot.active {
   background: #e3f2fd;
-  color: #0171e9;
+  color: #005baa;
 }
 
 .cal-dot.done {
@@ -1849,12 +1866,12 @@ input::-ms-clear {
 
 .btn-action.complete {
   background: #e3f2fd;
-  color: #0171e9;
+  color: #005baa;
   border-color: #bad6f5;
 }
 
 .btn-action.complete:hover {
-  background: #0171e9;
+  background: #005baa;
   color: #fff;
 }
 

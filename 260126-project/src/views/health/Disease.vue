@@ -33,17 +33,17 @@ const commonDiseases = ['고혈압', '당뇨병', '위염', '아토피 피부염
 .page-header { text-align: center; margin-bottom: 50px; }
 .page-header h2 { font-size: 32px; font-weight: 700; color: #111; }
 
-.search-bar-wrap { max-width: 600px; margin: 0 auto 40px; display: flex; border: 2px solid #0171e9; border-radius: 4px; overflow: hidden; }
+.search-bar-wrap { max-width: 600px; margin: 0 auto 40px; display: flex; border: 2px solid #005baa; border-radius: 4px; overflow: hidden; }
 .search-input { flex: 1; padding: 15px; border: none; outline: none; font-size: 16px; }
-.search-btn { background: #0171e9; border: none; padding: 0 25px; color: #fff; cursor: pointer; }
+.search-btn { background: #005baa; border: none; padding: 0 25px; color: #fff; cursor: pointer; }
 
 .alphabet-index { display: flex; justify-content: center; gap: 10px; flex-wrap: wrap; margin-bottom: 50px; }
 .idx-item { padding: 8px 12px; border: 1px solid #eee; font-size: 14px; color: #666; cursor: pointer; border-radius: 4px; }
-.idx-item:hover { background: #f0f7ff; color: #0171e9; border-color: #0171e9; }
+.idx-item:hover { background: #f0f7ff; color: #005baa; border-color: #005baa; }
 
 .disease-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; }
 .disease-card { border: 1px solid #eee; padding: 30px 20px; text-align: center; border-radius: 8px; transition: 0.2s; cursor: pointer; background: #fff; }
-.disease-card:hover { transform: translateY(-5px); border-color: #0171e9; box-shadow: 0 10px 20px rgba(0,0,0,0.05); }
+.disease-card:hover { transform: translateY(-5px); border-color: #005baa; box-shadow: 0 10px 20px rgba(0,0,0,0.05); }
 .disease-icon { font-size: 30px; margin-bottom: 15px; }
 .disease-name { font-weight: 600; color: #333; }
 </style>

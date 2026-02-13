@@ -170,6 +170,7 @@
 <script setup>
 import { ref, computed, onMounted, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
+// [API] 경로가 맞는지 꼭 확인해주세요!
 import {
     getNoticesReq, getNoticeDetailReq,
     addNoticeReq, editNoticeReq, delNoticeReq,
@@ -179,105 +180,82 @@ import {
 const route = useRoute();
 const router = useRouter();
 
-const mode = ref('list');
-const keyword = ref('');
-const loginInfo = ref({});
-const selectedItem = ref({});
-const sortOrder = ref('desc');
-const currentPage = ref(1);
-const itemsPerPage = 10;
-const maxPageBtn = 5;
-const noticeList = ref([]);
-const writeForm = ref({ noticeId: '', title: '', content: '', topFix: false });
-const isWonmuState = ref(false);
+// 1. 상태 변수 (State)
+const mode = ref('list');           // 현재 화면 모드 (list, detail, write, edit)
+const keyword = ref('');            // 검색어
+const loginInfo = ref({});          // 로그인 정보
+const selectedItem = ref({});       // 상세 보기할 글 데이터
+const sortOrder = ref('desc');      // 정렬 순서
+const currentPage = ref(1);         // 현재 페이지
+const itemsPerPage = 10;            // 페이지당 글 개수
+const maxPageBtn = 5;               // 페이지네이션 버튼 개수
+const noticeList = ref([]);         // 공지사항 리스트 데이터
+const writeForm = ref({ noticeId: '', title: '', content: '', topFix: false }); // 글쓰기 폼 데이터
+const isWonmuState = ref(false);    // 원무과 여부 상태
 
-// [추가] 파일 업로드를 위한 상태 변수들
-const fileInput = ref(null);      // <input type="file"> 태그 참조용
-const selectedFile = ref(null);   // 실제 선택된 파일 객체
-const previewUrl = ref(null);     // 미리보기용 임시 URL
-const isImageFile = ref(false);   // 이미지 파일인지 여부 체크
+// [추가] 파일 업로드 관련 변수
+const fileInput = ref(null);        // input 태그 연결
+const selectedFile = ref(null);     // 선택된 파일 데이터
+const previewUrl = ref(null);       // 미리보기 URL
+const isImageFile = ref(false);     // 이미지 여부 체크
 
 
-// 1. 권한 체크 (관리자 & 원무과)
-
-// [관리자 확인] 로그인 정보에 'ADMIN'이 있는지 확인
+// 2. 권한 체크 (Auth)
+// [관리자 확인]
 const isAdmin = computed(() => {
-    // 로그인 정보가 없으면 빈 객체({})로 (에러 방지)
     const info = loginInfo.value || {};
-    
     const userRole = info.loginType || info.role || '';
-
-    if (String(userRole).toUpperCase() === 'ADMIN') {
-        return true; 
-    } else {
-        return false;
-    }
+    return String(userRole).toUpperCase() === 'ADMIN';
 });
 
 // [원무과 확인]
 const isWonmuTeam = computed(() => {
-    // 서버에서 이미 확인된 상태면 바로 통과
-    if (isWonmuState.value === true) {
-        return true;
-    }
-
-    // 로그인 정보에서 부서명(deptName) 확인
+    if (isWonmuState.value === true) return true;
     const info = loginInfo.value || {};
-    const deptName = String(info.deptName ?? '').trim(); // 공백 제거
-
-    if (deptName.includes('원무')) {
-        return true;
-    } else {
-        return false;
-    }
+    const deptName = String(info.admin_dept_name ?? info.adminDeptName ?? '').trim();
+    return deptName.includes('원무');
 });
 
+// [최종 권한] 관리자이면서 원무과여야 글쓰기/수정/삭제 가능
 const canManageNotice = computed(() => {
-    if (isAdmin.value && isWonmuTeam.value) {
-        return true;
-    } else {
-        return false;
-    }
+    return isAdmin.value && isWonmuTeam.value;
 });
 
 
-// 2. 목록 정렬 & 페이징 (데이터 가공)
+// 3. Computed
+// [정렬] 상단 고정(topFix) 우선, 그 뒤 최신순/과거순 정렬
 const sortedList = computed(() => {
-    // 원본 데이터를 건드리지 않기 위해 복사본(...)
     const list = [...noticeList.value];
-
     return list.sort((a, b) => {
-        if (a.topFix !== b.topFix) { // 고정된 글(true)이 위로 올라오게
+        // 1순위: 상단 고정 여부
+        if (a.topFix !== b.topFix) { 
             return Number(b.topFix) - Number(a.topFix);
         }
+        // 2순위: 정렬 필터 (최신순/오래된순)
         if (sortOrder.value === 'desc') {
-            return b.noticeId - a.noticeId; // 최신순 (큰 숫자가 위로)
+            return b.noticeId - a.noticeId;
         } else {
-            return a.noticeId - b.noticeId; // 오래된순 (작은 숫자가 위로)
+            return a.noticeId - b.noticeId;
         }
     });
 });
 
-// [페이징] 현재 페이지에 보여줄 10개만
+// [페이징 & 검색] 화면에 보여줄 데이터 자르기
 const paginatedList = computed(() => {
-    let targetList = sortedList.value; // 정렬된 리스트 가져오기
-
-    // 검색어 필터링
+    let targetList = sortedList.value;
+    
+    // 검색 필터
     if (keyword.value) {
-        targetList = targetList.filter(item => {
-            return item.title.includes(keyword.value); // 제목에 검색어 포함 여부 확인
-        });
+        targetList = targetList.filter(item => item.title.includes(keyword.value));
     }
 
-    // 잘라낼 범위 계산 (예: 1페이지면 0번부터 10개)
+    // 페이징 자르기
     const startIndex = (currentPage.value - 1) * itemsPerPage;
     const endIndex = startIndex + itemsPerPage;
-
-    // 해당 범위만큼 잘라서 반환
     return targetList.slice(startIndex, endIndex);
 });
 
-// [전체 페이지 수] 총 몇 페이지인지 계산
+// [전체 페이지 수 계산]
 const totalPages = computed(() => {
     let count = 0;
     if (keyword.value) {
@@ -285,84 +263,75 @@ const totalPages = computed(() => {
     } else {
         count = sortedList.value.length;
     }
-    // 올림 처리
     const pages = Math.ceil(count / itemsPerPage);
-
-    // 글이 하나도 없어도 최소 1페이지 노출
-    if (pages === 0) return 1;
-    return pages;
+    return pages === 0 ? 1 : pages;
 });
 
-// [페이지 버튼] 화면에 보여줄 버튼 번호들 (예: 1, 2, 3, 4, 5)
+// [페이지네이션 버튼 번호 계산]
 const visiblePages = computed(() => {
-    // 현재 페이지가 속한 그룹 계산 (예: 6페이지면 2번째 그룹)
     const currentGroup = Math.ceil(currentPage.value / maxPageBtn);
-    
-    // 그룹의 시작 번호와 끝 번호 계산
     const startPage = (currentGroup - 1) * maxPageBtn + 1;
     let endPage = startPage + maxPageBtn - 1;
-
-    if (endPage > totalPages.value) { // 끝 번호가 전체 페이지보다 크면 안 됨
-        endPage = totalPages.value;
-    }
+    if (endPage > totalPages.value) endPage = totalPages.value;
+    
     const pages = [];
-    for (let i = startPage; i <= endPage; i++) {
-        pages.push(i);
-    }
+    for (let i = startPage; i <= endPage; i++) pages.push(i);
     return pages;
 });
 
 
-
-// 3. 상세 페이지 네비게이션 (이전글/다음글)
-// [현재 글 위치 찾기] 지금 보고 있는 글이 리스트에서 몇 번째인지
+// 4. 네비게이션 (이전글/다음글)
 const currentIndex = computed(() => {
-    // 글 정보가 없으면 -1 반환
     if (!selectedItem.value.noticeId) return -1;
-
-    // ID가 같은 것 순서(index)찾기
     return sortedList.value.findIndex(item => item.noticeId === selectedItem.value.noticeId);
 });
 
 const prevItem = computed(() => {
-    // 맨 처음 글이거나(index <= 0) 글을 못 찾았으면 없음(null)
-    if (currentIndex.value <= 0) {
-        return null;
-    }
-    // 내 앞 번호 글 반환
+    if (currentIndex.value <= 0) return null;
     return sortedList.value[currentIndex.value - 1];
 });
 
 const nextItem = computed(() => {
-    // 맨 마지막 글이거나 글을 못 찾았으면 없음(null)
-    if (currentIndex.value === -1 || currentIndex.value >= sortedList.value.length - 1) {
-        return null;
-    }
-    // 내 뒷 번호 글 반환
+    if (currentIndex.value === -1 || currentIndex.value >= sortedList.value.length - 1) return null;
     return sortedList.value[currentIndex.value + 1];
 });
 
-// 4. 유틸리티 함수 
+
+// 5. Utils
 const formatDate = (dateStr) => dateStr ? String(dateStr).substring(0, 10) : '';
 const isNew = (dateStr) => dateStr ? (new Date() - new Date(dateStr)) / (1000 * 60 * 60 * 24) < 1 : false;
-const guardWonmu = () => { if (!canManageNotice.value) { alert("권한이 없습니다."); return false; } return true; };
 
-// [추가] 파일명 확장자를 확인해서 이미지인지 판단 (jpg, png 등)
+// 권한 가드 함수 (버튼 클릭 시 재확인용)
+const guardWonmu = () => { 
+    if (!canManageNotice.value) { 
+        alert("권한이 없습니다."); 
+        return false; 
+    } 
+    return true; 
+};
+
+// [추가] 서버 이미지 경로(/images/...)를 전체 URL(http://...)로 변환
+const getImageUrl = (path) => {
+    if (!path) return '';
+    if (path.startsWith('http')) return path;
+    return `http://localhost:8080${path}`; 
+};
+
+// 파일 확장자 체크 (이미지인지 확인)
 const isImage = (fileName) => {
     if (!fileName) return false;
     const ext = fileName.split('.').pop().toLowerCase();
     return ['jpg', 'jpeg', 'png', 'gif', 'bmp', 'webp'].includes(ext);
 };
 
-// [추가] 줄바꿈 문자를 HTML 태그 <br>로 변환 (v-html용)
+// 본문 줄바꿈 처리
 const formatContent = (text) => text ? text.replace(/\n/g, '<br>') : '';
 
-// [추가] 본문 내 링크 클릭 시, 새 창이 아닌 SPA 방식으로 부드럽게 이동
+// 내부 링크 클릭 처리 (새로고침 방지)
 const handleLinkClick = (e) => {
-    const target = e.target.closest('a'); // 클릭된 요소가 <a> 태그인지 확인
+    const target = e.target.closest('a');
     if (target) {
         const href = target.getAttribute('href');
-        // 내부 링크('/'로 시작)만 가로채서 라우터로 이동
         if (href && href.startsWith('/')) {
             e.preventDefault();
             router.push(href);
@@ -370,123 +339,208 @@ const handleLinkClick = (e) => {
     }
 };
 
-// 5. 화면 이동 및 연동 로직
-const goDetail = async (item) => { router.push(`/notice/${item.noticeId}`); };
-const goList = () => { router.push('/notice'); mode.value = 'list'; selectedItem.value = {}; getNoticeList(); };
-const loadDetailData = async (id) => {
-    try {
-        const res = await getNoticeDetailReq(id);
-        selectedItem.value = res.data;
-        mode.value = 'detail';
-        window.scrollTo(0, 0);
-    } catch (e) { mode.value = 'list'; }
-};
-
-// [추가] 파일 선택 시 처리 핸들러
+// 6. 파일 처리 핸들러 (File Handler)
 const handleFileChange = (e) => {
     const file = e.target.files[0];
     if (!file) return;
 
     selectedFile.value = file;
-    // 파일 타입 확인 후 미리보기 URL 생성
+    
+    // 이미지 파일이면 미리보기 생성
     if (file.type.startsWith('image/')) {
         isImageFile.value = true;
         previewUrl.value = URL.createObjectURL(file);
     } else {
         isImageFile.value = false;
-        previewUrl.value = 'doc'; // 문서 파일용 표시
+        previewUrl.value = 'doc'; // 문서 아이콘용 플래그
     }
 };
 
-// [추가] 선택한 파일 삭제 (초기화)
 const removeFile = () => {
     selectedFile.value = null;
     previewUrl.value = null;
     isImageFile.value = false;
-    if (fileInput.value) fileInput.value.value = ''; // input 태그 값도 비워줘야 재선택 가능
+    // input 태그 값도 초기화
+    if (fileInput.value) fileInput.value.value = '';
 };
 
-// [수정] 글쓰기 진입 시 파일 정보 초기화 추가
+
+// 7. 화면 이동 로직 (Routing)
+const goList = () => { 
+    router.push('/notice'); 
+    mode.value = 'list'; 
+    selectedItem.value = {}; 
+    writeForm.value = { noticeId: '', title: '', content: '', topFix: false }; // 폼 초기화
+    removeFile(); 
+    getNoticeList(); // 리스트 새로고침
+};
+
 const goWrite = () => {
     if (!guardWonmu()) return;
     writeForm.value = { title: '', content: '', topFix: false };
-    removeFile(); // 파일 초기화
+    removeFile();
     mode.value = 'write';
 };
 
-// [수정] 수정 모드 진입 시 파일 정보 초기화 추가
 const goEdit = (item) => {
     if (!guardWonmu()) return;
+    
+    // 기존 데이터 복사
     writeForm.value = { ...item };
-    removeFile(); // 파일 초기화
+    
+    // 기존 파일이 있다면 미리보기 설정
+    if (item.fileUrl) {
+        previewUrl.value = item.fileUrl;
+        selectedFile.value = null; // 새로 올릴 파일은 아직 없음
+        
+        if (isImage(item.fileName)) {
+            isImageFile.value = true;
+        } else {
+            isImageFile.value = false;
+        }
+    } else {
+        removeFile();
+    }
     mode.value = 'edit';
 };
 
-watch(() => route.params.id, (newId) => { if (newId) loadDetailData(newId); else mode.value = 'list'; });
+// 상세 화면 이동
+const goDetail = (item) => { 
+    router.push(`/notice/${item.noticeId}`); 
+};
 
-// 6. 서버 통신 로직 (CRUD)
+// 상세 데이터 로드 (새로고침 시 사용)
+const loadDetailData = async (id) => {
+    try {
+        const res = await getNoticeDetailReq(id);
+        const data = res.data;
+
+        selectedItem.value = {
+            ...data,
+            // [중요] 서버 이미지 경로 변환
+            fileUrl: getImageUrl(data.thumbnailImg),
+            // 파일명만 추출
+            fileName: data.thumbnailImg ? data.thumbnailImg.split('/').pop() : ''
+        };
+        
+        mode.value = 'detail';
+        window.scrollTo(0, 0);
+    } catch (e) { 
+        console.error(e);
+        mode.value = 'list'; 
+    }
+};
+
+
+// 8. 서버 통신 (API Call)
+// 목록 조회
+const getNoticeList = async () => {
+    try {
+        const params = keyword.value ? { keyword: keyword.value } : null;
+        const res = await getNoticesReq(params);
+        
+        // 서버 데이터를 화면에 맞게 변환
+        noticeList.value = res.data.map(item => ({
+            ...item,
+            fileUrl: getImageUrl(item.thumbnailImg),
+            fileName: item.thumbnailImg,
+            hasFile: !!item.thumbnailImg // 파일 존재 여부
+        })) || [];
+    } catch (err) { 
+        console.error(err);
+        noticeList.value = []; 
+    }
+};
+
+// 글 등록 및 수정 (파일 업로드 포함)
 const submitNotice = async () => {
     if (!guardWonmu()) return;
-    if (!writeForm.value.title || !writeForm.value.content) { alert("내용을 입력해주세요"); return; }
+    if (!writeForm.value.title || !writeForm.value.content) { 
+        alert("내용을 입력해주세요"); 
+        return; 
+    }
 
     try {
         const memId = Number(loginInfo.value.memId || 0);
 
-        // [추가/수정] 일반 객체(JSON) 대신 FormData(택배상자) 사용
+        // [중요] 파일 전송을 위해 FormData 사용
         const formData = new FormData();
         formData.append('title', writeForm.value.title);
         formData.append('content', writeForm.value.content);
-        formData.append('topFix', writeForm.value.topFix); // boolean 값도 문자열로 변환되어 전송됨
+        formData.append('topFix', writeForm.value.topFix);
         formData.append('memId', memId);
 
-        // 수정 모드일 때는 ID가 필요하고, 신규일 때는 삭제여부 0으로 설정
         if (mode.value === 'edit') {
             formData.append('noticeId', writeForm.value.noticeId);
         } else {
             formData.append('del', 0);
         }
 
-        // 파일이 선택되어 있다면 상자에 담기 ('file'이라는 이름으로 백엔드가 받음)
+        // 파일이 선택된 경우에만 추가
         if (selectedFile.value) {
-            formData.append('file', selectedFile.value);
+            formData.append('uploadFile', selectedFile.value); 
         }
 
-        // FormData를 API로 전송 (기존 addNoticeReq, editNoticeReq 함수가 받아서 처리)
         let res = mode.value === 'write' ? await addNoticeReq(formData) : await editNoticeReq(formData);
 
         if (res.data === 'success' || res.data === true) {
             alert("완료되었습니다.");
             goList();
+        } else {
+            alert("실패했습니다.");
         }
-    } catch (e) { alert("오류가 발생했습니다."); }
+    } catch (e) { 
+        console.error(e);
+        alert("오류가 발생했습니다."); 
+    }
 };
 
+// 글 삭제
 const deleteNotice = async (id) => {
     if (!guardWonmu()) return;
     if (!confirm("정말 삭제하시겠습니까?")) return;
     try {
         const res = await delNoticeReq(id);
-        if (res.data === 'success' || res.data === true) { alert("삭제되었습니다."); goList(); }
+        if (res.data === 'success' || res.data === true) { 
+            alert("삭제되었습니다."); 
+            goList(); 
+        }
     } catch (e) { alert("오류가 발생했습니다."); }
 };
 
-const getNoticeList = async () => {
-    try {
-        const params = keyword.value ? { keyword: keyword.value } : null;
-        const res = await getNoticesReq(params);
-        noticeList.value = res.data || [];
-    } catch (err) { noticeList.value = []; }
-};
 
-// 7. 페이지 시작
+// 9. Lifecycle
+// URL 변경 감지 (뒤로가기 지원)
+watch(() => route.params.id, (newId) => { 
+    if (newId) loadDetailData(newId); 
+    else {
+        mode.value = 'list';
+        getNoticeList(); // 목록으로 돌아올 때 데이터 갱신
+    }
+});
+
 onMounted(async () => {
+    // 세션에서 로그인 정보 확인
     const raw = sessionStorage.getItem('loginId');
     if (raw) loginInfo.value = JSON.parse(raw);
+    
+    // 원무과 권한 체크
     if (isAdmin.value) {
-        try { const res = await getAdminInfoReq(); if (res?.data?.isWonmu) isWonmuState.value = true; } catch (e) { }
+        try { 
+            const res = await getAdminInfoReq(); 
+            if (res && res.data && res.data.isWonmu) {
+                isWonmuState.value = true;
+            }
+        } catch (e) { console.log(e); }
     }
+    
+    // 초기 데이터 로드
     await getNoticeList();
-    if (route.params.id) loadDetailData(route.params.id);
+    
+    // URL에 ID가 있으면 상세 페이지 로드
+    if (route.params.id) {
+        loadDetailData(route.params.id);
+    }
 });
 </script>
 
@@ -535,7 +589,7 @@ onMounted(async () => {
 }
 
 .total-count span {
-    color: #0171e9;
+    color: #005baa;
     font-weight: 700;
 }
 
@@ -579,7 +633,7 @@ onMounted(async () => {
 }
 
 .btn-write {
-    background: #0171e9;
+    background: #005baa;
     color: #fff;
     border: none;
     padding: 0 20px;
@@ -671,9 +725,9 @@ onMounted(async () => {
 }
 
 .page-btn.active {
-    background: #0171e9;
+    background: #005baa;
     color: #fff;
-    border-color: #0171e9;
+    border-color: #005baa;
 }
 
 .detail-wrap {
@@ -849,7 +903,7 @@ onMounted(async () => {
 
 .btn-save {
     padding: 12px 40px;
-    background: #0171e9;
+    background: #005baa;
     color: #fff;
     border: none;
     cursor: pointer;
@@ -909,7 +963,7 @@ onMounted(async () => {
 
 /* [추가] 상세화면 링크 스타일 (v-html 내부 적용용) */
 .view-text :deep(a) {
-    color: #0171e9;
+    color: #005baa;
     text-decoration: underline;
     cursor: pointer;
     font-weight: 600;
@@ -990,7 +1044,7 @@ onMounted(async () => {
 }
 
 .file-link:hover {
-    color: #0171e9;
+    color: #005baa;
     text-decoration: underline;
 }
 

@@ -64,10 +64,10 @@ const historyData = ref([
 
 /* 연도 원형 포인트 */
 .year-col { position: absolute; left: -100px; width: 100px; text-align: right; padding-right: 30px; }
-.year-col h3 { font-size: 28px; font-weight: 800; color: #0171e9; margin: 0; line-height: 1; }
+.year-col h3 { font-size: 28px; font-weight: 800; color: #005baa; margin: 0; line-height: 1; }
 .timeline-item::before {
   content: ''; position: absolute; left: -6px; top: 5px;
-  width: 10px; height: 10px; background: #fff; border: 3px solid #0171e9; border-radius: 50%;
+  width: 10px; height: 10px; background: #fff; border: 3px solid #005baa; border-radius: 50%;
 }
 
 .content-col { padding-left: 30px; }

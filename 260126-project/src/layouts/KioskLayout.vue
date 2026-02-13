@@ -1,7 +1,7 @@
 <template>
     <div class="kiosk-container">
         <header class="kiosk-header">
-            <h3>{{ $route.meta.title || 'S-HOSPITAL' }}</h3>
+            <h3>{{ $route.meta.title || '서울에스병원' }}</h3>
         </header>
 
         <main class="kiosk-main">
@@ -9,7 +9,7 @@
         </main>
 
         <footer class="kiosk-footer">
-            <p>Copyright &copy; S-HOSPITAL</p>
+            <p>Copyright &copy; 서울에스병원</p>
         </footer>
     </div>
 </template>
