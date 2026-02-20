@@ -31,6 +31,14 @@
     
     <!-- ========== 공지사항 ========== -->
     
+    <!-- 무슨 부서(원무, 홍보)인지 확인 -->
+    <select id="getAdminDeptName" parameterType="long" resultType="String">
+        SELECT d.admin_dept_name 
+        FROM admin_staff s 
+        JOIN admin_dept d ON s.admin_dept_id = d.admin_dept_id
+        WHERE s.mem_id = #{memId}
+    </select>
+    
     <!-- 공지사항 전체 목록 -->
     <!--<select id="getAllNoticeList" resultType="com.mbc.mid.dto.NoticeDto">
         SELECT * FROM notice 
@@ -59,7 +67,7 @@
         WHERE n.notice_id = #{noticeId}
     </select>
     
-    <!-- 공지사항 조회수 증가 -->
+    <!-- 공지사항 조회수 증가 (24시간) -->
     <update id="increaseNoticeReadCount" parameterType="long">
         UPDATE notice
         SET read_count = read_count + 1
@@ -127,14 +135,6 @@
     </update>
     
     <!-- ========== 고객의소리 ========== -->
-    
-    <!-- 무슨 부서(원무)인지 확인 -->
-    <select id="getAdminDeptName" parameterType="long" resultType="String">
-        SELECT d.admin_dept_name 
-        FROM admin_staff s 
-        JOIN admin_dept d ON s.admin_dept_id = d.admin_dept_id
-        WHERE s.mem_id = #{memId}
-    </select>
     
     <!-- 고객의소리 목록 (전체/미답변/답변완료/삭제) -->
     <select id="getAllVocList" parameterType="String" resultType="com.mbc.mid.dto.VocDto">

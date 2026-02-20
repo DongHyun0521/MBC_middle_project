@@ -62,21 +62,9 @@ public class AdminService {
         return adminDao.getAllAdminDepts();
     }
     
-    // 부서 이름 확인
+    // 무슨 부서(원무, 홍보)인지 확인
     public String getAdminDeptName(Long memId) {
         return adminDao.getAdminDeptName(memId);
-    }
-    
-    // 무슨 부서(원무)인지 확인
-    public boolean isWonMu(Long memId) {
-        String deptName = adminDao.getAdminDeptName(memId);
-        return deptName != null && deptName.contains("원무");
-    }
-    
-    // 무슨 부서(홍보)인지 확인
-    public boolean isPr(Long memId) {
-        String deptName = adminDao.getAdminDeptName(memId);
-        return deptName != null && deptName.contains("홍보");
     }
     
     // 파일 저장
@@ -85,7 +73,6 @@ public class AdminService {
             return null; // 파일이 없으면 null 반환
         }
         
-        // 프로젝트 루트/images/ 폴더에 저장
         String uploadDir = "images/";
         File folder = new File(uploadDir);
         if (!folder.exists()) folder.mkdirs();
@@ -101,6 +88,12 @@ public class AdminService {
     
     // ========== 공지사항 ==========
     
+    // 무슨 부서(원무)인지 확인
+    public boolean isWonMu(Long memId) {
+        String deptName = adminDao.getAdminDeptName(memId);
+        return deptName != null && deptName.contains("원무");
+    }
+    
     // 공지사항 전체 목록
     public List<NoticeDto> getAllNoticeList() {
         return adminDao.getAllNoticeList();
@@ -111,7 +104,7 @@ public class AdminService {
         return adminDao.getNoticeDetail(noticeId);
     }
     
-    // 공지사항 조회수 증가
+    // 공지사항 조회수 증가 (24시간)
     public void increaseNoticeReadCount(Long noticeId) {
         adminDao.increaseNoticeReadCount(noticeId);
     }
@@ -211,6 +204,12 @@ public class AdminService {
     
     // ========== 건강이야기 ==========
     
+    // 무슨 부서(홍보)인지 확인
+    public boolean isPr(Long memId) {
+        String deptName = adminDao.getAdminDeptName(memId);
+        return deptName != null && deptName.contains("홍보");
+    }
+    
     // 건강이야기 목록
     public List<HealthStoryDto> getAllHealthStories() {
         return adminDao.getAllHealthStories();
@@ -240,7 +239,7 @@ public class AdminService {
     // 건강이야기 수정
     public int updateHealthStory(HealthStoryDto dto) throws Exception {
         String savedPath = saveFile(dto.getUploadFile());
-        dto.setThumbnailImg(savedPath);
+        if (savedPath != null) dto.setThumbnailImg(savedPath);
 
         return adminDao.updateHealthStory(dto);
     }

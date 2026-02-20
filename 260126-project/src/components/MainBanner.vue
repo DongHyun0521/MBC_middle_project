@@ -87,14 +87,14 @@ const prevSlide = () => { currentSlide.value = currentSlide.value === 0 ? slides
 const startSlide = () => { if (!slideInterval) slideInterval = setInterval(nextSlide, 4000) }
 const stopSlide = () => { if (slideInterval) { clearInterval(slideInterval); slideInterval = null } }
 
-// ★ [추가] 드래그 시작 (마우스 누름 / 터치 시작)
+// [추가] 드래그 시작 (마우스 누름 / 터치 시작)
 const startDrag = (e) => {
   stopSlide() // 드래그 중엔 자동 넘김 정지
   // 마우스 이벤트면 e.clientX, 터치 이벤트면 e.touches[0].clientX 사용
   touchStartX.value = e.type.includes('mouse') ? e.clientX : e.touches[0].clientX
 }
 
-// ★ [추가] 드래그 끝 (마우스 뗌 / 터치 끝)
+// [추가] 드래그 끝 (마우스 뗌 / 터치 끝)
 const endDrag = (e) => {
   // 마우스 뗐을 때 좌표 or 터치 끝났을 때 좌표
   touchEndX.value = e.type.includes('mouse') ? e.clientX : e.changedTouches[0].clientX
@@ -102,14 +102,14 @@ const endDrag = (e) => {
   startSlide()  // 다시 자동 재생 시작
 }
 
-// ★ [추가] 마우스가 배너 밖으로 나갔을 때 (드래그 취소 처리 겸 재시작)
+// [추가] 마우스가 배너 밖으로 나갔을 때 (드래그 취소 처리 겸 재시작)
 const handleMouseLeave = () => {
   touchStartX.value = 0
   touchEndX.value = 0
   startSlide()
 }
 
-// ★ [추가] 스와이프 계산 로직
+// [추가] 스와이프 계산 로직
 const handleSwipe = () => {
   // 30px 이상 움직여야 의도적인 드래그로 판단 (너무 민감하지 않게)
   const threshold = 10 

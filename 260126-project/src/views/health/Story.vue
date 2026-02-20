@@ -135,9 +135,6 @@ import {
 const router = useRouter();
 const route = useRoute();
 
-// ==========================================
-// 1. 상태 변수
-// ==========================================
 const mode = ref('list');
 const keyword = ref('');
 const loginInfo = ref({});
@@ -156,12 +153,9 @@ const previewUrl = ref(null);
 const isImageFile = ref(false);
 const isVideoFile = ref(false);
 
-
-// ==========================================
 // 2. 권한 체크
-// ==========================================
 const isAdmin = computed(() => String(loginInfo.value.loginType || loginInfo.value.role || '').toUpperCase() === 'ADMIN');
-
+// [홍보팀 확인]
 const isPrTeam = computed(() => {
   if (!isAdmin.value) return false;
   if (isPrTeamState.value === true) return true;

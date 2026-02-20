@@ -1,23 +1,13 @@
 // middleProject - com.mbc.mid.service - OcrService.java
 package com.mbc.mid.service;
 
-import net.sourceforge.tess4j.ITesseract;
-import net.sourceforge.tess4j.Tesseract;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.multipart.MultipartFile;
-
-import com.mbc.mid.dao.MemDao;
-import com.mbc.mid.dao.ParkingLogDao;
-import com.mbc.mid.dto.OcrResponse;
-import com.mbc.mid.dto.ParkingLogDto;
-
-import javax.imageio.ImageIO;
-import java.awt.*;
+import java.awt.Color;
+import java.awt.Graphics2D;
+import java.awt.RenderingHints;
 import java.awt.image.BufferedImage;
 import java.awt.image.ConvolveOp;
 import java.awt.image.Kernel;
+import java.awt.image.WritableRaster;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
@@ -28,19 +18,50 @@ import java.util.ArrayList;
 import java.util.Base64;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import javax.imageio.ImageIO;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
+
+import com.mbc.mid.dao.MemDao;
+import com.mbc.mid.dao.ParkingLogDao;
+import com.mbc.mid.dto.EntryPathResponse;
+import com.mbc.mid.dto.OcrResponse;
+import com.mbc.mid.dto.ParkingLogDto;
+import com.mbc.mid.dto.ParkingSpotDto;
+
+import net.sourceforge.tess4j.ITesseract;
+import net.sourceforge.tess4j.Tesseract;
 
 @Service
 @Transactional
 public class OcrService {
-    
+
     @Autowired
     private ParkingLogDao parkingLogDao;
+    
+    // 추가
+    @Autowired
+    private ParkingSpotService parkingSpotService;
+    // 추가 끝
     
     @Autowired
     private MemDao memDao;
     
+    @Autowired
+    private PaymentService paymentService;
+
+    // 추가
+    private static final Map<String, Object> ENTRY_LOCK = new ConcurrentHashMap<>();
+    // 추가 끝
+
     // 입차 시
     public OcrResponse processEntryImage(MultipartFile file) {
     	System.out.println("=> OcrService: processEntryImage | "+ new Date());
@@ -86,6 +107,7 @@ public class OcrService {
             String rawResult = instance.doOCR(tempFile).replace("\n", "").trim();
             // OCR 실행해서 나온 번호판 결과
             String finalResult = parseLicensePlate(rawResult);
+            finalResult = finalResult.replaceAll("\\s+", "");
             
             String entryTimeStr = "";
             String exitTimeStr = "";
@@ -95,18 +117,40 @@ public class OcrService {
             // OCR 성공 시 DB 로직 수행
             if (isValidResult(finalResult)) {
                 
+            	// 수정: 입차 로직
             	if (type.equals("ENTRY")) {
-                    // 중복 입차 방지
-                    ParkingLogDto existingLog = parkingLogDao.selectRecentEntryLog(finalResult);
-                    if (existingLog != null && existingLog.getExitTime() == null) {
-                        return new OcrResponse(finalResult, rawResult, debugImages, "ALREADY_PARKED", null, isMember, 0, null, null);
+                    Object lock = ENTRY_LOCK.computeIfAbsent(finalResult, k -> new Object());
+
+                    synchronized (lock) {
+                        ParkingLogDto existingLog = parkingLogDao.selectRecentEntryLog(finalResult);
+
+                        if (existingLog != null && existingLog.getExitTime() == null) {
+                            Integer spotId = parkingSpotService.findSpotIdByParkingLogId(existingLog.getParkingLogId());
+                            if (spotId != null) {
+                                return new OcrResponse(
+                                    finalResult, "이미 주차 공간(" + spotId + ")을 차지하고 있는 차량입니다.", debugImages, 
+                                    "ALREADY_PARKED", null, isMember, 0, existingLog.getParkingLogId(), null
+                                );
+                            } else {
+                                System.out.println("유령 로그 발견(ID:" + existingLog.getParkingLogId() + "). 무시하고 새로 입차 진행.");
+                            }
+                        }
+
+                        ParkingSpotDto spot = parkingSpotService.recommendSpot();
+                        if (spot == null) {
+                            return new OcrResponse(finalResult, "주차 공간이 부족합니다", debugImages, "NO_SPACE", null, isMember, 0, null, null);
+                        }
+
+                        EntryPathResponse parkResult = parkingSpotService.parkCar(spot.getSpotId().intValue(), finalResult);
+                        entryTimeStr = formatDateTime(LocalDateTime.now());
+
+                        return new OcrResponse(finalResult, rawResult, debugImages, entryTimeStr, null, isMember, 0, null, null);
                     }
-                    
-                    parkingLogDao.insertEntryLog(finalResult);
-                    entryTimeStr = formatDateTime(LocalDateTime.now());
-                    parkingFee = 0; 
-                    
-                } else if (type.equals("EXIT")) {
+                }
+            	// 수정 끝
+                
+            	// 수정: 출차 로직
+                else if (type.equals("EXIT")) {
                     ParkingLogDto log = parkingLogDao.selectRecentEntryLog(finalResult);
                     Long memId = null;
 
@@ -117,22 +161,54 @@ public class OcrService {
                         if (isMember)
                             memId = memDao.getMemIdByVehicle(finalResult);
 
-                        // DB 업데이트 (출차시간, 회원여부)
-                        log.setIsMember(isMember);
-                        parkingLogDao.updateExitLog(log);
-
-                        // 요금 계산
-                        LocalDateTime inTime = log.getEntryTime();
-                        LocalDateTime outTime = LocalDateTime.now();
-                        parkingFee = calculateFee(inTime, outTime, isMember);
-
-                        // 시간 보여주는 모양 변경
-                        entryTimeStr = formatDateTime(inTime);
-                        exitTimeStr = formatDateTime(outTime);
+                        Map<String, Object> exitStatus = parkingSpotService.checkExit(finalResult);
+                        String status = (String) exitStatus.get("status");
                         
-                        return new OcrResponse(finalResult, rawResult, debugImages, entryTimeStr, exitTimeStr, isMember, parkingFee, log.getParkingLogId(), memId);
+                        boolean hasClinicVisit = exitStatus.get("hasClinicVisit") != null && (boolean) exitStatus.get("hasClinicVisit");
+                        boolean isCurrentFree = exitStatus.get("amount") != null && (int)exitStatus.get("amount") == 0;
+
+                        if ("PREPAID_OK".equals(status) || isCurrentFree) {
+                            parkingSpotService.processExit(finalResult);
+
+                            String msg = hasClinicVisit ? "[진료할인] 무료 주차입니다. " : "정산 확인되었습니다. ";
+                            msg += "안녕히 가십시오.";
+
+                            OcrResponse res = new OcrResponse(
+                                finalResult, msg, debugImages, 
+                                formatDateTime(log.getEntryTime()), formatDateTime(LocalDateTime.now()), 
+                                isMember, 0, log.getParkingLogId(), memId
+                            );
+                            res.setAlreadyPaid(true);
+                            return res;
+                        }
+                        
+                        else {
+                            Integer feeToPay = exitStatus.containsKey("amount") ? 
+                                               (Integer) exitStatus.get("amount") : 
+                                               (Integer) exitStatus.get("additionalFee");
+
+                            StringBuilder msgBuilder = new StringBuilder();
+                            if (hasClinicVisit) msgBuilder.append("[진료할인 적용] ");
+                            else if (isMember) msgBuilder.append("[회원할인 적용] ");
+                            msgBuilder.append(exitStatus.get("message"));
+
+                            OcrResponse res = new OcrResponse(
+                                finalResult,
+                                msgBuilder.toString(),
+                                debugImages,
+                                formatDateTime(log.getEntryTime()),
+                                null, 
+                                isMember,
+                                feeToPay,
+                                log.getParkingLogId(),
+                                memId
+                            );
+                            res.setAlreadyPaid(false);
+                            return res;
+                        }
                     }
                 }
+                // 수정 끝
             }
             return new OcrResponse(finalResult, rawResult, debugImages, entryTimeStr, exitTimeStr, isMember, parkingFee, null, null);
         } catch (Exception e) {
@@ -145,7 +221,7 @@ public class OcrService {
     }
 
     // 요금 계산 함수
-    private Integer calculateFee(LocalDateTime in, LocalDateTime out, boolean isMember) {
+    /*private Integer calculateFee(LocalDateTime in, LocalDateTime out, boolean isMember) {
     	System.out.println("=> OcrService: calculateFee | "+ new Date());
         long minutes = Duration.between(in, out).toMinutes();
 
@@ -158,7 +234,7 @@ public class OcrService {
         int unit = (int) Math.ceil(chargeMinutes / 30.0);
         int rate = isMember ? 1000 : 2000;
         return unit * rate;
-    }
+    }*/
 
     // 추출한 문자열이 번호판 형태인지 확인
     private boolean isValidResult(String text) {
@@ -180,6 +256,69 @@ public class OcrService {
         BufferedImage smoothBold = applyGaussianBlur(bold);	// 가우시안 블러
         return addPadding(smoothBold, 50);					// 패딩해서 리턴
     }
+    
+    /*private BufferedImage preprocessBoldBlur(BufferedImage source) {
+        System.out.println("=> OcrService: preprocessBoldBlur | " + new Date());
+        
+        // 1. 확대 및 흑백 변환 (필수: 히스토그램 평활화는 흑백 이미지에서 작동)
+        BufferedImage resized = resizeImage(source, 2); 
+        
+        // 2. [추가] 히스토그램 평활화 (명암 대비 극대화 - CLAHE 효과 유사)
+        BufferedImage contrasted = applyHistogramEqualization(resized);
+        
+        // 3. 글자 굵게 (Dilation)
+        BufferedImage bold = applyDilation(contrasted); 
+        
+        // 4. 가우시안 블러 (노이즈 제거)
+        BufferedImage smoothBold = applyGaussianBlur(bold); 
+        
+        // 5. 패딩 추가
+        return addPadding(smoothBold, 50); 
+    }
+
+    // [신규 추가] 히스토그램 평활화 (CLAHE 대체 구현)
+    private BufferedImage applyHistogramEqualization(BufferedImage input) {
+        int width = input.getWidth();
+        int height = input.getHeight();
+        
+        // 흑백 이미지여야 하므로 TYPE_BYTE_GRAY로 변환된 이미지인지 확인 후 처리
+        BufferedImage gray = new BufferedImage(width, height, BufferedImage.TYPE_BYTE_GRAY);
+        Graphics2D g = gray.createGraphics();
+        g.drawImage(input, 0, 0, null);
+        g.dispose();
+
+        // 1. 히스토그램 계산
+        int[] histogram = new int[256];
+        WritableRaster raster = gray.getRaster();
+        for (int y = 0; y < height; y++) {
+            for (int x = 0; x < width; x++) {
+                int value = raster.getSample(x, y, 0);
+                histogram[value]++;
+            }
+        }
+
+        // 2. 누적 분포 함수(CDF) 계산 및 정규화
+        int totalPixels = width * height;
+        int[] cdf = new int[256];
+        int sum = 0;
+        for (int i = 0; i < 256; i++) {
+            sum += histogram[i];
+            // 0~255 범위로 정규화 (Equalization Formula)
+            cdf[i] = (int) ((float) sum / totalPixels * 255);
+        }
+
+        // 3. 픽셀 매핑 (새로운 값 적용)
+        BufferedImage equalized = new BufferedImage(width, height, BufferedImage.TYPE_BYTE_GRAY);
+        WritableRaster outRaster = equalized.getRaster();
+        for (int y = 0; y < height; y++) {
+            for (int x = 0; x < width; x++) {
+                int oldVal = raster.getSample(x, y, 0);
+                int newVal = cdf[oldVal];
+                outRaster.setSample(x, y, 0, newVal);
+            }
+        }
+        return equalized;
+    }*/
 
     // 확대 2x
     private BufferedImage resizeImage(BufferedImage original, int scale) {

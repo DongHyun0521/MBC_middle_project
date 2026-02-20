@@ -51,7 +51,7 @@ public class AdminController {
         return adminService.getAllAdminDepts();
     }
     
-    //
+    // 이게 무슨 코드지??
     @GetMapping("/my-info")
     public Map<String, Object> getMyAdminInfo(HttpSession session) {
         String loginId = (String) session.getAttribute("loginId");
@@ -359,6 +359,24 @@ public class AdminController {
         return adminService.getAllHealthStories();
     }
     
+    // 건강이야기 작성
+    @PostMapping("/health/write")
+    public String writeHealthStory(@ModelAttribute HealthStoryDto dto, HttpSession session) {
+        System.out.println("=> AdminController: writeHealthStory | " + new Date());
+        // 로그인여부 & 회원 & 행정원무 확인
+        String loginId = (String) session.getAttribute("loginId");
+        MemDto member = memService.getMemberInfo(loginId);
+        if (loginId == null || member == null || !adminService.isAdmin(member.getMemId()) || !adminService.isPr(member.getMemId())) return "fail";
+
+        try {
+            adminService.addHealthStory(dto, member.getMemId());
+            return "success";
+        } catch (Exception e) {
+            e.printStackTrace();
+            return "fail";
+        }
+    }
+    
     // 건강이야기 상세 보기
     @GetMapping("/health/detail/{healthStoryId}")
     public HealthStoryDto getHealthStoryDetail(@PathVariable Long healthStoryId, HttpServletRequest request, HttpServletResponse response) {
@@ -386,24 +404,6 @@ public class AdminController {
             response.addCookie(newCookie);
         }
         return adminService.getHealthStoryDetail(healthStoryId);
-    }
-    
-    // 건강이야기 작성
-    @PostMapping("/health/write")
-    public String writeHealthStory(@ModelAttribute HealthStoryDto dto, HttpSession session) {
-        System.out.println("=> AdminController: writeHealthStory | " + new Date());
-        // 로그인여부 & 회원 & 행정원무 확인
-        String loginId = (String) session.getAttribute("loginId");
-        MemDto member = memService.getMemberInfo(loginId);
-        if (loginId == null || member == null || !adminService.isAdmin(member.getMemId()) || !adminService.isPr(member.getMemId())) return "fail";
-
-        try {
-            adminService.addHealthStory(dto, member.getMemId());
-            return "success";
-        } catch (Exception e) {
-            e.printStackTrace();
-            return "fail";
-        }
     }
     
     // 건강이야기 수정

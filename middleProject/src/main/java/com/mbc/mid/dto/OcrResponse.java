@@ -14,6 +14,17 @@ public class OcrResponse {
     private Long parkingLogId;			// 결제할 주차기록 ID
     private Long memId;					// 회원 ID (비회원: null)
     
+    // 추가
+    private boolean alreadyPaid;		// 사전정산 완료 여부
+    
+    public boolean isAlreadyPaid() {
+        return alreadyPaid;
+    }
+    public void setAlreadyPaid(boolean alreadyPaid) {
+        this.alreadyPaid = alreadyPaid;
+    }
+    // 추가 끝
+    
 	public OcrResponse(String resultText, String rawText, List<String> debugImages, String entryTime, String exitTime, Boolean isMember, Integer parkingFee, Long parkingLogId, Long memId) {
 		this.resultText = resultText;
 		this.rawText = rawText;

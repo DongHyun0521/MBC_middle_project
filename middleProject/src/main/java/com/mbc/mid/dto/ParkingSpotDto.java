@@ -10,6 +10,11 @@ public class ParkingSpotDto {
     private Integer distanceFromEntrance;	// 입구 거리
     private Boolean isParked;       		// 주차 여부
     
+    // 추가
+    private String vehicleNum;      		// 차량번호 (parking_log JOIN 결과)
+    private String entryTime;       		// 입차시간 (차량번호 검색용)
+    // 추가 끝
+    
 	public ParkingSpotDto() {
 		super();
 	}
@@ -67,4 +72,18 @@ public class ParkingSpotDto {
 		this.isParked = isParked;
 	}
     
+	// 추가
+    public String getVehicleNum() {
+        return vehicleNum;
+    }
+    public void setVehicleNum(String vehicleNum) {
+        this.vehicleNum = vehicleNum;
+    }
+    public String getEntryTime() {
+        return entryTime;
+    }
+    public void setEntryTime(String entryTime) {
+        this.entryTime = entryTime;
+    }
+    // 추가 끝
 }

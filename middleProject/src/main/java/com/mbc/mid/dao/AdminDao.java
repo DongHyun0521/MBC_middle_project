@@ -22,7 +22,7 @@ public interface AdminDao {
     
     List<NoticeDto> getAllNoticeList();			// 공지사항 전체 목록
     NoticeDto getNoticeDetail(Long noticeId);	// 공지사항 상세 보기
-    int increaseNoticeReadCount(Long noticeId);	// 공지사항 조회수 증가
+    int increaseNoticeReadCount(Long noticeId);	// 공지사항 조회수 증가 (24시간)
     void addNotice(NoticeDto noticeDto);		// 공지사항 작성
     int updateNotice(NoticeDto noticeDto);		// 공지사항 수정
     int deleteNotice(Long noticeId);			// 공지사항 삭제 (del=1)
@@ -31,7 +31,7 @@ public interface AdminDao {
     List<FaqDto> getFaqListByCategory(String category);	// FAQ 카테고리별 목록
     void addFaq(FaqDto faqDto);							// FAQ 작성
     int updateFaq(FaqDto faqDto);						// FAQ 수정
-    int deleteFaq(Long faqId);							// FAQ 삭제
+    int deleteFaq(Long faqId);							// FAQ 삭제 (del=1)
     
     public String getAdminDeptName(Long memId);	// 부서 이름 확인
     
@@ -41,9 +41,10 @@ public interface AdminDao {
     int deleteVocByAdmin(Long vocId);			// 고객의소리 강제 삭제 (del=1)
     int permanentDeleteVoc();					// 고객의소리 30일 후 자동 삭제 (delete)
     int restoreVoc(Long vocId);					// 고객의소리 복구 (del=0)
+    
     int addReply(VocDto vocDto);				// 고객의소리 답변 작성
     int updateReply(VocDto vocDto);				// 고객의소리 답변 수정
-    int deleteReply(Long vocId);				// 고객의소리 답변 삭제
+    int deleteReply(Long vocId);				// 고객의소리 답변 삭제 (NULL)
     
     public boolean isPr(Long memId);							// 무슨 부서(홍보)인지 확인
     List<HealthStoryDto> getAllHealthStories();					// 건강이야기 목록

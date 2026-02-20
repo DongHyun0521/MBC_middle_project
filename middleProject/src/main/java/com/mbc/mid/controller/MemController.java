@@ -7,6 +7,7 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -205,7 +206,7 @@ public class MemController {
 
     // 고객의소리 작성
     @PostMapping("/voc/write")
-    public String writeVoc(@RequestBody VocDto vocDto, HttpSession session) {
+    public String writeVoc(@ModelAttribute VocDto vocDto, HttpSession session) throws Exception {
     	// 로그인상태 & 회원인지 확인
         String loginId = (String) session.getAttribute("loginId");
         MemDto member = memService.getMemberInfo(loginId);
@@ -219,7 +220,7 @@ public class MemController {
 
     // 고객의소리 수정 (답변 없는 것만 수정 가능)
     @PutMapping("/voc/update")
-    public String updateVoc(@RequestBody VocDto vocDto, HttpSession session) {
+    public String updateVoc(@ModelAttribute VocDto vocDto, HttpSession session) throws Exception {
     	// 로그인상태 & 회원인지 확인
         String loginId = (String) session.getAttribute("loginId");
         MemDto member = memService.getMemberInfo(loginId);

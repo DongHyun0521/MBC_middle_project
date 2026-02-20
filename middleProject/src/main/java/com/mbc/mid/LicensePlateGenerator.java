@@ -11,7 +11,7 @@ import java.util.Random;
 public class LicensePlateGenerator {
 
     // 이미지가 저장될 경로 (프로젝트 폴더 안에 'test-images' 폴더가 자동 생성됨)
-    private static final String SAVE_PATH = "test-images";
+    private static final String SAVE_PATH = "generated";
     private static final int COUNT = 1000; // 생성할 이미지 개수
 
     public static void main(String[] args) {

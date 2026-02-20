@@ -1,48 +1,39 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
-        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
  	<mapper namespace="com.mbc.mid.dao.ParkingLogDao">
  	
+ 	<!-- 수정: parameterType String → ParkingLogDto, useGeneratedKeys 추가 -->
  	<!-- 차량 입차 시 -->
-    <insert id="insertEntryLog" parameterType="string">
-	    INSERT INTO parking_log (vehicle_num, entry_time)
-	    VALUES (#{vehicleNum}, NOW())
+ 	<insert id="insertEntryLog" parameterType="com.mbc.mid.dto.ParkingLogDto" useGeneratedKeys="true" keyProperty="parkingLogId">
+        INSERT INTO parking_log (vehicle_num, entry_time) 
+        VALUES (#{vehicleNum}, NOW())
     </insert>
-
+    <!-- 수정 끝 -->
+    
     <!-- 차량 출차 시, 최근부터 입차 기록 검색 -->
-    <select id="selectRecentEntryLog" parameterType="string" resultType="com.mbc.mid.dto.ParkingLogDto">
-        SELECT * FROM parking_log
-        WHERE vehicle_num = #{vehicleNum}
-        AND exit_time IS NULL
-        ORDER BY entry_time DESC
-        LIMIT 1
+    <select id="selectRecentEntryLog" parameterType="String" resultType="com.mbc.mid.dto.ParkingLogDto">
+        SELECT * FROM parking_log 
+        WHERE vehicle_num = #{vehicleNum} 
+        	AND exit_time IS NULL 
+        ORDER BY entry_time DESC LIMIT 1
     </select>
-    
-    <!-- 진료 예약이 있는지 확인 -->
-    <select id="checkClinicVisit" parameterType="string" resultType="int">
-	    SELECT COUNT(*)
-	    FROM reservation r
-	    JOIN member_vehicle v ON r.mem_id = v.mem_id
-	    WHERE v.vehicle_num = #{vehicleNum}
-		    AND r.reservation_status = '완료'
-		    AND r.reservation_date = CAST(TO_CHAR(NOW(), 'YYYYMMDD') AS INTEGER)
-    </select>
-    
-    <!-- 출차 기록 업데이트 -->
+
+	<!-- 출차 기록 업데이트 -->
     <update id="updateExitLog" parameterType="com.mbc.mid.dto.ParkingLogDto">
-        UPDATE parking_log
-        SET exit_time = NOW(), is_member = #{isMember}
+        UPDATE parking_log 
+        SET exit_time = now(), is_member = #{isMember} 
         WHERE parking_log_id = #{parkingLogId}
     </update>
-
-    <!-- 결제 여부 업데이트 (사전정산 시) -->
+    
+    <!-- 결제 여부 업데이트 -->
     <update id="updatePaymentStatus" parameterType="Long">
         UPDATE parking_log 
         SET payment_status = true 
         WHERE parking_log_id = #{parkingLogId}
     </update>
-
-    <!-- 동시 중복 로그 제거 -->
+    
+    <!-- 추가 -->
+    <!-- 동시 중복 로그 제거 (선점 실패 시) -->
     <delete id="deleteById" parameterType="long">
         DELETE FROM parking_log
         WHERE parking_log_id = #{parkingLogId}
@@ -56,25 +47,26 @@
             entry_time      AS entryTime,
             exit_time       AS exitTime,
             is_member       AS isMember,
-            payment_status  AS paymentStatus
-        FROM parking_log
+            payment_status  AS paymentStatus 
+        FROM parking_log 
         WHERE parking_log_id = #{parkingLogId}
     </select>
 
     <!-- 회원차량 여부 확인 -->
     <select id="isMemberVehicle" parameterType="String" resultType="int">
-        SELECT COUNT(*)
-        FROM member_vehicle
+        SELECT COUNT(*) 
+        FROM member_vehicle 
         WHERE vehicle_num = #{vehicleNum}
     </select>
 
     <!-- 차량번호로 회원 ID 조회 -->
     <select id="getMemberIdByVehicle" parameterType="String" resultType="Long">
-        SELECT m.mem_id
-        FROM member m
-        JOIN member_vehicle mv ON m.mem_id = mv.mem_id
-        WHERE mv.vehicle_num = #{vehicleNum}
+        SELECT m.mem_id 
+        FROM mem m 
+        JOIN member_vehicle mv ON m.mem_id = mv.mem_id 
+        WHERE mv.vehicle_num = #{vehicleNum} 
         LIMIT 1
     </select>
+    <!-- 추가 끝 -->
   
 </mapper>

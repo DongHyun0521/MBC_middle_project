@@ -1,11 +1,16 @@
 // middleProject - com.mbc.mid.service - MemService.java
 package com.mbc.mid.service;
 
+import java.io.File;
 import java.util.Date;
 import java.util.List;
+import java.util.UUID;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
+
 import com.mbc.mid.dao.MemDao;
 import com.mbc.mid.dto.MemDto;
 import com.mbc.mid.dto.MemberVehicleDto;
@@ -90,14 +95,38 @@ public class MemService {
         if (filter == null || filter.isEmpty()) filter = "all";
         return memDao.getMyVocList(memId, filter);
     }
+    
+    // 파일 저장
+    private String saveFile(MultipartFile file) throws Exception {
+        if (file == null || file.isEmpty()) {
+            return null;
+        }
+        
+        String uploadDir = "images/";
+        File folder = new File(uploadDir);
+        if (!folder.exists()) folder.mkdirs();
+
+        String uuid = UUID.randomUUID().toString();
+        String saveName = uuid + "_" + file.getOriginalFilename();
+        
+        file.transferTo(new File(folder.getAbsolutePath() + "/" + saveName));
+        
+        return "/images/" + saveName;
+    }
 
     // 고객의소리 작성
-    public void addVoc(VocDto vocDto) {
+    public void addVoc(VocDto vocDto) throws Exception {
+    	String savedPath = saveFile(vocDto.getUploadFile());
+        vocDto.setUploadImg(savedPath);
+        
         memDao.addVoc(vocDto);
     }
 
     // 고객의소리 수정 (답변 없는 것만 수정 가능)
-    public int updateVoc(VocDto vocDto) {
+    public int updateVoc(VocDto vocDto) throws Exception {
+    	String savedPath = saveFile(vocDto.getUploadFile());
+        if (savedPath != null) vocDto.setUploadImg(savedPath);
+        
         return memDao.updateVoc(vocDto);
     }
 

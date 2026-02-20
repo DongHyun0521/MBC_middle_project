@@ -23,7 +23,7 @@
         LIMIT 1
     </select>
 
-    <!-- 진료 완료 여부 확인 (진료할인용) -->
+    <!-- 진료 완료 여부 확인 (당일 진료 완료) -->
     <select id="checkClinicVisit" parameterType="string" resultType="int">
         SELECT COUNT(*)
         FROM reservation r
