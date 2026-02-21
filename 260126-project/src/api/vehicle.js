@@ -29,7 +29,10 @@ export const editVehiReq = (vehicleData) => {
 // 백엔드 주소: /member/vehiDelete
 // 쿼리 스트링(?vehicleNum=...) 형태로 정확하게 전달
 export const delVehiReq = (vNum) => {
-    return url.delete(`/member/vehiDelete/${vehicleNum}`)
+    // 1. { params: ... } 부분을 삭제합니다.
+    // 2. 백틱(`)을 사용하여 URL 경로에 vNum을 직접 포함시킵니다.
+    // 3. 한글 차량 번호 깨짐 방지를 위해 encodeURIComponent를 사용합니다.
+    return url.delete(`/member/vehiDelete/${encodeURIComponent(vNum)}`);
 }
 
 export default url;

@@ -20,7 +20,5 @@ public interface ParkingLogDao {
     // 추가
     void deleteById(Long parkingLogId);				// 동시 중복 로그 제거 (선점 실패 시)
     ParkingLogDto findById(int parkingLogId);		// PK로 단건 조회
-    int isMemberVehicle(String vehicleNum);			// 회원차량 여부 확인
-    Long getMemberIdByVehicle(String vehicleNum);	// 차량번호로 회원 ID 조회
     // 추가 끝
 }
