@@ -29,7 +29,7 @@ export const editVehiReq = (vehicleData) => {
 // 백엔드 주소: /member/vehiDelete
 // 쿼리 스트링(?vehicleNum=...) 형태로 정확하게 전달
 export const delVehiReq = (vNum) => {
-    return url.delete('/member/vehiDelete', { params: { vehicleNum: vNum } })
+    return url.delete(`/member/vehiDelete/${vehicleNum}`)
 }
 
 export default url;

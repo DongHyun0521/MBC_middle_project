@@ -583,7 +583,6 @@ import { getMyResReq, cancelResReq, getAllDoctorsReq, getDocSchedReq } from '@/a
 import { getVehiReq, delVehiReq } from '@/api/vehicle'
 import { getAdminVocListReq } from '@/api/customer'
 
-// 1. 기본 설정 및 상태 변수 (State)
 const router = useRouter()
 const currentView = ref('dash') // 현재 화면 상태
 
@@ -648,7 +647,6 @@ const fetchMyDetailInfo = async () => {
   }
 }
 
-// 2. Computed (계산된 속성)
 // 권한 확인
 const isDoctor = computed(() => userType.value === 'MED' && (userInfo.value.role || '').toUpperCase().includes('의사' || 'DOCTOR'));
 const isNurse = computed(() => userType.value === 'MED' && (userInfo.value.role || '').toUpperCase().includes('간호사' || 'NURSE'));
@@ -707,7 +705,6 @@ const calendarDays = computed(() => {
   return days;
 });
 
-// 3. UI Helper Functions
 // 화면 전환 및 데이터 로드
 const changeView = (view) => {
   if (view === 'edit') isAuthModalOpen.value = true;
@@ -790,18 +787,18 @@ const calculateDday = (dateStr) => {
   // 예: dateStr = "20260206" (YYYYMMDD)
   if (!dateStr) return 0;
 
-  // 1. 날짜 변환 (YYYY-MM-DD로 만들기)
+  // 날짜 변환 (YYYY-MM-DD로 만들기)
   const formattedDate = String(dateStr).replace(/(\d{4})(\d{2})(\d{2})/, '$1-$2-$3');
   // 결과: "2026-02-06"
 
-  // 2. Date 객체 생성
+  // Date 객체 생성
   const targetDate = new Date(formattedDate);
   const today = new Date();
 
-  // 3. 차이 계산 (밀리초 단위)
+  // 차이 계산 (밀리초 단위)
   const diff = targetDate - today;
 
-  // 4. 밀리초 -> '일(Day)' 단위로 변환
+  // 밀리초 -> '일(Day)' 단위로 변환
   // Math.ceil : 소수점 올림 처리
   return Math.ceil(diff / (1000 * 3600 * 24));
 };
@@ -826,7 +823,6 @@ const cancelAccess = () => { isAuthModalOpen.value = false; authPw.value = ''; }
 const openPostcode = () => { new window.daum.Postcode({ oncomplete: (data) => { userInfo.value.address = data.roadAddress; } }).open(); };
 
 
-// 4. API Calls (서버 통신 함수들)
 // [환자] 내 예약 내역 조회
 const fetchReservations = async () => {
   try {
@@ -893,7 +889,7 @@ const saveUserInfo = async () => {
   }
 };
 
-// * [추가] 실시간 유효성 검사 함수 (입력할 때마다 실행됨)
+// [추가] 실시간 유효성 검사 함수 (입력할 때마다 실행)
 const validatePassword = () => {
   pwData.value.newPw = pwData.value.newPw.replace(/[ㄱ-ㅎㅏ-ㅣ가-힣]/g, '');
   pwData.value.newPwConfirm = pwData.value.newPwConfirm.replace(/[ㄱ-ㅎㅏ-ㅣ가-힣]/g, '');
@@ -989,7 +985,7 @@ const fetchDoctorSchedules = async () => {
   } catch (e) { }
 };
 
-// 5. 비즈니스 로직 (시간 체크 및 상태 변경)
+// 시간 체크 및 상태 변경
 // [시간 체크] 예약 시간이 현재보다 미래인지 확인
 const isFutureTime = (item) => {
   if (!item) return false;
@@ -1045,7 +1041,7 @@ const handleForceCancel = async (scheduleItem) => {
   }
 };
 
-// 6. 초기화 (Lifecycle)
+// 초기화 (Lifecycle)
 onMounted(async () => {
   // 로그인 체크
   const loginData = sessionStorage.getItem('loginId');

@@ -391,7 +391,7 @@ const handleFileChange = (e) => {
     previewUrl.value = URL.createObjectURL(file);
   } else {
     isImageFile.value = false;
-    previewUrl.value = 'doc'; // 이미지가 아니면 그냥 문서 아이콘 보여주려고
+    previewUrl.value = 'doc'; 
   }
 };
 
@@ -401,23 +401,18 @@ const removeFile = () => {
   previewUrl.value = null;
   isImageFile.value = false;
   writeForm.value.uploadImg = '';
-  // <input type="file"> 태그 안에 남아있는 값도 비워줘야, 
-  // 똑같은 파일을 다시 선택했을 때 'change' 이벤트가 다시 발생함
   if (fileInput.value) fileInput.value.value = '';
 };
 
-// [수정됨] 글 저장 함수
 const submitWrite = async () => {
   if (!writeForm.value.title) return alert("제목을 입력해주세요.");
 
   try {
     const memId = Number(loginInfo.value.memId || loginInfo.value.id || 0);
 
-    // [중요] JSON 대신 FormData를 쓰는 이유!
-    // 일반 편지(JSON)에는 파일(택배)을 넣을 수 x
-    // 그래서 'FormData'라는 택배 박스를 만들어서 글자랑 파일을 같이 담아야 함
     const formData = new FormData();
 
+    
     // 1. 글자 정보 담기 (append: 박스에 넣기)
     formData.append('title', writeForm.value.title);
     formData.append('content', writeForm.value.content);
