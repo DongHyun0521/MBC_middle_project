@@ -25,7 +25,7 @@
 
           <div class="f-row f-middle">
             <div class="f-info-text">
-              <span>서울특별시 종로구 종로 69 S-HOSPITAL</span>
+              <span>경기도 성남시 수정구 금토로80번길 56, 서울에스병원</span>
               <span class="bar">|</span>
               <span>대표자: 엠비씨</span>
               <span class="bar">|</span>
@@ -62,7 +62,7 @@
           </div>
 
           <div class="f-row f-bottom-info">
-            <span>대표전화: <b class="blue-txt">1588-0000</b></span>
+            <span>대표전화: <b class="blue-txt">1588-8282</b></span>
             <span class="bar">|</span>
             <span>응급의료센터: 02-123-4567</span>
             <span class="bar">|</span>
@@ -130,84 +130,22 @@ const goToLocation = () => router.push('/location')
   justify-content: center;
 }
 
+/* =====================================================================
+   [최종] 메인 홈 푸터 - 1번(HomeLayout) 스타일 + 1800px 규격 적용
+   ===================================================================== */
 .main-home-footer {
-  background-color: #f9f9f9;
+  width: 100%;
+  background-color: #f8f8f8; /* 1번 기준 배경색 */
+  padding: 40px 0;           /* 1번 기준 수직 패딩 */
   border-top: 1px solid #eee;
-  padding: 60px 0;
+  font-family: 'pretendard', sans-serif;
   scroll-snap-align: end;
 }
 
-.footer-inner {
-  max-width: 1800px;
-  margin: 0 auto;
-  padding: 0 4%;
-  width: 100%;
-  text-align: left;
-}
-
-.f-logo-img {
-  filter: grayscale(1);
-  height: 50px;
-  width: auto;
-  object-fit: contain;
-  opacity: 0.5;
-}
-
-.f-links {
-  display: flex;
-  gap: 20px;
-  font-size: 16px;
-  color: #888;
-  margin-bottom: 15px;
-}
-
-.f-links .bold {
-  font-weight: 700;
-  color: #333;
-}
-
-.footer-info {
-  font-size: 15px;
-  color: #888;
-  margin-bottom: 10px;
-  line-height: 1.6;
-}
-
-.info-row {
-  display: flex;
-  gap: 10px;
-  align-items: center;
-  margin-bottom: 5px;
-  flex-wrap: wrap;
-}
-
-.blue-txt {
-  color: #005baa;
-  font-weight: 700;
-}
-
-.bar {
-  color: #ddd;
-}
-
-.copy {
-  font-size: 13px;
-  color: #aaa;
-  margin-top: 20px;
-}
-
-.main-home-footer {
-  width: 100%;
-  background-color: #f8f8f8;
-  padding: 40px 0;
-  border-top: 1px solid #eee;
-  font-family: 'pretendard', sans-serif;
-}
-
 .footer-inner.wide-footer {
-  max-width: 1500px;
+  max-width: 1800px; /* 공주님이 말씀하신 1800px 규격 고수 */
   margin: 0 auto;
-  padding: 0 40px;
+  padding: 0 50px;   /* 1번과 동일한 좌우 여백 */
   text-align: left;
 }
 
@@ -222,8 +160,8 @@ const goToLocation = () => router.push('/location')
   filter: grayscale(1);
   height: 50px;
   width: auto;
-  object-fit: contain;
   opacity: 0.5;
+  transition: 0.3s;
 }
 
 .f-logo-img:hover {
@@ -231,11 +169,12 @@ const goToLocation = () => router.push('/location')
   opacity: 1;
 }
 
+/* 우측 상단 링크 (1번 수치 적용) */
 .f-links {
-  font-size: 17px;
+  font-size: 17px; /* 1번 기준 17px */
   color: #666;
   display: flex;
-  gap: 15px;
+  gap: 15px;      /* 1번 기준 간격 */
 }
 
 .f-links .bold {
@@ -243,23 +182,22 @@ const goToLocation = () => router.push('/location')
   color: #005baa;
 }
 
-.bar {
-  color: #ddd;
-  margin: 0 5px;
-}
-
-.f-info-text,
-.f-bottom-info {
+/* 중간 정보 텍스트 (1번 수치 적용) */
+.f-info-text {
   font-size: 15px;
-  margin-bottom: -10px;
   color: #888;
   line-height: 1.2;
+  margin-bottom: -10px; /* 1번 특유의 쫀쫀한 간격 이식 */
 }
 
+/* 하단 연락처 및 SNS 구역 (1번 수치 적용) */
 .f-bottom-info {
   display: flex;
   justify-content: flex-start;
-  margin-bottom: 30px;
+  font-size: 15px;
+  color: #888;
+  line-height: 1.2;
+  margin-bottom: 30px; /* 1번 기준 하단 여백 */
 }
 
 .blue-txt {
@@ -267,7 +205,7 @@ const goToLocation = () => router.push('/location')
   font-weight: 800;
 }
 
-/* SNS 아이콘 스타일.png */
+/* SNS 아이콘 스타일 */
 .f-sns-side {
   display: flex;
   gap: 10px;
@@ -293,10 +231,16 @@ const goToLocation = () => router.push('/location')
   transform: translateY(-3px);
 }
 
+/* 카피라이트 영역 */
 .footer-copyright {
   font-size: 13px;
   color: #bbb;
   border-top: 1px solid #f2f2f2;
   padding-top: 20px;
+}
+
+.bar {
+  margin: 0 5px;
+  color: #ddd;
 }
 </style>

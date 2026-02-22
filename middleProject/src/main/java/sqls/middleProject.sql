@@ -19,8 +19,6 @@ DROP TABLE IF EXISTS parking_log;		--
 
 DROP TABLE IF EXISTS mem;				-- 
 
---==================================================
-
 -- 회원 정보
 CREATE TABLE mem (
     mem_id SERIAL PRIMARY KEY,						-- PK
@@ -30,7 +28,7 @@ CREATE TABLE mem (
     birthday INTEGER NOT NULL,						-- 생년월일 (숫자 8자리)
     gender INTEGER NOT NULL,						-- 성별 (남:1, 여:2)
     address VARCHAR(100) NOT NULL,					-- 주소
-	address_detail VARCHAR(100),					-- 상세 주소
+	address_detail VARCHAR(100),			-- 상세 주소
     phone_number VARCHAR(20) NOT NULL,				-- 전화번호
     email VARCHAR(50) NOT NULL,						-- 이메일
     del INTEGER NOT NULL DEFAULT 0,					-- 탈퇴 여부
@@ -90,7 +88,7 @@ CREATE TABLE med_staff (
 	mem_id INTEGER NOT NULL
 		REFERENCES mem(mem_id) ON DELETE CASCADE,	-- FK (mem.mem_id)
 	role VARCHAR(20) NOT NULL,						-- 직업
-	license_number VARCHAR(50) NOT NULL,			-- 의료진 등록 번호 (의사: 13또는 14로 시작하는 6자리 숫자 / 간호사: 50또는 55로 시작하는 6자리 숫자)
+	license_number VARCHAR(50) NOT NULL,			-- 의료진 등록 번호
 	status VARCHAR(20) NOT NULL DEFAULT '재직',		-- 재직 상태
 	med_dept_id INTEGER
 		REFERENCES med_dept(med_dept_id),			-- FK (med_dept.med_dept_id)
@@ -128,7 +126,7 @@ CREATE TABLE admin_staff (
 	mem_id INTEGER NOT NULL
 		REFERENCES mem(mem_id) ON DELETE CASCADE,	-- FK (mem.mem_id)
 	rank VARCHAR(20),								-- 직급
-	emp_number VARCHAR(50) NOT NULL,				-- 사원번호 (알파벳 한자리 + 숫자 8자리)
+	emp_number VARCHAR(50) NOT NULL,				-- 사원번호
 	status VARCHAR(20) NOT NULL DEFAULT '재직',		-- 재직 상태
 	admin_dept_id INTEGER
 		REFERENCES admin_dept(admin_dept_id),		-- FK (admin_dept.admin_dept_id)
@@ -192,8 +190,6 @@ CREATE TABLE health_story (
 	del INTEGER NOT NULL DEFAULT 0					-- 삭제 여부
 );
 
---==================================================
-
 DELETE FROM reservation;
 DELETE FROM voc;
 DELETE FROM notice;
@@ -211,7 +207,7 @@ DELETE FROM med_dept;
 DELETE FROM admin_dept;
 DELETE FROM mem;
 
---==================================================
+
 
 SELECT * FROM mem;				-- 회원
 SELECT * FROM med_staff;		-- 의료진
@@ -233,9 +229,8 @@ SELECT * FROM notice;			-- 공지사항
 SELECT * FROM faq;				-- FAQ
 SELECT * FROM health_story;		-- 건강이야기
 
---==================================================
 
--- INSERT 의료 부서
+
 INSERT INTO med_dept (med_dept_name, dept_location, dept_phone_number) VALUES 
 	('내과', '본관 102호', '02-1111-1112'),
 	('정형외과', '본관 103호', '02-1111-1113'),
@@ -248,9 +243,6 @@ INSERT INTO med_dept (med_dept_name, dept_location, dept_phone_number) VALUES
 	('정신건강의학과', '별관 301호', '02-1111-1120'),
 	('응급의학과', '본관 100호', '02-1111-1119');
 
---==================================================
-
--- INSERT 행정 부서
 INSERT INTO admin_dept (admin_dept_name, dept_location, dept_phone_number) VALUES 
 	('총무과', '본관 B101호', '02-2222-2223'),
 	('인사팀', '본관 B102호', '02-2222-2224'),
@@ -261,124 +253,6 @@ INSERT INTO admin_dept (admin_dept_name, dept_location, dept_phone_number) VALUE
 	('홍보팀', '본관 501호', '02-2222-2229'),
 	('보안팀', '본관 100호(보안실)', '02-2222-2230');
 
---==================================================
-
--- 회원 10명
-WITH gen_mem AS (
-    SELECT
-        i AS mem_idx,
-        'user' || LPAD(i::TEXT, 4, '0') AS gen_id,
-        'User123!@' AS gen_pw,
-        '일반회원_' || i AS gen_name,
-        19900000 + i AS gen_birth,
-        (i % 2) + 1 AS gen_gender,
-        '서울시 일반구 회원동' AS gen_addr,
-        i || '길' AS gen_addr_detail,
-        '010-1111-' || LPAD(i::TEXT, 4, '0') AS gen_phone,
-        'user' || LPAD(i::TEXT, 4, '0') || '@hospital.com' AS gen_email
-    FROM generate_series(1, 10) AS s(i)
-)
-INSERT INTO mem (id, password, name, birthday, gender, address, address_detail, phone_number, email)
-SELECT gen_id, gen_pw, gen_name, gen_birth, gen_gender, gen_addr, gen_addr_detail, gen_phone, gen_email
-FROM gen_mem;
-
---==================================================
-
--- 의사 부서별 10명 (10 * 10 = 100명)
-WITH gen_doc AS (
-    SELECT
-        dept.id AS dept_id,
-        doc.idx AS doc_idx,
-        'doc' || LPAD(dept.id::TEXT, 2, '0') || LPAD(doc.idx::TEXT, 2, '0') AS gen_id,
-        'Doctor123!@' AS gen_pw,
-        '의사_' || dept.id || '_' || doc.idx AS gen_name,
-        19800000 + (dept.id * 100) + doc.idx AS gen_birth,
-        (doc.idx % 2) + 1 AS gen_gender,
-        '서울시 메디컬구 의사동' AS gen_addr,
-        dept.id || '길 ' || doc.idx || '호' AS gen_addr_detail,
-        '010-2222-' || LPAD(((dept.id - 1) * 10 + doc.idx)::TEXT, 4, '0') AS gen_phone,
-        'doc' || LPAD(dept.id::TEXT, 2, '0') || LPAD(doc.idx::TEXT, 2, '0') || '@hospital.com' AS gen_email,
-        '13' || LPAD(dept.id::TEXT, 2, '0') || LPAD(doc.idx::TEXT, 2, '0') AS gen_license
-    FROM generate_series(1, 10) AS dept(id)
-    CROSS JOIN generate_series(1, 10) AS doc(idx)
-),
-inserted_mem AS (
-    INSERT INTO mem (id, password, name, birthday, gender, address, address_detail, phone_number, email)
-    SELECT gen_id, gen_pw, gen_name, gen_birth, gen_gender, gen_addr, gen_addr_detail, gen_phone, gen_email
-    FROM gen_doc
-    RETURNING mem_id, id
-)
-INSERT INTO med_staff (mem_id, role, license_number, status, med_dept_id)
-SELECT m.mem_id, '의사', g.gen_license, '재직', g.dept_id
-FROM inserted_mem m
-JOIN gen_doc g ON m.id = g.gen_id;
-
---==================================================
-
--- 간호사 부서별 10명 (10 * 10 = 100명)
-WITH gen_nurse AS (
-    SELECT
-        dept.id AS dept_id,
-        nur.idx AS nur_idx,
-        'nur' || LPAD(dept.id::TEXT, 2, '0') || LPAD(nur.idx::TEXT, 2, '0') AS gen_id,
-        'Nurse123!@' AS gen_pw,
-        '간호사_' || dept.id || '_' || nur.idx AS gen_name,
-        19850000 + (dept.id * 100) + nur.idx AS gen_birth,
-        2 AS gen_gender, -- 간호사는 예시로 성별 2(여) 고정 배정
-        '서울시 메디컬구 간호동' AS gen_addr,
-        dept.id || '길 ' || nur.idx || '호' AS gen_addr_detail,
-        '010-3333-' || LPAD(((dept.id - 1) * 10 + nur.idx)::TEXT, 4, '0') AS gen_phone,
-        'nur' || LPAD(dept.id::TEXT, 2, '0') || LPAD(nur.idx::TEXT, 2, '0') || '@hospital.com' AS gen_email,
-        '50' || LPAD(dept.id::TEXT, 2, '0') || LPAD(nur.idx::TEXT, 2, '0') AS gen_license
-    FROM generate_series(1, 10) AS dept(id)
-    CROSS JOIN generate_series(1, 10) AS nur(idx)
-),
-inserted_mem AS (
-    INSERT INTO mem (id, password, name, birthday, gender, address, address_detail, phone_number, email)
-    SELECT gen_id, gen_pw, gen_name, gen_birth, gen_gender, gen_addr, gen_addr_detail, gen_phone, gen_email
-    FROM gen_nurse
-    RETURNING mem_id, id
-)
-INSERT INTO med_staff (mem_id, role, license_number, status, med_dept_id)
-SELECT m.mem_id, '간호사', g.gen_license, '재직', g.dept_id
-FROM inserted_mem m
-JOIN gen_nurse g ON m.id = g.gen_id;
-
---==================================================
-
--- 행정 부서별 10명 (10 * 8 = 80명)
-WITH gen_admin AS (
-    SELECT
-        dept.id AS dept_id,
-        adm.idx AS adm_idx,
-        'adm' || LPAD(dept.id::TEXT, 2, '0') || LPAD(adm.idx::TEXT, 2, '0') AS gen_id,
-        'Admin123!@' AS gen_pw,
-        '행정직_' || dept.id || '_' || adm.idx AS gen_name,
-        19920000 + (dept.id * 100) + adm.idx AS gen_birth,
-        (adm.idx % 2) + 1 AS gen_gender,
-        '서울시 메디컬구 행정동' AS gen_addr,
-        dept.id || '길 ' || adm.idx || '호' AS gen_addr_detail,
-        '010-4444-' || LPAD(((dept.id - 1) * 10 + adm.idx)::TEXT, 4, '0') AS gen_phone,
-        'adm' || LPAD(dept.id::TEXT, 2, '0') || LPAD(adm.idx::TEXT, 2, '0') || '@hospital.com' AS gen_email,
-        'A0000' || LPAD(dept.id::TEXT, 2, '0') || LPAD(adm.idx::TEXT, 2, '0') AS gen_emp_num,
-        '사원' AS gen_rank
-    FROM generate_series(1, 8) AS dept(id) -- 행정부서 8개 기준
-    CROSS JOIN generate_series(1, 10) AS adm(idx)
-),
-inserted_mem AS (
-    INSERT INTO mem (id, password, name, birthday, gender, address, address_detail, phone_number, email)
-    SELECT gen_id, gen_pw, gen_name, gen_birth, gen_gender, gen_addr, gen_addr_detail, gen_phone, gen_email
-    FROM gen_admin
-    RETURNING mem_id, id
-)
-INSERT INTO admin_staff (mem_id, rank, emp_number, status, admin_dept_id)
-SELECT m.mem_id, g.gen_rank, g.gen_emp_num, '재직', g.dept_id
-FROM inserted_mem m
-JOIN gen_admin g ON m.id = g.gen_id;
-
---==================================================
-
--- INSERT 주차 자리
 INSERT INTO parking_spot (floor, zone, spot_number, distance_from_entrance, is_parked)
 VALUES
   (1, 'A', 1, 242, false),

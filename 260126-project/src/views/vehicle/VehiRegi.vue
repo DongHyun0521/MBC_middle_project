@@ -40,7 +40,7 @@
         <div class="input-section">
           <label>유종 선택</label>
           <div class="fuel-grid">
-            <label v-for="fuel in ['전기', '휘발유', '경유', 'LPG']" :key="fuel" class="fuel-tile">
+            <label v-for="fuel in ['휘발유', '경유', 'LPG']" :key="fuel" class="fuel-tile">
               <input type="radio" :value="fuel" v-model="vehi.fuelType" class="hide-radio" />
               <span class="fuel-txt">{{ fuel }}</span>
             </label>
@@ -63,9 +63,6 @@ import { useRouter, useRoute } from 'vue-router'
 // [API] 차량 등록 요청 함수
 import { addVehiReq } from '@/api/vehicle' 
 
-// =========================================
-// 1. 기본 설정 및 상태 변수 (Data)
-// =========================================
 const router = useRouter() // 페이지 이동 도구
 const route = useRoute()   // 현재 주소 정보
 
@@ -83,10 +80,6 @@ const vehi = ref({
 // 유효성 검사 메시지 (차량 번호 관련)
 const vehiMsg = ref('') 
 
-
-// =========================================
-// 2. 페이지 로드 시 실행 (Lifecycle)
-// =========================================
 onMounted(() => {
   // 세션에서 로그인 정보 확인
   const loginData = sessionStorage.getItem('loginId') 
@@ -103,10 +96,6 @@ onMounted(() => {
   }
 })
 
-
-// =========================================
-// 3. 유효성 검사 및 입력 핸들러
-// =========================================
 
 /* [차량 번호] 입력 실시간 검사 */
 const checkVehiNum = () => {
@@ -140,10 +129,6 @@ const isReady = computed(() => {
 })
 
 
-// =========================================
-// 4. API 통신 (서버 전송)
-// =========================================
-
 /* [차량 등록] 버튼 클릭 핸들러 */
 const handleVehiRegi = async () => {
   // 유효성 통과 못했으면 함수 종료 (방어 코드)
@@ -155,22 +140,23 @@ const handleVehiRegi = async () => {
   }
 
   try {
-    // API 요청 전송
     const res = await addVehiReq(saveData)
     
     if (res.data === "success") {
-      alert("차량 등록이 완료되었습니다")
-      router.push('/mypage') // 마이페이지로 이동
-    } else {
+      alert("차량 등록이 완료되었습니다.")
+      // 마이페이지 차량 관리 탭으로 슝 이동
+      router.push({ path: '/mypage', query: { tab: 'vehi' } }) 
+    } 
+    else if (res.data === "duplicate") {
+      alert("이미 등록된 차량 번호입니다.")
+    } 
+    else {
       alert("등록에 실패했습니다. 정보를 다시 확인해 주세요")
     }
+
   } catch (err) {
-    // 500 에러는 보통 DB에서 중복 키(PK) 에러일 확률이 높음
-    if (err.response && err.response.status === 500) {
-      alert("이미 등록된 차량 번호입니다")
-    } else {
-      alert("서버 통신 오류가 발생했습니다")
-    }
+    console.error("차량 등록 서버 에러:", err)
+    alert("서버 통신 오류가 발생했습니다")
   }
 }
 </script>

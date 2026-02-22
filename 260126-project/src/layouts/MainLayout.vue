@@ -50,9 +50,7 @@
                     <path d="M32 24V40M24 32H40" stroke="#005baa" stroke-width="1" />
                   </svg>
                 </div>
-                <div class="icon-txt">
-                  <span class="main-t">진료과</span>
-                </div>
+                <div class="icon-txt"><span class="main-t">진료과</span></div>
               </div>
               <div class="st-icon-item" @click="goPage('/doctorsearch')">
                 <div class="circle-icon">
@@ -62,9 +60,7 @@
                       stroke-width="1" />
                   </svg>
                 </div>
-                <div class="icon-txt">
-                  <span class="main-t">의료진</span>
-                </div>
+                <div class="icon-txt"><span class="main-t">의료진</span></div>
               </div>
             </div>
           </div>
@@ -74,8 +70,10 @@
               <h3 class="st-title">진료예약/안내</h3>
               <div class="reserve-guide-card">
                 <p class="guide-tag">RESERVATION</p>
-                <p class="guide-text">전화 예약</p>
-                <div class="call-center-box"><span class="number">1577-0083</span></div>
+                <div class="call-info-group">
+                  <p class="guide-text">전화 예약</p>
+                  <div class="call-center-box"><span class="number">1577-0083</span></div>
+                </div>
                 <button class="primary-rect-btn" @click="goPage('/reservation')">온라인 예약</button>
               </div>
             </div>
@@ -100,7 +98,15 @@
           <div v-else class="column-menu-box">
             <div v-if="activeMenu === 'intro'" class="full-menu-grid">
               <div class="promo-small-box">
-                <p><b>Smart S-Hospital</b><br>첨단 스마트 의료 시스템</p>
+                <div class="promo-icon-circle">
+                  <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="#005baa" stroke-width="1.5">
+                    <path d="M3 21h18M3 7v14M21 7v14M9 21V11M15 21V11M2 7l10-5 10 5" />
+                  </svg>
+                </div>
+                <div class="promo-txt-area">
+                  <p><b>Smart S-Hospital</b><br>첨단 스마트 의료 시스템</p>
+                  <button class="promo-go-btn" @click="goPage('/greeting')">병원 소개 보러가기 &gt;</button>
+                </div>
               </div>
               <div class="menu-box-item">
                 <p class="box-head">소개</p>
@@ -121,7 +127,17 @@
 
             <div v-if="activeMenu === 'health'" class="full-menu-grid">
               <div class="promo-small-box sky">
-                <p><b>Health Guide</b><br>정확한 정보를 약속합니다</p>
+                <div class="promo-icon-circle">
+                  <svg width="36" height="36" viewBox="-0.5 -0.5 24 24" fill="none" stroke="#005baa" stroke-width="2"
+                    stroke-linecap="round" stroke-linejoin="round" preserveAspectRatio="xMidYMid meet">
+                    <path
+                      d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" />
+                  </svg>
+                </div>
+                <div class="promo-txt-area">
+                  <p><b>Health Guide</b><br>정확한 정보를 약속합니다</p>
+                  <button class="promo-go-btn" @click="goPage('/story')">건강 정보 전체보기 &gt;</button>
+                </div>
               </div>
               <div class="menu-box-item">
                 <p class="box-head">건강한 삶</p>
@@ -140,7 +156,15 @@
 
             <div v-if="activeMenu === 'service'" class="full-menu-grid">
               <div class="promo-small-box point">
-                <p><b>Customer Support</b><br>친절하고 빠른 도움</p>
+                <div class="promo-icon-circle">
+                  <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="#005baa" stroke-width="1.5">
+                    <path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z" />
+                  </svg>
+                </div>
+                <div class="promo-txt-area">
+                  <p><b>Customer Support</b><br>친절하고 빠른 도움</p>
+                  <button class="promo-go-btn" @click="goPage('/notice')">고객 지원 센터 &gt;</button>
+                </div>
               </div>
               <div class="menu-box-item">
                 <p class="box-head">병원소식</p>
@@ -151,7 +175,7 @@
               <div class="menu-box-item">
                 <p class="box-head">소통</p>
                 <ul>
-                  <li @click="goPage('/voc')" v-if="showVoc" class="voc-point">고객의 소리</li>
+                  <li @click="goPage('/voc')" v-if="showVoc">고객의 소리</li>
                 </ul>
               </div>
               <div class="menu-box-item">
@@ -209,64 +233,46 @@
     <footer v-if="!isMainPage" class="main-footer">
       <div class="footer-inner">
         <div class="f-row f-top">
-          <div class="f-logo-box">
-            <img src="@/assets/txtlogo2.png" alt="S-HOSPITAL" class="f-logo-img">
-          </div>
+          <div class="f-logo-box"><img src="@/assets/txtlogo2.png" alt="S-HOSPITAL" class="f-logo-img"></div>
           <div class="f-links">
-            <span class="bold">개인정보처리방침</span>
-            <span class="bar">|</span>
-            <span>이용약관</span>
-            <span class="bar">|</span>
+            <span class="bold">개인정보처리방침</span><span class="bar">|</span>
+            <span>이용약관</span><span class="bar">|</span>
             <span>환자의 권리와 의무</span>
           </div>
         </div>
-
         <div class="f-row f-middle">
           <div class="f-info-text">
-            <span>서울특별시 종로구 종로 69 S-HOSPITAL</span>
-            <span class="bar">|</span>
-            <span>대표자: 엠비씨</span>
-            <span class="bar">|</span>
+            <span>경기도 성남시 수정구 금토로80번길 56, 서울에스병원</span><span class="bar">|</span>
+            <span>대표자: 엠비씨</span><span class="bar">|</span>
             <span>사업자등록번호: 123-45-67890</span>
           </div>
-
           <div class="f-sns-side">
-            <a href="#" class="sns-link" title="유튜브">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"
-                stroke-linecap="round" stroke-linejoin="round">
+            <a href="#" class="sns-link" title="유튜브"><svg width="20" height="20" viewBox="0 0 24 24" fill="none"
+                stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
                 <path
                   d="M22.54 6.42a2.78 2.78 0 0 0-1.94-2C18.88 4 12 4 12 4s-6.88 0-8.6.46a2.78 2.78 0 0 0-1.94 2A29 29 0 0 0 1 11.75a29 29 0 0 0 .46 5.33A2.78 2.78 0 0 0 3.4 19c1.72.46 8.6.46 8.6.46s6.88 0 8.6-.46a2.78 2.78 0 0 0 1.94-2 29 29 0 0 0 .46-5.25 29 29 0 0 0-.46-5.33z" />
                 <polygon points="9.75 15.02 15.5 11.75 9.75 8.48 9.75 15.02" />
-              </svg>
-            </a>
-            <a href="#" class="sns-link" title="인스타그램">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"
-                stroke-linecap="round" stroke-linejoin="round">
+              </svg></a>
+            <a href="#" class="sns-link" title="인스타그램"><svg width="20" height="20" viewBox="0 0 24 24" fill="none"
+                stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
                 <rect x="2" y="2" width="20" height="20" rx="5" ry="5" />
                 <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z" />
                 <line x1="17.5" y1="6.5" x2="17.51" y2="6.5" />
-              </svg>
-            </a>
-            <a href="#" class="sns-link" title="네이버 블로그">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-                stroke-linecap="round" stroke-linejoin="round">
+              </svg></a>
+            <a href="#" class="sns-link" title="네이버 블로그"><svg width="20" height="20" viewBox="0 0 24 24" fill="none"
+                stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <path d="M4 4h16v16H4z" />
                 <path d="M9 8v8" />
                 <path d="M9 12h4a2 2 0 0 0 0-4H9" />
                 <path d="M9 16h5a2 2 0 0 0 0-4H9" />
-              </svg>
-            </a>
+              </svg></a>
           </div>
         </div>
-
         <div class="f-row f-bottom-info">
-          <span>대표전화: <b class="blue-txt">1588-0000</b></span>
-          <span class="bar">|</span>
-          <span>응급의료센터: 02-123-4567</span>
-          <span class="bar">|</span>
+          <span>대표전화: <b class="blue-txt">1588-8282</b></span><span class="bar">|</span>
+          <span>응급의료센터: 02-123-4567</span><span class="bar">|</span>
           <span>이메일: help@s-hospital.com</span>
         </div>
-
         <div class="footer-copyright">
           <p>Copyright © S-HOSPITAL. All rights reserved.</p>
         </div>
@@ -276,212 +282,229 @@
 </template>
 
 <script setup>
-import { ref, onMounted, onUnmounted, watch, computed } from 'vue'
-import { useRouter, useRoute } from 'vue-router'
+  import { ref, onMounted, onUnmounted, watch, computed } from 'vue'
+  import { useRouter, useRoute } from 'vue-router'
 
-const router = useRouter();
-const route = useRoute();
+  const router = useRouter();
+  const route = useRoute();
 
-const isScrolled = ref(false);
+  const isScrolled = ref(false);
 
-const isLogin = ref(false);
-const loginName = ref('');
-const loginInfo = ref(null);
+  const isLogin = ref(false);
+  const loginName = ref('');
+  const loginInfo = ref(null);
 
-const isMegamenuOpen = ref(false);
-const isTransparentSection = ref(false);
+  const isMegamenuOpen = ref(false);
+  const isTransparentSection = ref(false);
 
-const activeMenu = ref(''); // 현재 어떤 메뉴가 열려있는지 저장
+  const activeMenu = ref(''); // 현재 어떤 메뉴가 열려있는지 저장
 
-const openDepth1 = ref(false);
-const openDepth2 = ref(false);
+  const openDepth1 = ref(false);
+  const openDepth2 = ref(false);
 
-// 메가메뉴 열기 함수
-const openMegamenu = (menuName) => {
-  activeMenu.value = menuName;
-  isMegamenuOpen.value = true;
-};
+  // 메가메뉴 열기 함수
+  const openMegamenu = (menuName) => {
+    activeMenu.value = menuName;
+    isMegamenuOpen.value = true;
+  };
 
-// 메가메뉴 닫기 함수
-const closeMegamenu = () => {
-  activeMenu.value = '';
-  isMegamenuOpen.value = false;
-};
-
-const goPage = (path) => {
-  const protectedPaths = ['/reservation', '/checkreservation', '/voc'];
-
-  if (protectedPaths.includes(path) && !isLogin.value) {
-    alert("로그인 후 이용 가능한 서비스입니다");
+  // 메가메뉴 닫기 함수
+  const closeMegamenu = () => {
+    activeMenu.value = '';
     isMegamenuOpen.value = false;
-    router.push('/login');
-    return;
-  }
+  };
 
-  isMegamenuOpen.value = false;
-  router.push(path);
-}
+  const goPage = (path) => {
+    const protectedPaths = ['/reservation', '/checkreservation', '/voc'];
 
-const handleScroll = () => {
-  if (!isMainPage.value) {
-    isScrolled.value = window.scrollY > 50
-  }
-}
-
-const handleMainScroll = (info) => {
-  if (typeof info === 'object') {
-    isScrolled.value = info.scrolled;
-    // 섹션 1(메인) 혹은 섹션 3(건강이야기 - 배경색)일 때 투명 유지
-    isTransparentSection.value = (info.section === 1 || info.section === 3);
-  } else {
-    isScrolled.value = info;
-  }
-}
-
-const showVoc = computed(() => {
-  // if (!isLogin.value) return false;
-  if (loginInfo.value && loginInfo.value.loginType === 'MED') return false;
-  return true;
-});
-
-const siteMap = [
-  {
-    name: '병원소개',
-    list: [
-      { name: '인사말', path: '/greeting' },
-      { name: '연혁', path: '/history' },
-      { name: '미션/비전', path: '/mission' },
-      { name: '오시는 길', path: '/location' },
-      { name: '주차안내', path: '/parkinginfo' }
-    ]
-  },
-  {
-    name: '의료진/진료과',
-    list: [
-      { name: '의료진 찾기', path: '/doctorsearch' },
-      { name: '진료과 찾기', path: '/deptsearch' },
-      { name: '센터/클리닉', path: '/centerclinic' }
-    ]
-  },
-  {
-    name: '진료예약',
-    list: [
-      { name: '진료예약 신청', path: '/reservation' },
-      { name: '예약내역 조회', path: '/checkreservation' },
-      { name: '진료안내', path: '/guide' },
-      { name: '진료절차', path: '/process' }
-    ]
-  },
-  {
-    name: '건강정보',
-    list: [
-      { name: '질환백과', path: '/disease' },
-      { name: '자가진단', path: '/checkup' },
-      { name: '건강이야기', path: '/story' }
-    ]
-  },
-  {
-    name: '고객서비스',
-    list: [
-      { name: '공지사항', path: '/notice' },
-      { name: 'FAQ', path: '/faq' },
-      { name: '고객의 소리', path: '/voc' },
-      { name: '차량등록', path: '/vehiregi' }
-    ]
-  },
-  {
-    name: '회원서비스',
-    list: [
-      { name: '로그인', path: '/login' },
-      { name: '회원가입', path: '/regi' }
-    ]
-  },
-  {
-    name: '마이페이지',
-    list: [
-      { name: '나의 정보', path: '/mypage' }
-    ]
-  }
-];
-
-const menuMap = {
-  'doctorsearch': { parent: '의료진/진료과', current: '의료진 찾기' },
-  'deptsearch': { parent: '의료진/진료과', current: '진료과 찾기' },
-  'centerclinic': { parent: '의료진/진료과', current: '센터/클리닉' },
-  'reservation': { parent: '진료예약', current: '진료예약 신청' },
-  'checkreservation': { parent: '진료예약', current: '예약내역 조회' },
-  'guide': { parent: '진료예약', current: '진료안내' },
-  'process': { parent: '진료예약', current: '진료절차' },
-  'notice': { parent: '고객서비스', current: '공지사항' },
-  'faq': { parent: '고객서비스', current: 'FAQ' },
-  'voc': { parent: '고객서비스', current: '고객의 소리' },
-  'vehiregi': { parent: '고객서비스', current: '차량등록' },
-  'login': { parent: '회원서비스', current: '로그인' },
-  'regi': { parent: '회원서비스', current: '회원가입' },
-  'mypage': { parent: '마이페이지', current: '나의 정보' },
-  'location': { parent: '병원소개', current: '오시는 길' },
-  'greeting': { parent: '병원소개', current: '인사말' },
-  'history': { parent: '병원소개', current: '연혁' },
-  'mission': { parent: '병원소개', current: '미션/비전' },
-  'disease': { parent: '건강정보', current: '질환백과' },
-  'checkup': { parent: '건강정보', current: '자가진단' },
-  'stroy': { parent: '건강정보', current: '건강이야기' },
-  'search': { parent: '통합검색', current: '검색결과' },
-  'parking': { parent: 'HOME', current: '주차 이용 안내' }
-};
-
-const currentCategoryInfo = computed(() => {
-  const currentPath = route.path;
-  for (const group of siteMap) {
-    const found = group.list.find(page => currentPath.startsWith(page.path) && page.path !== '/');
-    if (found) return { categoryName: group.name, pages: group.list };
-  }
-  return { categoryName: '', pages: [] };
-});
-
-const currentMenuName = computed(() => {
-  const foundInSiteMap = currentCategoryInfo.value.pages.find(p => route.path.startsWith(p.path));
-  if (foundInSiteMap) return foundInSiteMap.name;
-  const key = route.path.replace('/', '').split('/')[0];
-  return menuMap[key]?.current || '페이지';
-});
-
-const checkLogin = () => {
-  const loginData = sessionStorage.getItem('loginId')
-  if (loginData) {
-    try {
-      const user = JSON.parse(loginData);
-      isLogin.value = true;
-      loginName.value = user.name || user.id;
-      loginInfo.value = user;
+    if (protectedPaths.includes(path) && !isLogin.value) {
+      alert("로그인 후 이용 가능한 서비스입니다");
+      isMegamenuOpen.value = false;
+      router.push('/login');
+      return;
     }
-    catch (e) {
-      isLogin.value = true;
-      loginName.value = loginData;
+
+    isMegamenuOpen.value = false;
+    router.push(path);
+  }
+
+  const handleScroll = () => {
+    if (!isMainPage.value) {
+      isScrolled.value = window.scrollY > 50
     }
-  } else {
-    isLogin.value = false;
-    loginInfo.value = null;
   }
-}
 
-const handleLogout = () => {
-  if (confirm("로그아웃 하시겠습니까?")) {
-    sessionStorage.removeItem('loginId');
-    isLogin.value = false;
-    router.push('/');
+  const handleMainScroll = (info) => {
+    if (typeof info === 'object') {
+      isScrolled.value = info.scrolled;
+      // 섹션 1(메인) 혹은 섹션 3(건강이야기 - 배경색)일 때 투명 유지
+      isTransparentSection.value = (info.section === 1 || info.section === 3);
+    } else {
+      isScrolled.value = info;
+    }
   }
-}
 
-const isMainPage = computed(() => route.path === '/' || route.path === '/mainhome')
+  const showVoc = computed(() => {
+    // if (!isLogin.value) return false;
+    if (loginInfo.value && loginInfo.value.loginType === 'MED') return false;
+    return true;
+  });
 
-watch(() => route.path, () => { checkLogin(); isMegamenuOpen.value = false; isScrolled.value = false; })
+  const siteMap = [
+    {
+      name: '병원소개',
+      list: [
+        { name: '인사말', path: '/greeting' },
+        { name: '연혁', path: '/history' },
+        { name: '미션/비전', path: '/mission' },
+        { name: '오시는 길', path: '/location' },
+        { name: '주차안내', path: '/parkinginfo' }
+      ]
+    },
+    {
+      name: '의료진/진료과',
+      list: [
+        { name: '의료진 찾기', path: '/doctorsearch' },
+        { name: '진료과 찾기', path: '/deptsearch' },
+        { name: '센터/클리닉', path: '/centerclinic' }
+      ]
+    },
+    {
+      name: '진료예약',
+      list: [
+        { name: '진료예약 신청', path: '/reservation' },
+        { name: '예약내역 조회', path: '/checkreservation' },
+        { name: '진료안내', path: '/guide' },
+        { name: '진료절차', path: '/process' }
+      ]
+    },
+    {
+      name: '건강정보',
+      list: [
+        { name: '질환백과', path: '/disease' },
+        { name: '자가진단', path: '/checkup' },
+        { name: '건강이야기', path: '/story' }
+      ]
+    },
+    {
+      name: '고객서비스',
+      list: [
+        { name: '공지사항', path: '/notice' },
+        { name: 'FAQ', path: '/faq' },
+        { name: '고객의 소리', path: '/voc' },
+        { name: '차량등록', path: '/vehiregi' }
+      ]
+    },
+    {
+      name: '회원서비스',
+      list: [
+        { name: '로그인', path: '/login' },
+        { name: '회원가입', path: '/regi' }
+      ]
+    },
+    {
+      name: '마이페이지',
+      list: [
+        { name: '나의 정보', path: '/mypage' }
+      ]
+    }
+  ];
 
-onMounted(() => { checkLogin(); window.addEventListener('scroll', handleScroll); })
-onUnmounted(() => { window.removeEventListener('scroll', handleScroll); })
+  const menuMap = {
+    'doctorsearch': { parent: '의료진/진료과', current: '의료진 찾기' },
+    'deptsearch': { parent: '의료진/진료과', current: '진료과 찾기' },
+    'centerclinic': { parent: '의료진/진료과', current: '센터/클리닉' },
+    'reservation': { parent: '진료예약', current: '진료예약 신청' },
+    'checkreservation': { parent: '진료예약', current: '예약내역 조회' },
+    'guide': { parent: '진료예약', current: '진료안내' },
+    'process': { parent: '진료예약', current: '진료절차' },
+    'notice': { parent: '고객서비스', current: '공지사항' },
+    'faq': { parent: '고객서비스', current: 'FAQ' },
+    'voc': { parent: '고객서비스', current: '고객의 소리' },
+    'vehiregi': { parent: '고객서비스', current: '차량등록' },
+    'login': { parent: '회원서비스', current: '로그인' },
+    'regi': { parent: '회원서비스', current: '회원가입' },
+    'mypage': { parent: '마이페이지', current: '나의 정보' },
+    'location': { parent: '병원소개', current: '오시는 길' },
+    'greeting': { parent: '병원소개', current: '인사말' },
+    'history': { parent: '병원소개', current: '연혁' },
+    'mission': { parent: '병원소개', current: '미션/비전' },
+    'disease': { parent: '건강정보', current: '질환백과' },
+    'checkup': { parent: '건강정보', current: '자가진단' },
+    'stroy': { parent: '건강정보', current: '건강이야기' },
+    'search': { parent: '통합검색', current: '검색결과' },
+    'parking': { parent: 'HOME', current: '주차 이용 안내' }
+  };
+
+  const currentCategoryInfo = computed(() => {
+    const currentPath = route.path;
+    for (const group of siteMap) {
+      const found = group.list.find(page => currentPath.startsWith(page.path) && page.path !== '/');
+      if (found) return { categoryName: group.name, pages: group.list };
+    }
+    return { categoryName: '', pages: [] };
+  });
+
+  const currentMenuName = computed(() => {
+    const foundInSiteMap = currentCategoryInfo.value.pages.find(p => route.path.startsWith(p.path));
+    if (foundInSiteMap) return foundInSiteMap.name;
+    const key = route.path.replace('/', '').split('/')[0];
+    return menuMap[key]?.current || '페이지';
+  });
+
+  const checkLogin = () => {
+    const loginData = sessionStorage.getItem('loginId')
+    if (loginData) {
+      try {
+        const user = JSON.parse(loginData);
+        isLogin.value = true;
+        loginName.value = user.name || user.id;
+        loginInfo.value = user;
+      }
+      catch (e) {
+        isLogin.value = true;
+        loginName.value = loginData;
+      }
+    } else {
+      isLogin.value = false;
+      loginInfo.value = null;
+    }
+  }
+
+  const handleLogout = () => {
+    if (confirm("로그아웃 하시겠습니까?")) {
+      sessionStorage.removeItem('loginId');
+      isLogin.value = false;
+      router.push('/');
+    }
+  }
+
+  const isMainPage = computed(() => route.path === '/' || route.path === '/mainhome')
+
+  watch(() => route.path, () => { checkLogin(); isMegamenuOpen.value = false; isScrolled.value = false; })
+
+  onMounted(() => { checkLogin(); window.addEventListener('scroll', handleScroll); })
+  onUnmounted(() => { window.removeEventListener('scroll', handleScroll); })
 </script>
 
 <style scoped>
+/* =====================================================================
+   [1] 공통 및 레이아웃 (Layout & Global)
+   ===================================================================== */
+#home-layout {
+  width: 100%;
+  font-family: 'pretendard', sans-serif !important;
+}
+.content-body {
+  min-height: 100vh;
+}
+.content-body.is-main-view {
+  padding-top: 0;
+}
+
+/* =====================================================================
+   [2] 메인 헤더 (Main Header)
+   ===================================================================== */
 .main-header {
   position: fixed;
   top: 0;
@@ -491,42 +514,31 @@ onUnmounted(() => { window.removeEventListener('scroll', handleScroll); })
   z-index: 5000;
   background: #fff;
   border-bottom: 1px solid #e5e5e5;
-  transition: 0.3s;
+  transition: background 0.3s, border 0.3s;
 }
 
+/* 메인 페이지 투명 헤더 상태 */
 .main-header.is-main:not(.is-scrolled) {
   background: transparent;
   border-bottom: 1px solid rgba(255, 255, 255, 0.15);
 }
 
-.main-header.is-main:not(.is-scrolled):not(:has(.megamenu-panel.active)) .nav-item,
-.main-header.is-main:not(.is-scrolled):not(:has(.megamenu-panel.active)) .util-item {
-  color: #fff;
-}
-
-/* 메가메뉴 오픈 시 흰 배경 고정 */
+/* 스크롤 시 또는 메뉴 오픈 시 흰색 배경 고정 */
 .main-header:has(.megamenu-panel.active),
 .main-header.is-scrolled {
   background-color: #ffffff;
   border-bottom: 1px solid #e5e5e5;
 }
 
-.logo-box {
-  flex: 0 0 240px;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
+/* 투명 헤더일 때 글자색 하얗게 */
+.main-header.is-main:not(.is-scrolled):not(:has(.megamenu-panel.active)) .nav-item,
+.main-header.is-main:not(.is-scrolled):not(:has(.megamenu-panel.active)) .util-item {
+  color: #fff;
 }
 
-.main-logo-img {
-  height: 55px;
-  width: auto;
-  padding-left: 30px;
-  object-fit: contain;
-}
-
+/* 헤더 내부 정렬 */
 .header-inner {
-  max-width: 1550px;
+  max-width: 1800px;
   margin: 0 auto;
   height: 100%;
   display: flex;
@@ -535,6 +547,25 @@ onUnmounted(() => { window.removeEventListener('scroll', handleScroll); })
   padding: 0 20px;
 }
 
+/* =====================================================================
+   [3] 헤더 구성 요소 (Logo, Nav, Util)
+   ===================================================================== */
+/* 로고 */
+.logo-box {
+  flex: 0 0 240px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+}
+
+.main-logo-img {
+  height: 60px;
+  width: auto;
+  padding-left: 30px;
+  object-fit: contain;
+}
+
+/* 메인 메뉴 */
 .nav-menu {
   display: flex;
   gap: 50px;
@@ -544,8 +575,7 @@ onUnmounted(() => { window.removeEventListener('scroll', handleScroll); })
 }
 
 .nav-item {
-  font-family: 'pretendard';
-  font-size: 18px;
+  font-size: 19px;
   font-weight: 500;
   color: #333;
   cursor: pointer;
@@ -558,6 +588,34 @@ onUnmounted(() => { window.removeEventListener('scroll', handleScroll); })
   color: #005baa;
 }
 
+/* 우측 유틸리티 (로그인/마이페이지) */
+.combined-util {
+  flex: 0 0 350px;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 30px;
+  padding-right: 30px;
+}
+
+.util-item {
+  font-size: 16px;
+  font-weight: 400;
+  color: #666;
+  cursor: pointer;
+}
+
+.logout-txt {
+  color: #888;
+}
+
+.user-info {
+  color: #fbb900;
+}
+
+/* =====================================================================
+   [4] 메가메뉴 패널 (Megamenu Panel)
+   ===================================================================== */
 .megamenu-panel {
   position: absolute;
   top: 100px;
@@ -572,7 +630,7 @@ onUnmounted(() => { window.removeEventListener('scroll', handleScroll); })
 }
 
 .megamenu-panel.active {
-  max-height: 300px;
+  max-height: 350px;
   visibility: visible;
 }
 
@@ -583,7 +641,7 @@ onUnmounted(() => { window.removeEventListener('scroll', handleScroll); })
   background: #fff;
 }
 
-.mega-split-container,
+/* 메뉴 박스 공통 구조 */
 .special-menu-box,
 .full-menu-grid {
   display: flex;
@@ -591,59 +649,114 @@ onUnmounted(() => { window.removeEventListener('scroll', handleScroll); })
   min-height: 350px;
 }
 
+/* =====================================================================
+   [5] 메가메뉴 - 왼쪽 프로모션 구역
+   ===================================================================== */
+.promo-small-box,
 .left-search-zone,
-.left-info-zone,
-.promo-small-box {
+.left-info-zone {
   flex: 0 0 350px;
   background-color: #f8f9fb;
-  padding: 50px 40px;
+  padding: 0 55px;
   border-right: 1px solid #e5e5e5;
   text-align: left;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: flex-start;
+  gap: 2px;
 }
 
+/* 아이콘 원형 배경 */
+.promo-icon-circle {
+  width: 64px;
+  height: 64px;
+  background: #fff;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 6px 15px rgba(0, 91, 170, 0.08);
+  margin-bottom: 5px;
+}
+
+/* 텍스트 타이틀 */
 .st-title {
-  font-size: 30px;
-  font-weight: 800;
+  font-size: 26px;
+  font-weight: 700;
   color: #005baa;
-  margin-bottom: 12px;
+  margin-bottom: 0;
+}
+
+.promo-small-box p b {
+  font-size: 22px;
+  color: #333;
+  display: block;
+  margin-bottom: 8px;
 }
 
 .st-desc,
 .promo-small-box p {
-  font-size: 15px;
+  font-size: 14px;
   color: #666;
   line-height: 1.6;
+  margin-bottom: 0;
 }
 
-.promo-small-box p b {
-  display: block;
-  font-size: 20px;
-  color: #333;
-  margin-bottom: 8px;
+/* 바로가기 버튼 (하단 여백 채우기용) */
+.promo-go-btn {
+  margin-top: 10px;
+  padding: 10px 22px;
+  background: transparent;
+  border: 1px solid #005baa;
+  color: #005baa;
+  font-size: 14px;
+  font-weight: 700;
+  border-radius: 30px;
+  cursor: pointer;
+  transition: all 0.3s;
+  white-space: nowrap;
 }
 
+.promo-go-btn:hover {
+  background: #005baa;
+  color: #fff;
+  transform: translateX(5px);
+}
+
+/* 테마별 배경색 */
+.promo-small-box.sky {
+  background-color: #f0f7ff;
+}
+
+.promo-small-box.point {
+  background-color: #fbb8001b;
+}
+
+/* =====================================================================
+   [6] 메가메뉴 - 오른쪽 상세 리스트 및 아이콘 구역
+   ===================================================================== */
+/* 아이콘 구역 (의료진/진료과) */
 .right-icon-zone {
   flex: 1;
-  padding: 50px 40px;
+  padding: 50px 60px;
   display: flex;
-  gap: 60px;
+  gap: 80px;
   align-items: flex-start;
 }
 
-/* 개별 아이콘 아이템 */
 .st-icon-item {
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 20px;
   cursor: pointer;
-  transition: 0.3s ease;
-  background-color: transparent;
+  transition: 0.3s;
 }
 
 .circle-icon {
-  width: 140px;
-  height: 140px;
+  width: 120px;
+  height: 120px;
   background-color: #f2f2f2;
   border-radius: 50%;
   display: flex;
@@ -653,30 +766,27 @@ onUnmounted(() => { window.removeEventListener('scroll', handleScroll); })
   transition: 0.3s;
 }
 
-/* 호버 시 테두리와 색상 변경 */
 .st-icon-item:hover .circle-icon {
   border-color: #005baa;
   background-color: #fff;
-  box-shadow: 0 10px 20px rgba(142, 26, 50, 0.1);
+  box-shadow: 0 10px 20px rgba(0, 91, 170, 0.1);
 }
 
-/* 아이콘 하단 메인 텍스트 */
 .icon-txt .main-t {
   font-size: 20px;
-  font-weight: 800;
+  font-weight: 700;
   color: #333;
-  transition: 0.3s;
 }
 
 .st-icon-item:hover .main-t {
   color: #005baa;
 }
 
+/* 리스트 구역 (예약/안내 등) */
 .right-list-zone {
   display: flex;
   align-items: flex-start;
 }
-
 
 .menu-box-item {
   flex: 0 0 300px;
@@ -685,7 +795,6 @@ onUnmounted(() => { window.removeEventListener('scroll', handleScroll); })
   padding: 50px 40px;
 }
 
-/* 소제목 디자인 */
 .box-head {
   font-size: 18px;
   font-weight: 800;
@@ -693,13 +802,7 @@ onUnmounted(() => { window.removeEventListener('scroll', handleScroll); })
   margin-bottom: 15px;
   padding-bottom: 10px;
   border-bottom: 2px solid #333;
-  width: 100%;
   text-align: left;
-}
-
-/* 세로 리스트 스타일 */
-.menu-box-item ul {
-  width: 100%;
 }
 
 .menu-box-item li {
@@ -718,11 +821,14 @@ onUnmounted(() => { window.removeEventListener('scroll', handleScroll); })
   font-weight: 600;
 }
 
+/* 검색바 및 예약 카드 */
 .st-search-bar {
   display: flex;
   height: 50px;
   border: 1px solid #005baa;
-  border-radius: 0;
+  overflow: hidden;
+  width: 100%;
+  margin-top: 15px;
 }
 
 .st-search-bar input {
@@ -730,83 +836,136 @@ onUnmounted(() => { window.removeEventListener('scroll', handleScroll); })
   border: none;
   padding: 0 15px;
   outline: none;
+  font-size: 16px;
 }
 
 .st-search-bar button {
   background: #005baa;
   color: #fff;
   border: none;
-  padding: 0 20px;
+  padding: 0 25px;
   font-weight: 700;
   cursor: pointer;
+  white-space: nowrap;
 }
 
 .reserve-guide-card {
   background: #fff;
   border: 1px solid #e5e5e5;
-  padding: 25px;
-  border-radius: 0;
-  width: 100%;
+  padding: 35px 30px;
+  margin-top: 20px;
+}
+
+.guide-tag {
+  font-size: 14px;
+  font-weight: 700;
+  color: #005baa;
+  letter-spacing: 1px;
+  margin-bottom: 20px;
+}
+
+.call-center-box .number {
+  font-size: 30px;
+  font-weight: 800;
+  color: #333;
+  line-height: 1;
 }
 
 .primary-rect-btn {
   width: 100%;
-  height: 50px;
+  height: 55px;
   background: #005baa;
   color: #fff;
   border: none;
-  font-weight: 800;
+  font-size: 18px;
+  font-weight: 700;
   cursor: pointer;
-  border-radius: 0;
+  transition: 0.3s;
+  margin-top: 15px;
 }
 
-.combined-util {
-  flex: 0 0 350px;
+.primary-rect-btn:hover {
+  background-color: #004a8a;
+  box-shadow: 0 5px 15px rgba(0, 91, 170, 0.2);
+}
+
+/* =====================================================================
+   [7] 브레드크럼 (Breadcrumb Bar)
+   ===================================================================== */
+.breadcrumb-bar {
+  width: 100%;
+  background-color: #f9f9f9;
+  border-bottom: 1px solid #eee;
+  padding: 20px 35px;
+  margin-top: 100px;
+}
+
+.breadcrumb-inner {
+  max-width: 1550px;
+  margin: 0 auto;
+  padding: 0 20px;
   display: flex;
   align-items: center;
-  justify-content: flex-end;
-  gap: 30px;
-  padding-right: 30px;
+  gap: 10px;
+  font-size: 18px;
+  color: #666;
 }
 
-.util-item {
-  font-family: 'pretendard';
-  font-size: 16px;
-  font-weight: 400;
-  color: #666;
+.home-icon,
+.divider {
+  color: #999;
   cursor: pointer;
 }
 
-.user-info {
-  font-family: 'pretendard';
-  color: #fbb900;
+.crumb-dropdown {
+  position: relative;
+  cursor: pointer;
 }
 
-.content-body {
-  min-height: 100vh;
+.current-select {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  color: #444;
 }
 
-.content-body.is-main-view {
-  padding-top: 0;
+.current-select.active {
+  font-weight: 700;
+  color: #005baa;
 }
 
+.dropdown-list {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  background: #fff;
+  border: 1px solid #ddd;
+  min-width: 150px;
+  z-index: 6000;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+}
+
+/* =====================================================================
+   [8] 푸터 
+   ===================================================================== */
 .main-footer {
   width: 100%;
   background-color: #f8f8f8;
-  padding: 40px 0;
+  padding: 40px 0; /* 2번 파일 규격 */
   border-top: 1px solid #eee;
   font-family: 'pretendard', sans-serif;
 }
 
 .footer-inner {
-  max-width: 1500px;
+  max-width: 1500px; /* 2번 파일의 wide-footer 가로폭 */
   margin: 0 auto;
-  padding: 0 40px;
+  padding: 0 40px;   /* 미세 패딩 동기화 */
+  text-align: left;
 }
 
 .f-row {
   display: flex;
-  justify-content: space-between;
+  justify-content: space-between; /* 양 끝 정렬로 우측 요소 위치 고정 */
   align-items: center;
   margin-bottom: 9px;
 }
@@ -817,6 +976,7 @@ onUnmounted(() => { window.removeEventListener('scroll', handleScroll); })
   width: auto;
   object-fit: contain;
   opacity: 0.5;
+  transition: 0.3s;
 }
 
 .f-logo-img:hover {
@@ -824,6 +984,7 @@ onUnmounted(() => { window.removeEventListener('scroll', handleScroll); })
   opacity: 1;
 }
 
+/* 우측 링크 구역 */
 .f-links {
   font-size: 17px;
   color: #666;
@@ -836,37 +997,15 @@ onUnmounted(() => { window.removeEventListener('scroll', handleScroll); })
   color: #005baa;
 }
 
-.f-links .bar {
-  color: #ddd;
-  margin: 0 5px;
-}
-
-.f-info-text,
-.f-bottom-info {
+/* 중간 정보 텍스트 구역 */
+.f-info-text {
   font-size: 15px;
-  margin-bottom: -10px;
+  margin-bottom: -10px; /* 2번 파일 특유의 쫀쫀한 간격 */
   color: #888;
   line-height: 1.2;
 }
 
-.f-info-text .bar,
-.f-bottom-info .bar {
-  margin: 0 10px;
-  color: #eee;
-}
-
-.blue-txt {
-  color: #005baa;
-  font-weight: 800;
-}
-
-.f-bottom-info {
-  display: flex;
-  justify-content: flex-start;
-  margin-bottom: 30px;
-}
-
-/* SNS 아이콘 스타일 */
+/* 우측 SNS 아이콘 구역 */
 .f-sns-side {
   display: flex;
   gap: 10px;
@@ -889,70 +1028,34 @@ onUnmounted(() => { window.removeEventListener('scroll', handleScroll); })
   background-color: #005baa;
   color: #fff;
   border-color: #005baa;
-  transform: translateY(-3px);
+  transform: translateY(-3px); /* 2번 파일의 호버 액션 이식 */
 }
 
+/* 하단 연락처 구역 */
+.f-bottom-info {
+  display: flex;
+  justify-content: flex-start;
+  font-size: 15px;
+  color: #888;
+  line-height: 1.2;
+  margin-bottom: 30px; /* 하단 여백 확보 */
+}
+
+.blue-txt {
+  color: #005baa;
+  font-weight: 800;
+}
+
+/* 카피라이트 구역 */
 .footer-copyright {
   font-size: 13px;
   color: #bbb;
   border-top: 1px solid #f2f2f2;
-  padding-top: 20px;
+  padding-top: 20px; /* 패딩 동기화 */
 }
 
-/* 브레드크럼 바 전체 레이아웃 */
-.breadcrumb-bar {
-  width: 100%;
-  background-color: #f9f9f9;
-  border-bottom: 1px solid #eee;
-  padding: 15px 0;
-  margin-top: 100px;
-}
-
-.breadcrumb-inner {
-  max-width: 1550px;
-  margin: 0 auto;
-  padding: 0 20px;
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  font-family: 'pretendard';
-  font-size: 14px;
-  color: #666;
-}
-
-/* 홈 아이콘 및 구분자 색상 */
-.home-icon, .divider {
-  color: #999;
-  cursor: pointer;
-}
-
-/* 드롭다운 영역 가독성 */
-.crumb-dropdown {
-  position: relative;
-  cursor: pointer;
-}
-
-.current-select {
-  display: flex;
-  align-items: center;
-  gap: 5px;
-  color: #444;
-}
-
-.current-select.active {
-  font-weight: 700;
-  color: #005baa;
-}
-
-/* 드롭다운 리스트가 떴을 때 위로 올라오도록 z-index 설정 */
-.dropdown-list {
-  position: absolute;
-  top: 100%;
-  left: 0;
-  background: #fff;
-  border: 1px solid #ddd;
-  min-width: 150px;
-  z-index: 6000;
-  box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+.bar {
+  margin: 0 5px;
+  color: #ddd;
 }
 </style>

@@ -31,7 +31,7 @@ public interface ParkingSpotDao {
     // 입차 
     int parkCar(@Param("spotId") int spotId, @Param("parkingLogId") Long parkingLogId);
     
-     // 해당 차량 번호로 오늘 '완료'된 기록이 있는지 확인 (있으면 1, 없으면 0)
+     // 해당 차량 번호로 오늘 '진료완료'된 기록이 있는지 확인 (있으면 1, 없으면 0)
     int checkClinicVisit(String vehicleNum);
     // 출차할때 필요한것...
     public Integer findSpotIdByParkingLogId(Long parkingLogId);

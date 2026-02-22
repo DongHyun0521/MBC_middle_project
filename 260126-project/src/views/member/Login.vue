@@ -3,7 +3,7 @@
     <div class="portal-login-container">
       <div class="portal-info-panel">
         <div class="brand-area">
-          <img src="@/assets/txtlogo.png" alt="S-HOSPITAL" class="brand-logo">
+          <img src="@/assets/txtlogo2.png" alt="S-HOSPITAL" class="brand-logo">
           </div>
 
         <div v-if="mainTab === 'member'" class="service-intro transition-box">
@@ -358,7 +358,21 @@ onMounted(() => {
 </script>
 
 <style scoped>
+input::-ms-reveal,
+input::-ms-clear {
+  display: none !important; /* MS Edge/IE 전용 눈 아이콘 제거 */
+}
+
+/* 크롬/사파리 등 자동완성 아이콘 방어 (깔끔함 유지) */
+input[type="password"]::-webkit-contacts-auto-fill-button,
+input[type="password"]::-webkit-credentials-auto-fill-button {
+  visibility: hidden;
+  display: none !important;
+  pointer-events: none;
+}
+
 .login-page-wrap {
+  font-family: 'Pretendard', -apple-system, sans-serif !important;
   display: flex;
   justify-content: center;
   align-items: center;
@@ -381,7 +395,7 @@ onMounted(() => {
 .portal-info-panel {
   flex: 1;
   background-color: #f9f9f9;
-  padding: 100px 80px;
+  padding: 90px 80px;
   border-right: 1px solid #eee;
   display: flex;
   flex-direction: column;
@@ -395,21 +409,15 @@ onMounted(() => {
 }
 
 .brand-logo {
-  height: 80px;
-}
-
-.brand-name {
-  font-size: 20px;
-  font-weight: 700;
-  color: #005baa;
+  height: 60px;
 }
 
 .intro-main {
   font-size: 28px;
   font-weight: 600;
   color: #005baa;
-  line-height: 1.4;
-  margin: 0px 0 20px;
+  line-height: 1.2;
+  margin-bottom: 20px;
 }
 
 .service-list {
@@ -418,12 +426,12 @@ onMounted(() => {
 }
 
 .service-list li {
-  font-size: 14px;
+  font-size: 18px;
   color: #777;
-  margin-bottom: 12px;
+  margin-bottom: 10px;
   display: flex;
-  gap: 8px;
-  font-weight: 300;
+  gap: 10px;
+  font-weight: 400;
 }
 
 .service-list span {
@@ -431,8 +439,14 @@ onMounted(() => {
   font-weight: bold;
 }
 
+.cs-info {
+  margin-bottom: 10px;
+  line-height: 1.8;
+  font-size: 18px;
+}
+
 .cs-tel {
-  font-size: 20px;
+  font-size: 22px;
   font-weight: 600;
   color: #005baa;
 }
@@ -450,6 +464,8 @@ onMounted(() => {
 }
 
 .tab-btn {
+  font-family: 'pretendard';
+  font-size: 15px;
   flex: 1;
   padding: 12px;
   border: 1px solid #eee;
@@ -457,7 +473,6 @@ onMounted(() => {
   color: #999;
   font-weight: 600;
   cursor: pointer;
-  border-radius: 4px;
   transition: 0.3s;
 }
 
@@ -472,9 +487,9 @@ onMounted(() => {
 }
 
 .form-title-group h3 {
-  font-size: 22px;
+  font-size: 26px;
   color: #005baa;
-  font-weight: 600;
+  font-weight: 700;
   margin-bottom: 10px;
 }
 
@@ -540,7 +555,7 @@ onMounted(() => {
 
 .field-label {
   display: block;
-  font-size: 12px;
+  font-size: 16px;
   font-weight: 700;
   color: #999;
   margin-bottom: 8px;
@@ -548,11 +563,12 @@ onMounted(() => {
 
 input[type="text"],
 input[type="password"] {
+  font-family: 'pretendard';
   width: 100%;
   padding: 12px 0;
   border: none;
   border-bottom: 1px solid #ddd;
-  font-size: 16px;
+  font-size: 17px;
   color: #4e4e4e;
   transition: 0.3s;
   background: transparent;
@@ -582,7 +598,7 @@ input:focus {
   justify-content: space-between;
   align-items: center;
   margin-bottom: 40px;
-  font-size: 13px;
+  font-size: 16px;
   color: #777;
 }
 
@@ -606,13 +622,13 @@ input:focus {
 }
 
 .btn-login-submit {
+  font-family: 'pretendard';
   width: 100%;
   padding: 18px;
   background-color: #005baa;
   color: #fff;
   border: none;
-  border-radius: 4px;
-  font-size: 16px;
+  font-size: 22px;
   font-weight: 600;
   cursor: pointer;
   transition: 0.3s;
@@ -624,14 +640,14 @@ input:focus {
 }
 
 .regi-footer {
-  margin-top: 35px;
+  margin-top: 30px;
   text-align: center;
 }
 
 .regi-footer p {
-  font-size: 13px;
+  font-size: 16px;
   color: #bbb;
-  margin-bottom: 8px;
+  margin-bottom: 10px;
 }
 
 /* 링크 스타일*/
@@ -644,7 +660,7 @@ input:focus {
 .regi-footer a {
   color: #005baa;
   font-weight: 600;
-  font-size: 14px;
+  font-size: 18px;
   text-decoration: none;
   border-bottom: 1px solid transparent; /* 밑줄 호버 효과용 */
   transition: border-bottom 0.3s;

@@ -65,7 +65,7 @@
     </update>
 
 	<!-- 내 차량 삭제 (delete) -->
-    <delete id="delVehi" parameterType="String">
+    <delete id="delVehi">
         DELETE FROM member_vehicle 
         WHERE vehicle_num = #{vehicleNum} 
         	AND mem_id = #{memId}

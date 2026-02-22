@@ -207,9 +207,6 @@ import { useRouter, useRoute } from 'vue-router';
 import { idCheckReq, regiReq, staffRegiReq, adminRegiReq, getAdminDeptsReq } from '@/api/member';
 import { getDeptsReq } from '@/api/reservation';
 
-// =========================================
-// 1. 기본 설정 및 상태 변수 (Data)
-// =========================================
 const router = useRouter();
 const route = useRoute();
 
@@ -261,9 +258,8 @@ const isEmpValid = ref(false);     // 사원번호 유효성
 const empMsg = ref("사원번호를 입력해 주세요 (예: A12345678)");
 
 
-// =========================================
-// 2. 유효성 검사 및 입력 핸들러
-// =========================================
+
+// 유효성 검사 및 입력 핸들러
 
 // [아이디] 영문 소문자, 숫자만 허용 (나머지 제거)
 const checkID = () => {
@@ -376,13 +372,13 @@ const checkLicenseInput = (e) => {
     if (val.startsWith('13') || val.startsWith('14')) {
       isLicenseValid.value = true; licenseMsg.value = "✔ 면허 인증이 완료되었습니다. 진료과를 선택해주세요.";
     } else {
-      isLicenseValid.value = false; licenseMsg.value = "올바르지 않는 형식입니다. 다시 입력해 주세요.";
+      isLicenseValid.value = false; licenseMsg.value = "올바르지 않은 형식입니다. 다시 입력해 주세요.";
     }
   } else if (user.value.role === '간호사') {
     if (val.startsWith('50') || val.startsWith('55')) {
       isLicenseValid.value = true; licenseMsg.value = "✔ 면허 인증이 완료되었습니다. 진료과를 선택해주세요.";
     } else {
-      isLicenseValid.value = false; licenseMsg.value = "올바르지 않는 형식입니다. 다시 입력해 주세요.";
+      isLicenseValid.value = false; licenseMsg.value = "올바르지 않은 형식입니다. 다시 입력해 주세요.";
     }
   }
 }
@@ -397,9 +393,9 @@ const checkEmpInput = (e) => {
   if (val.length === 0) {
     isEmpValid.value = false; empMsg.value = "사원번호를 입력해 주세요";
   } else if (!pattern.test(val)) {
-    isEmpValid.value = false; empMsg.value = "형식이 올바르지 않습니다 (영대문자 1개 + 숫자 8개)";
+    isEmpValid.value = false; empMsg.value = "올바르지 않는 형식입니다. 다시 입력해 주세요.";
   } else {
-    isEmpValid.value = true; empMsg.value = "✔ 올바른 형식입니다. 부서를 선택해주세요.";
+    isEmpValid.value = true; empMsg.value = "✔ 사원 인증이 완료되었습니다. 부서를 선택해주세요.";
   }
 }
 
@@ -407,8 +403,8 @@ const checkEmpInput = (e) => {
 const resetHospitalFields = () => {
   user.value.license_number = '';
   user.value.emp_number = '';
-  isLicenseValid.value = false; licenseMsg.value = "면허번호 6자리를 입력해 주세요";
-  isEmpValid.value = false; empMsg.value = "사원번호를 입력해 주세요 (예: A12345678)";
+  isLicenseValid.value = false; licenseMsg.value = "면허번호 6자리를 입력해 주세요.";
+  isEmpValid.value = false; empMsg.value = "사원번호를 입력해 주세요. (예: A12345678)";
 }
 
 // 숫자만 입력 + 전화번호 자동 포커스 이동
@@ -488,7 +484,7 @@ const handleRegi = async () => {
   if (user.value.password !== user.value.pwCk) { alert("비밀번호 확인이 일치하지 않습니다."); return; }
   if (!isNameValid.value) { alert("이름을 확인해주세요."); return; }
   if (!isBirthValid.value) { alert("생년월일을 확인해주세요."); return; }
-  if (!isPhoneValid.value) { alert("휴대폰 번호를 입력해주세요."); return; }
+  if (!isPhoneValid.value) { alert("전화번호를 입력해주세요."); return; }
   
   user.value.phoneNumber = `${tel1.value}${tel2.value}${tel3.value}`;
   

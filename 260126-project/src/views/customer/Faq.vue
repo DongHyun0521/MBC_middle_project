@@ -417,6 +417,7 @@ onMounted(async () => {
 
 <style scoped>
 .faq-container {
+  font-family: 'Pretendard', -apple-system, sans-serif !important;
   max-width: 1000px;
   margin: 80px auto;
   padding: 0 20px;
@@ -429,15 +430,15 @@ onMounted(async () => {
 }
 
 .faq-header h2 {
-  font-size: 36px;
-  font-weight: 700;
+  font-size: 42px;
+  font-weight: 800;
   color: #333;
   margin-bottom: 15px;
 }
 
 .faq-header p {
   color: #666;
-  font-size: 16px;
+  font-size: 18px;
 }
 
 .category-tabs {
@@ -452,7 +453,8 @@ onMounted(async () => {
   padding: 15px 0;
   background: #fff;
   border: 1px solid #ddd;
-  font-size: 15px;
+  font-size: 18px;
+  font-weight: 600;
   color: #555;
   cursor: pointer;
   transition: 0.2s;
@@ -563,20 +565,20 @@ onMounted(async () => {
 }
 
 .q-badge {
-  font-size: 20px;
+  font-size: 22px;
   font-weight: 800;
   color: #005baa;
 }
 
 .q-cat {
-  font-size: 14px;
+  font-size: 18px;
   color: #666;
   font-weight: 500;
   min-width: 80px;
 }
 
 .q-text {
-  font-size: 17px;
+  font-size: 20px;
   color: #333;
   font-weight: 500;
   line-height: 1.4;
@@ -614,10 +616,10 @@ onMounted(async () => {
 }
 
 .a-badge {
-  font-size: 20px;
+  font-size: 22px;
   font-weight: 800;
   color: #333;
-  margin-top: -3px;
+  margin-left: -8px;
 }
 
 .a-content-box {
@@ -625,7 +627,7 @@ onMounted(async () => {
 }
 
 .a-text {
-  font-size: 16px;
+  font-size: 18px;
   color: #555;
   line-height: 1.7;
   white-space: pre-wrap;

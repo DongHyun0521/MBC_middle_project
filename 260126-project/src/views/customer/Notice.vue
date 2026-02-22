@@ -180,7 +180,7 @@ import {
 const route = useRoute();
 const router = useRouter();
 
-// 1. 상태 변수 (State)
+// 상태 변수 (State)
 const mode = ref('list');           // 현재 화면 모드 (list, detail, write, edit)
 const keyword = ref('');            // 검색어
 const loginInfo = ref({});          // 로그인 정보
@@ -200,7 +200,7 @@ const previewUrl = ref(null);       // 미리보기 URL
 const isImageFile = ref(false);     // 이미지 여부 체크
 
 
-// 2. 권한 체크 (Auth)
+// 권한 체크 (Auth)
 // [관리자 확인]
 const isAdmin = computed(() => {
     const info = loginInfo.value || {};
@@ -222,7 +222,7 @@ const canManageNotice = computed(() => {
 });
 
 
-// 3. Computed
+// Computed
 // [정렬] 상단 고정(topFix) 우선, 그 뒤 최신순/과거순 정렬
 const sortedList = computed(() => {
     const list = [...noticeList.value];
@@ -280,7 +280,7 @@ const visiblePages = computed(() => {
 });
 
 
-// 4. 네비게이션 (이전글/다음글)
+// 네비게이션 (이전글/다음글)
 const currentIndex = computed(() => {
     if (!selectedItem.value.noticeId) return -1;
     return sortedList.value.findIndex(item => item.noticeId === selectedItem.value.noticeId);
@@ -297,7 +297,7 @@ const nextItem = computed(() => {
 });
 
 
-// 5. Utils
+// Utils
 const formatDate = (dateStr) => dateStr ? String(dateStr).substring(0, 10) : '';
 const isNew = (dateStr) => dateStr ? (new Date() - new Date(dateStr)) / (1000 * 60 * 60 * 24) < 1 : false;
 
@@ -339,7 +339,7 @@ const handleLinkClick = (e) => {
     }
 };
 
-// 6. 파일 처리 핸들러 (File Handler)
+// 파일 처리 핸들러 (File Handler)
 const handleFileChange = (e) => {
     const file = e.target.files[0];
     if (!file) return;
@@ -364,8 +364,7 @@ const removeFile = () => {
     if (fileInput.value) fileInput.value.value = '';
 };
 
-
-// 7. 화면 이동 로직 (Routing)
+// 화면 이동 로직 (Routing)
 const goList = () => { 
     router.push('/notice'); 
     mode.value = 'list'; 
@@ -431,8 +430,7 @@ const loadDetailData = async (id) => {
     }
 };
 
-
-// 8. 서버 통신 (API Call)
+// 서버 통신 (API Call)
 // 목록 조회
 const getNoticeList = async () => {
     try {
@@ -508,8 +506,6 @@ const deleteNotice = async (id) => {
     } catch (e) { alert("오류가 발생했습니다."); }
 };
 
-
-// 9. Lifecycle
 // URL 변경 감지 (뒤로가기 지원)
 watch(() => route.params.id, (newId) => { 
     if (newId) loadDetailData(newId); 
@@ -553,6 +549,7 @@ onMounted(async () => {
 }
 
 .notice-container {
+    font-family: 'Pretendard', -apple-system, sans-serif !important;
     max-width: 1000px;
     margin: 80px auto;
     padding: 0 20px;
@@ -565,15 +562,15 @@ onMounted(async () => {
 }
 
 .page-header h2 {
-    font-size: 32px;
-    font-weight: 600;
+    font-size: 42px;
+    font-weight: 700;
     color: #333;
     margin-bottom: 10px;
 }
 
 .page-header p {
     color: #666;
-    font-size: 15px;
+    font-size: 18px;
 }
 
 .top-controls {
@@ -584,7 +581,7 @@ onMounted(async () => {
 }
 
 .total-count {
-    font-size: 14px;
+    font-size: 18px;
     color: #666;
 }
 
@@ -644,8 +641,8 @@ onMounted(async () => {
 
 .notice-table th {
     background: #f8f9fa;
-    padding: 15px 0;
-    font-size: 14px;
+    padding: 20px 0px;
+    font-size: 18px;
     color: #333;
     border-bottom: 1px solid #ddd;
     font-weight: 600;
@@ -654,7 +651,7 @@ onMounted(async () => {
 .notice-table td {
     padding: 15px 10px;
     border-bottom: 1px solid #eee;
-    font-size: 14px;
+    font-size: 16px;
     color: #555;
     white-space: nowrap;
     overflow: hidden;

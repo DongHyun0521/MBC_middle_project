@@ -54,4 +54,14 @@ export const cancelResReq = (resId) => {
     return url.put(`/med/reservation/cancel/${resId}`)
 }
 
+// 8. 의사가 진료 완료 처리 (백엔드: /med/doctor/reservation/complete/{id})
+export const completeResByDocReq = (resId) => {
+    return url.put(`/med/doctor/reservation/complete/${resId}`) 
+}
+
+// 9. 의사가 예약 강제 취소 (백엔드: /med/doctor/reservation/cancel/{id})
+export const forceCancelResByDocReq = (resId) => {
+    return url.put(`/med/doctor/reservation/cancel/${resId}`)
+}
+
 export default url;

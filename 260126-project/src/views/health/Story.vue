@@ -469,7 +469,7 @@ onMounted(async () => {
 }
 
 .page-header h2 {
-  font-size: 32px;
+  font-size: 42px;
   font-weight: 700;
   color: #333;
   margin-bottom: 10px;
@@ -477,7 +477,7 @@ onMounted(async () => {
 
 .page-header p {
   color: #666;
-  font-size: 15px;
+  font-size: 18px;
 }
 
 /* 상단 컨트롤 */
@@ -486,15 +486,23 @@ onMounted(async () => {
   justify-content: center;
   position: relative;
   margin-bottom: 50px;
+  height: 50px;
+}
+
+.video-info {
+  padding: 0px 8px 10px;
+  text-align: left;    
+  margin-bottom: 8px;
 }
 
 .video-search {
   display: flex;
   background: #f4f4f4;
-  border-radius: 4px;
-  padding: 5px;
+  /* border-radius: 4px; */
+  padding: 0;
   width: 100%;
   max-width: 600px;
+  height: 100%;
 }
 
 .video-search input {
@@ -507,11 +515,11 @@ onMounted(async () => {
 }
 
 .s-btn {
-  background: #043264;
+  background: #005baa;
   color: #fff;
   border: none;
   padding: 0 20px;
-  border-radius: 4px;
+  /* border-radius: 4px; */
   cursor: pointer;
   font-size: 14px;
 }
@@ -519,40 +527,43 @@ onMounted(async () => {
 .btn-write {
   position: absolute;
   right: 0;
-  bottom: 0;
+  top: 0; 
   background: #005baa;
   color: #fff;
   border: none;
-  padding: 10px 20px;
+  padding: 0 20px; 
   font-weight: 600;
   cursor: pointer;
-  border-radius: 4px;
+  height: 100%;
 }
 
 /* 그리드 */
 .video-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 25px;
+  gap: 28px;
 }
+
 
 .video-card {
   cursor: pointer;
   transition: 0.3s;
   background: #fff;
-  border-radius: 8px;
+  /* border-radius: 8px; */
   overflow: hidden;
 }
 
 .video-card:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.08);
+  transform: translateY(-7px);
+  box-shadow: 0 20px 40px rgba(0, 91, 170, 0.15);
+  border-color: #005baa;
+  z-index: 2;
 }
 
 .thumb-box {
-  width: 100%;
+  width: 120%;
   aspect-ratio: 16/9;
-  border-radius: 8px;
+  /* border-radius: 8px; */
   overflow: hidden;
   margin-bottom: 15px;
   border: 1px solid #eee;
@@ -579,26 +590,25 @@ onMounted(async () => {
 }
 
 .v-title {
-  font-size: 16px;
+  font-size: 18px;
   font-weight: 700;
   color: #333;
   margin-bottom: 8px;
   line-height: 1.4;
-  height: 2.8em;
+  height: 1.4em;
   overflow: hidden;
   display: block;
   word-wrap: break-word;
 }
 
 .v-author {
-  font-size: 14px;
+  font-size: 16px;
   color: #888;
 }
 
 /* 상세 화면 */
 .detail-wrap {
   border-top: 2px solid #333;
-  border-bottom: 1px solid #ddd;
 }
 
 .detail-header {
@@ -608,14 +618,14 @@ onMounted(async () => {
 }
 
 .dh-title {
-  font-size: 24px;
+  font-size: 26px;
   font-weight: 700;
   color: #333;
   margin-bottom: 15px;
 }
 
 .dh-info {
-  font-size: 13px;
+  font-size: 16px;
   color: #777;
 }
 
@@ -625,6 +635,7 @@ onMounted(async () => {
 }
 
 .detail-content {
+  font-size: 20px;
   padding: 40px 30px;
   min-height: 300px;
   color: #444;
@@ -633,14 +644,13 @@ onMounted(async () => {
 }
 
 .media-view {
-  margin-top: 30px;
+  margin-top: 40px;
   text-align: center;
 }
 
 .detail-media {
   max-width: 100%;
-  max-height: 600px;
-  border-radius: 8px;
+  max-height: 400px;
   border: 1px solid #ddd;
 }
 
@@ -705,6 +715,7 @@ onMounted(async () => {
   color: #333;
   font-weight: 600;
   cursor: pointer;
+  font-size: 16px;
 }
 
 .admin-btns {
@@ -713,21 +724,23 @@ onMounted(async () => {
 }
 
 .btn-mod {
-  padding: 12px 25px;
+  padding: 12px 40px;
   background: #555;
   color: #fff;
   border: none;
   font-weight: 600;
   cursor: pointer;
+  font-size: 16px;
 }
 
 .btn-del {
-  padding: 12px 25px;
+  padding: 12px 40px;
   background: #333;
   color: #fff;
   border: none;
   font-weight: 600;
   cursor: pointer;
+  font-size: 16px;
 }
 
 /* 글쓰기 폼 */

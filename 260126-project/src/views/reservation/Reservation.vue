@@ -402,14 +402,14 @@ onMounted(async () => {
   justify-content: center;
   padding: 100px 20px;
   min-height: 120vh;
-  background-color: #f4f7fa;
+  background-color: #ffffff;
 }
 
 .reservation-card {
   width: 100%;
-  max-width: 700px;
+  max-width: 900px;
   background: #fff;
-  padding: 60px 50px;
+  padding: 80px 50px;
   border-radius: 8px;
   border: 1px solid #eee;
   box-shadow: 0 15px 40px rgba(0, 0, 0, 0.05);
@@ -432,7 +432,7 @@ onMounted(async () => {
 .title-bar {
   width: 40px;
   height: 3px;
-  background: #0171e9;
+  background: #005baa;
   margin: 0 auto 20px;
 }
 
@@ -454,7 +454,7 @@ onMounted(async () => {
   font-weight: 700;
   color: #333;
   margin-bottom: 15px;
-  border-left: 4px solid #0171e9;
+  border-left: 4px solid #005baa;
   padding-left: 10px;
 }
 
@@ -480,7 +480,7 @@ onMounted(async () => {
 
 .res-input:focus,
 .res-select:focus {
-  border-color: #0171e9;
+  border-color: #005baa;
   outline: none;
   box-shadow: 0 0 0 3px rgba(1, 113, 233, 0.1);
 }
@@ -554,7 +554,7 @@ onMounted(async () => {
 
 .date-display-box:hover,
 .date-display-box.active {
-  border-color: #0171e9;
+  border-color: #005baa;
   box-shadow: 0 5px 15px rgba(1, 113, 233, 0.1);
 }
 
@@ -611,8 +611,8 @@ onMounted(async () => {
 
 .cal-nav-btn:hover {
   background: #f0f7ff;
-  color: #0171e9;
-  border-color: #0171e9;
+  color: #005baa;
+  border-color: #005baa;
 }
 
 .cal-grid {
@@ -643,12 +643,12 @@ onMounted(async () => {
 
 .cal-day:hover:not(.empty):not(.disabled) {
   background-color: #f0f7ff;
-  color: #0171e9;
+  color: #005baa;
   font-weight: 700;
 }
 
 .cal-day.selected {
-  background-color: #0171e9;
+  background-color: #005baa;
   color: #fff !important;
   font-weight: 700;
   box-shadow: 0 4px 10px rgba(1, 113, 233, 0.4);
@@ -662,8 +662,8 @@ onMounted(async () => {
 }
 
 .cal-day.today {
-  border: 1px solid #0171e9;
-  color: #0171e9;
+  border: 1px solid #005baa;
+  color: #005baa;
   font-weight: 700;
 }
 
@@ -701,8 +701,8 @@ onMounted(async () => {
 }
 
 .time-btn.selected {
-  background: #0171e9;
-  border-color: #0171e9 !important;
+  background: #005baa;
+  border-color: #005baa !important;
   color: #fff;
   box-shadow: 0 4px 10px rgba(1, 113, 233, 0.3);
   transform: translateY(-1px);
@@ -754,7 +754,7 @@ onMounted(async () => {
 
 .fixed-label {
   font-size: 13px;
-  color: #0171e9;
+  color: #005baa;
   font-weight: 700;
 }
 
@@ -772,7 +772,7 @@ onMounted(async () => {
 
 .f-doc {
   font-size: 18px;
-  color: #0171e9;
+  color: #005baa;
   font-weight: 700;
 }
 
@@ -791,7 +791,7 @@ onMounted(async () => {
 .res-submit-btn {
   width: 100%;
   padding: 20px;
-  background: #0171e9;
+  background: #005baa;
   color: #fff;
   border: none;
   border-radius: 6px;

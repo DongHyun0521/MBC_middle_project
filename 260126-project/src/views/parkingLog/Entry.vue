@@ -109,6 +109,41 @@
         </div>
       </div>
     </div>
+
+    <div v-if="viewMode === 'full'" class="screen-container screen-full">
+      <div class="center-content">
+        <div class="logo-box compact-logo">
+          <img class="main-logo-img" src="@/assets/txtlogo2.png" alt="S-HOSPITAL" />
+        </div>
+
+        <h1 class="page-title error-title compact-title">주차장 만차 안내</h1>
+
+        <div class="result-card-container single-card">
+          <div class="info-card data-card full-status-card">
+            <h2 class="card-title error-title">입차 제한</h2>
+
+            <div class="error-visual-box">
+              <svg viewBox="0 0 24 24" class="svg-error compact-svg">
+                <path fill="currentColor"
+                  d="M12,2L1,21H23L12,2M12,6L19.53,19H4.47L12,6M11,10V14H13V10H11M11,16V18H13V16H11Z" />
+              </svg>
+              <p class="error-msg">현재 주차 공간이 부족합니다</p>
+              <p class="sub-guide">
+                방문객이 많아 입차가 제한되고 있습니다 <br />
+                잠시 후 다시 시도해 주시기 바랍니다
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <div class="timer-section">
+          <div class="timer-bar">
+            <div class="timer-progress" :style="{ width: (countdown / 5) * 100 + '%' }"></div>
+          </div>
+          <p class="timer-text"><b>{{ countdown }}초</b> 후 초기 화면으로 돌아갑니다</p>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -126,8 +161,26 @@ const entryTime = ref('');
 const countdown = ref(3);
 let timerId = null;
 
-const startEntry = () => {
-  viewMode.value = 'input';
+// [추가] 입차 시작 시 만차 여부 체크 로직
+const startEntry = async () => {
+  try {
+    // 백엔드에 남은 자리 확인 요청
+    const response = await axios.get('/parking/spot/entry/dummy');
+    const availableSpots = response.data;
+
+    if (availableSpots <= 0) {
+      // 만차라면 바로 만차 화면으로
+      viewMode.value = 'full';
+      startCountdown(); // 자동 복귀 타이머 실행
+    } else {
+      // 자리가 있다면 입차 화면으로 이동
+      viewMode.value = 'input';
+    }
+  } catch (error) {
+    console.error("만차 확인 중 오류:", error);
+    // 오류 시 안전하게 입력 화면으로 보내거나 경고창 띄움
+    viewMode.value = 'input'; 
+  }
 };
 
 const handleFileUpload = async (event) => {
@@ -202,15 +255,6 @@ const resetToIdle = () => {
 </script>
 
 <style scoped>
-:root {
-  --main-blue: #005baa;
-  --sky-blue: #84c2e6;
-  --accent-yellow: #fbb900;
-  --bg-light: #f4f7fb;
-  --text-dark: #222;
-  --text-grey: #7f8c8d;
-}
-
 .kiosk-main-wrapper {
   font-family: 'Pretendard', sans-serif;
   display: flex;
@@ -224,11 +268,13 @@ const resetToIdle = () => {
 .screen-container {
   width: 100%;
   min-height: 90%;
-  flex-direction: column; /* 세로 정렬 보장 */
+  flex-direction: column;
+  /* 세로 정렬 보장 */
   display: flex;
   justify-content: center;
   align-items: center;
-  padding: 40px 60px; /* 위아래 패딩 조절 */
+  padding: 40px 60px;
+  /* 위아래 패딩 조절 */
 }
 
 .center-content {
@@ -447,22 +493,27 @@ const resetToIdle = () => {
 
 .timer-bar {
   width: 100%;
-  height: 14px; 
-  background: rgba(0, 91, 170, 0.15); 
+  height: 14px;
+  background: rgba(0, 91, 170, 0.15);
   border-radius: 10px;
   overflow: hidden;
-  margin-top: 40px; 
+  margin-top: 40px;
 }
 
 .timer-progress {
   height: 100%;
   background: #005baa;
-  animation: timerShrink 5s linear forwards; 
+  animation: timerShrink 5s linear forwards;
 }
 
 @keyframes timerShrink {
-  from { width: 100%; }
-  to { width: 0%; }
+  from {
+    width: 100%;
+  }
+
+  to {
+    width: 0%;
+  }
 }
 
 .timer-text {

@@ -158,11 +158,11 @@
         </div>
         <div class="modal-body">
           <div class="input-group">
-            <label>제목</label>
+            <label>제목 <span class="req">*</span></label>
             <input type="text" v-model="writeForm.title" class="modal-input" placeholder="제목을 입력하세요">
           </div>
           <div class="input-group">
-            <label>내용</label>
+            <label>내용 <span class="req">*</span></label>
             <textarea v-model="writeForm.content" class="modal-textarea" placeholder="문의하실 내용을 상세히 입력하세요"></textarea>
           </div>
 
@@ -205,7 +205,7 @@ import {
   delVocByAdminReq, restoreVocReq, getAdminInfoReq
 } from '@/api/customer';
 
-// 1. 상태 변수 (State)
+// ============================= 상태 변수 (State) =============================
 const filterStatus = ref('all');
 const openItemId = ref(null);
 const editingReplyId = ref(null);
@@ -217,36 +217,24 @@ const vocList = ref([]);
 const writeForm = ref({ vocId: '', title: '', content: '', uploadImg: ''});
 const isWonmuState = ref(false);
 
-// [신규] 파일 업로드를 위한 변수들
+// 파일 업로드를 위한 변수들
 const fileInput = ref(null);
 const selectedFile = ref(null);
 const previewUrl = ref(null);
 const isImageFile = ref(false);
 
-
-// [추가] 이미지 확대 모달 제어 변수
+// 이미지 확대 모달 제어 변수
 const showImgModal = ref(false);
 const currentImgUrl = ref('');
 
-// [추가] 이미지 클릭 시 실행 (확대 창 열기)
-const openImgModal = (path) => {
-  // getImageUrl 함수를 통해 전체 주소로 변환해서 저장
-  currentImgUrl.value = getImageUrl(path);
-  showImgModal.value = true;
-};
-
-// [추가] 확대 창 닫기
-const closeImgModal = () => {
-  showImgModal.value = false;
-  currentImgUrl.value = '';
-};
-
+// 답변 가이드 상수
 const replyHeader = "안녕하십니까, 서울에스병원 원무과입니다.\n고객님의 소중한 의견에 깊이 감사드립니다.\n\n";
 const replyFooter = "\n\n추가로 궁금하신 점이 있으시면 언제든 문의해주시기 바랍니다.\n항상 고객님의 건강과 행복을 기원합니다.\n감사합니다.";
 
-
-// 2. 권한 및 설정
+// ============================= 권한 및 설정 =============================
+// 행정 부서인지 확인
 const isAdmin = computed(() => String(loginInfo.value.loginType || loginInfo.value.role || '').toUpperCase() === 'ADMIN');
+// 행정 부서에서 원무팀인지 확인
 const isWonmu = computed(() => {
   if (!isAdmin.value) return false;
   if (isWonmuState.value) return true;
@@ -256,13 +244,11 @@ const isWonmu = computed(() => {
 });
 const canReply = computed(() => isAdmin.value && isWonmu.value);
 const canManageDeleted = computed(() => isAdmin.value && isWonmu.value);
+// 목록 필터
 const currentTabs = computed(() => {
   const tabs = [{ id: 'all', label: '전체' }];
 
-  // 원무팀일 때만 '미답변' 탭과 '휴지통' 탭을 줌
-  if (isWonmu.value) {
-    tabs.push({ id: 'unanswered', label: '미답변' });
-  }
+  tabs.push({ id: 'unanswered', label: '미답변' });
   tabs.push({ id: 'answered', label: '답변완료' });
 
   if (isWonmu.value) {
@@ -271,7 +257,7 @@ const currentTabs = computed(() => {
   return tabs;
 });
 
-// 3. 유틸리티 함수
+// ============================= 유틸리티 함수 =============================
 const getWriterName = (item) => {
   if (item.writerName || item.name) {
     return item.writerName || item.name;
@@ -297,7 +283,7 @@ const isImage = (fileName) => {
   return ['jpg', 'jpeg', 'png', 'gif', 'bmp', 'webp'].includes(ext);
 };
 
-// 4. 데이터 조회
+// ============================= 데이터 조회 및 목록 제어 =============================
 const fetchList = async () => {
   try {
     let res;
@@ -345,8 +331,7 @@ const toggleItem = (item) => {
   }
 };
 
-// 5. [핵심] 글쓰기 & 파일 업로드 로직 
-
+// ============================= 글쓰기 및 파일 업로드 =============================
 // 모달 열 때 (초기화)
 const openWriteModal = () => {
   isEditing.value = false;
@@ -376,13 +361,12 @@ const openEditModal = (item) => {
   showModal.value = true;
 };
 
-// [신규] 사용자가 파일을 선택했을 때 실행되는 함수
+// 사용자가 파일을 선택했을 때 실행되는 함수
 const handleFileChange = (e) => {
   const file = e.target.files[0]; // 선택한 파일 중 첫 번째 것 가져오기
   if (!file) return; // 취소 눌러서 파일이 없으면 그냥 종료
 
   selectedFile.value = file; // 파일 변수에 저장
-
 
   // 파일 타입이 'image/...' 로 시작하면 이미지임
   if (file.type.startsWith('image/')) {
@@ -395,7 +379,7 @@ const handleFileChange = (e) => {
   }
 };
 
-// [신규] 선택한 파일 취소(X버튼) 함수
+// 선택한 파일 취소(X버튼) 함수
 const removeFile = () => {
   selectedFile.value = null;
   previewUrl.value = null;
@@ -406,14 +390,13 @@ const removeFile = () => {
 
 const submitWrite = async () => {
   if (!writeForm.value.title) return alert("제목을 입력해주세요.");
+  if (!writeForm.value.content) return alert("내용을 입력해주세요.");
 
   try {
     const memId = Number(loginInfo.value.memId || loginInfo.value.id || 0);
-
     const formData = new FormData();
-
     
-    // 1. 글자 정보 담기 (append: 박스에 넣기)
+    // 글자 정보 담기 (append: 박스에 넣기)
     formData.append('title', writeForm.value.title);
     formData.append('content', writeForm.value.content);
     formData.append('memId', memId);
@@ -421,7 +404,7 @@ const submitWrite = async () => {
     if (isEditing.value) {
       formData.append('vocId', writeForm.value.vocId);
 
-      // 기존 파일 경로도 같이 보냄(새 파일 없으면 이걸 유지!)
+      // 기존 파일 경로도 같이 보냄(새 파일 없으면 이걸 유지)
       formData.append('uploadImg', writeForm.value.uploadImg || '');
     } else {
       // 신규일 때는 초기값 설정
@@ -429,12 +412,12 @@ const submitWrite = async () => {
       formData.append('answerStatus', false);
     }
 
-    // 2. 파일이 있으면 박스에 담기
+    // 파일이 있으면 박스에 담기
     if (selectedFile.value) {
       formData.append('uploadFile', selectedFile.value);
     }
 
-    // 3. API 호출 (택배 박스째로 보냄)
+    // API 호출 (택배 박스째로 보냄)
     let res;
     if (isEditing.value) res = await editVocReq(formData);
     else res = await addVocReq(formData);
@@ -455,8 +438,7 @@ const deleteVocUser = async (id) => {
   }
 };
 
-// 6. 관리자 기능 (기존과 동일)
-// const applyTemplate = () => { replyText.value = replyHeader + replyText.value + replyFooter; };
+// ============================= 관리자 기능 =============================
 const submitReply = async (item) => {
   if (!replyText.value) return alert("답변 내용을 입력하세요.");
   const memId = Number(loginInfo.value.memId || loginInfo.value.id);
@@ -470,10 +452,10 @@ const submitReply = async (item) => {
 };
 const startEditReply = (item) => { replyText.value = item.answerContent; editingReplyId.value = item.vocId; };
 const cancelEditReply = () => { editingReplyId.value = null; replyText.value = ''; };
+
 const updateReply = async (item) => {
   if (!replyText.value) return alert("내용을 입력하세요.");
   try {
-    // [정답] 카멜케이스 vocId
     const payload = { vocId: Number(item.vocId), answerContent: replyText.value, answerStatus: true, memId: Number(loginInfo.value.memId || loginInfo.value.id) };
     await editVocReplyReq(payload);
     alert("수정되었습니다.");
@@ -505,8 +487,20 @@ const restoreVoc = async (id) => {
   }
 };
 
+// ============================= 이미지 모달 및 onmounted =============================
+// 이미지 클릭 시 실행 (확대 창 열기)
+const openImgModal = (path) => {
+  // getImageUrl 함수를 통해 전체 주소로 변환해서 저장
+  currentImgUrl.value = getImageUrl(path);
+  showImgModal.value = true;
+};
 
-// 7. 시작 (Lifecycle)
+// 확대 창 닫기
+const closeImgModal = () => {
+  showImgModal.value = false;
+  currentImgUrl.value = '';
+};
+
 onMounted(async () => {
   const raw = sessionStorage.getItem('loginId');
   if (raw) loginInfo.value = JSON.parse(raw);
@@ -519,6 +513,7 @@ onMounted(async () => {
 
 <style scoped>
 .voc-container {
+  font-family: 'Pretendard', -apple-system, sans-serif !important;
   max-width: 900px;
   margin: 60px auto;
   padding: 0 20px;
@@ -530,22 +525,22 @@ onMounted(async () => {
 }
 
 .page-header h2 {
-  font-size: 32px;
+  font-size: 42px;
   font-weight: 700;
-  color: #111;
+  color: #333;
   margin-bottom: 10px;
 }
 
 .page-header p {
   color: #666;
-  font-size: 15px;
+  font-size: 18px;
 }
 
 .list-controls {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 15px;
+  margin-bottom: 5px;
   border-bottom: 1px solid #333;
   padding-bottom: 15px;
 }
@@ -576,10 +571,10 @@ onMounted(async () => {
   background: #005baa;
   color: #fff;
   border: none;
-  padding: 10px 24px;
+  padding: 8px 16px;
   cursor: pointer;
   font-weight: 600;
-  font-size: 14px;
+  font-size: 16px;
 }
 
 .btn-write:hover {
@@ -587,7 +582,7 @@ onMounted(async () => {
 }
 
 .voc-list {
-  border-top: 1px solid #333;
+  border-top: none;
 }
 
 .voc-item {
@@ -602,7 +597,7 @@ onMounted(async () => {
 .voc-header {
   display: flex;
   justify-content: space-between;
-  padding: 20px 15px;
+  padding: 25px 15px;
   cursor: pointer;
   align-items: center;
   transition: background 0.1s;
@@ -615,16 +610,17 @@ onMounted(async () => {
 .vh-left {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 18px;
   flex: 1;
 }
 
 .status-badge {
-  padding: 4px 10px;
-  font-size: 12px;
+  padding: 6px 0;
+  font-size: 14px;
   font-weight: 600;
   color: #fff;
-  min-width: 60px;
+  width: 80px;
+  display: inline-block;
   text-align: center;
 }
 
@@ -641,7 +637,7 @@ onMounted(async () => {
 }
 
 .vh-title {
-  font-size: 16px;
+  font-size: 18px;
   font-weight: 500;
   color: #333;
 }
@@ -655,6 +651,7 @@ onMounted(async () => {
 }
 
 .vh-writer {
+  font-size: 16px;
   font-weight: 500;
   color: #555;
   min-width: 60px;
@@ -663,7 +660,7 @@ onMounted(async () => {
 
 .vh-date {
   font-family: 'Roboto', sans-serif;
-  font-size: 13px;
+  font-size: 16px;
 }
 
 .vh-arrow {
@@ -924,6 +921,15 @@ onMounted(async () => {
 
 .modal-body {
   padding: 25px;
+}
+
+.req {
+  color: #dc3545; 
+  margin-left: 2px;
+}
+
+.content-text, .ans-content pre, .modal-input, .modal-textarea {
+  font-family: inherit; 
 }
 
 .input-group {

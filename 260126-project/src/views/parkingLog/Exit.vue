@@ -75,8 +75,7 @@
 
               <div class="error-visual-box compact">
                 <svg viewBox="0 0 24 24" class="svg-error">
-                  <path fill="currentColor"
-                    d="M12,2L1,21H23L12,2M12,6L19.53,19H4.47L12,6M11,10V14H13V10H11M11,16V18H13V16H11Z" />
+                  <path fill="currentColor" d="M12,2L1,21H23L12,2M12,6L19.53,19H4.47L12,6M11,10V14H13V10H11M11,16V18H13V16H11Z" />
                 </svg>
                 <p class="error-msg">확인 불가 (입차 기록 없음)</p>
                 <p class="sub-guide">관리자 호출 또는 다시 시도해 주세요</p>
@@ -174,7 +173,7 @@
         <!-- 자동 복귀 타이머: 무료/실패일 때만 보여주기 -->
         <div v-if="parkingFee <= 0" class="timer-section">
           <div class="timer-bar">
-            <div class="timer-progress" :style="{ width: (countdown / 5) * 100 + '%' }"></div>
+            <div class="timer-progress" :style="{ width: (countdown / 3) * 100 + '%' }"></div>
           </div>
           <p class="timer-text"><b>{{ countdown }}초</b> 후 초기 화면으로 돌아갑니다</p>
         </div>
@@ -250,6 +249,31 @@
     if (parkingFee.value === -1) return '확인 불가';
     return parkingFee.value.toLocaleString();
   });
+
+  // 총 주차 시간
+  const totalParkingTime = computed(() => {
+    // 입차 시간이나 출차 시간 데이터가 하나라도 없으면 계산을 중단하고 '-'를 반환
+    if (!entryTime.value || !exitTime.value) return '-';
+
+    try {
+      const start = new Date(entryTime.value.replace(/-/g, '/')); 
+      const end = new Date(exitTime.value.replace(/-/g, '/'));
+
+      // 출차 시간에서 입차 시간을 빼서 밀리초(ms) 단위의 차이를 구함
+      const diffMs = end - start;
+
+      // 밀리초를 시간 단위로 변환 (1000ms * 60초 * 60분으로 나눈 뒤 소수점 버림)
+      const diffHrs = Math.floor(diffMs / (1000 * 60 * 60));
+
+      // 전체 차이에서 시간으로 계산된 부분을 뺀 나머지(%)를 분 단위로 변환
+      const diffMins = Math.floor((diffMs % (1000 * 60 * 60)) / (1000 * 60));
+
+      // 계산된 결과값을 X시간 Y분 형태의 템플릿 리터럴 문자열로 최종 반환
+      return `${diffHrs}시간 ${diffMins}분`;
+    } catch (e) {
+      return '계산 불가';
+    }
+});
 
   const startExit = () => {
     viewMode.value = 'input';
@@ -370,15 +394,6 @@
 </script>
 
 <style scoped>
-:root {
-  --main-blue: #005baa;
-  --sky-blue: #84c2e6;
-  --accent-yellow: #fbb900;
-  --bg-light: #f4f7fb;
-  --text-dark: #222;
-  --text-grey: #7f8c8d;
-}
-
 .kiosk-main-wrapper {
   font-family: 'Pretendard', sans-serif;
   display: flex;
@@ -391,12 +406,12 @@
 
 .screen-container {
   width: 100%;
-  min-height: 90%;
-  flex-direction: column;
+  min-height: 100%;
+  flex-direction: column; /* 세로 정렬 보장 */
   display: flex;
   justify-content: center;
   align-items: center;
-  padding: 40px 60px;
+  padding: 40px 60px; /* 위아래 패딩 조절 */
 }
 
 .center-content {
@@ -509,16 +524,17 @@
 .info-card {
   flex: 1;
   background: #fff;
-  padding: 40px;
-  box-shadow: 0 15px 40px rgba(0, 0, 0, 0.05);
+  padding: 30px 35px;
+  border-radius: 15px;
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.05);
   border: 1px solid #eef2f6;
 }
 
 .card-title{
-  font-size: 34px;
+  font-size: 26px;
   font-weight: 800;
   color: var(--text-dark);
-  margin: 0 0 12px 0;
+  margin-bottom: 20px;
 }
 
 .res-table {
@@ -538,7 +554,7 @@
 
 .res-table td {
   text-align: left;
-  font-size: 1.8rem;
+  font-size: 1.5rem;
   font-weight: 700;
   padding: 20px 0;
   border-bottom: 1px solid #f1f5f9;
@@ -565,7 +581,7 @@
 
 /* 총 주차 시간 / 결제금액 강조 */
 .time-num{
-  font-size: 2.4rem;
+  font-size: 2.5rem;
   font-weight: 800;
   letter-spacing: 1px;
   color: #1f2d3d;
@@ -623,8 +639,8 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 20px 0;
-  margin-top: 20px;
+  padding: 10px 0;
+  margin-top: 10px;
 }
 
 .error-visual-box.compact{
@@ -632,14 +648,14 @@
 }
 
 .svg-error {
-  width: 100px;
-  height: 100px;
+  width: 80px;
+  height: 80px;
   color: #e74c3c;
-  margin-bottom: 30px;
+  margin-bottom: 15px;
 }
 
 .error-msg {
-  font-size: 38px !important;
+  font-size: 22px !important;
   font-weight: 700;
   color: #e74c3c;
   margin: 0 0 15px 0;
@@ -647,7 +663,7 @@
 }
 
 .sub-guide {
-  font-size: 24px !important;
+  font-size: 18px !important;
   color: var(--text-grey);
   font-weight: 500;
   text-align: center;
@@ -666,7 +682,7 @@
 /* 이미지 */
 .image-wrapper {
   width: 100%;
-  height: 200px;
+  height: 160px;
   background: #ffffff;
   overflow: hidden;
   align-items: center;

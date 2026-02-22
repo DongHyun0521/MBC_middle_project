@@ -72,7 +72,7 @@ const utilMenus = [
   { 
     title: '주차 안내', 
     emitName: 'parking', 
-    path: 'parking-info',
+    path: 'parkinginfo',
     svg: '<svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2"><circle cx="12" cy="12" r="10"/><path d="M9 17V7h4a3 3 0 1 1 0 6H9"/></svg>'
   }
 ]

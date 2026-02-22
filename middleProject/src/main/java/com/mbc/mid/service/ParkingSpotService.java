@@ -9,7 +9,6 @@ import java.util.Map;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import com.mbc.mid.dao.MemDao;
 import com.mbc.mid.dao.ParkingLogDao;
 import com.mbc.mid.dao.ParkingSpotDao;
 import com.mbc.mid.dao.PaymentDao;
@@ -30,13 +29,12 @@ public class ParkingSpotService {
 
     @Autowired
     private PaymentDao paymentDao;
-    
-    @Autowired
-    private MemDao memDao;
 
     private static final int PREPAY_GRACE_MINUTES = 30;
 
-    // 1. 요금 계산 (진료할인 2시간 포함)
+    // =====================
+    // 1. 요금 계산 (진료할인 4시간 포함)
+    // =====================
     public int calculateFee(long minutes, boolean isMember, boolean hasClinicVisit) {
         int freeMinutes = 30;					// 기본 30분 무료
         if (hasClinicVisit) freeMinutes += 120;	// 진료 상태 = '완료' 시, 120분 무료
@@ -54,7 +52,9 @@ public class ParkingSpotService {
         return Math.min(totalAmount, (int)(days * dailyLimit));
     }
 
+    // =====================
     // 2. 출차 미리보기
+    // =====================
     public ExitPreviewResponse getExitPreview(int spotId) {
         ParkingSpotDto spot = dao.findById(spotId);
         if (spot == null || spot.getParkingLogId() == null) {
@@ -62,10 +62,7 @@ public class ParkingSpotService {
         }
 
         ParkingLogDto log = parkingLogDao.findById(spot.getParkingLogId().intValue());
-        
-        //boolean isMember = parkingLogDao.isMemberVehicle(log.getVehicleNum()) > 0;
-        boolean isMember = memDao.checkMemberVehicle(log.getVehicleNum()) > 0;
-        
+        boolean isMember = parkingLogDao.isMemberVehicle(log.getVehicleNum()) > 0;
         boolean hasClinicVisit = paymentDao.checkClinicVisit(log.getVehicleNum()) > 0;
 
         LocalDateTime now = LocalDateTime.now();
@@ -87,7 +84,9 @@ public class ParkingSpotService {
         return res;
     }
 
+    // =====================
     // 3. 사전정산
+    // =====================
     public Map<String, Object> prepay(int spotId) {
         ParkingSpotDto spot = dao.findById(spotId);
         if (spot == null || spot.getParkingLogId() == null) {
@@ -99,9 +98,7 @@ public class ParkingSpotService {
             throw new RuntimeException("이미 정산 완료된 차량입니다");
         }
 
-        //boolean isMember = parkingLogDao.isMemberVehicle(log.getVehicleNum()) > 0;
-        boolean isMember = memDao.checkMemberVehicle(log.getVehicleNum()) > 0;
-        
+        boolean isMember = parkingLogDao.isMemberVehicle(log.getVehicleNum()) > 0;
         boolean hasClinicVisit = paymentDao.checkClinicVisit(log.getVehicleNum()) > 0;
         long minutes = Duration.between(log.getEntryTime(), LocalDateTime.now()).toMinutes();
         int amount = calculateFee(minutes, isMember, hasClinicVisit);
@@ -122,14 +119,14 @@ public class ParkingSpotService {
         return result;
     }
 
+    // =====================
     // 4. 출차 상태 확인 (Controller: checkExit)
+    // =====================
     public Map<String, Object> checkExit(String vehicleNum) {
         ParkingLogDto log = parkingLogDao.selectRecentEntryLog(vehicleNum);
         if (log == null) throw new RuntimeException("입차 기록 없음");
 
-        //boolean isMember = parkingLogDao.isMemberVehicle(vehicleNum) > 0;
-        boolean isMember = memDao.checkMemberVehicle(vehicleNum) > 0;
-        
+        boolean isMember = parkingLogDao.isMemberVehicle(vehicleNum) > 0;
         boolean hasClinicVisit = paymentDao.checkClinicVisit(vehicleNum) > 0;
         LocalDateTime now = LocalDateTime.now();
 
@@ -159,14 +156,14 @@ public class ParkingSpotService {
         return result;
     }
 
+    // =====================
     // 5. 출차 실행 (Controller: processExit)
+    // =====================
     public void processExit(String vehicleNum) {
         ParkingLogDto log = parkingLogDao.selectRecentEntryLog(vehicleNum);
         if (log == null) throw new RuntimeException("입차 기록 없음");
 
-        //boolean isMember = parkingLogDao.isMemberVehicle(vehicleNum) > 0;
-        boolean isMember = memDao.checkMemberVehicle(vehicleNum) > 0;
-        
+        boolean isMember = parkingLogDao.isMemberVehicle(vehicleNum) > 0;
         boolean hasClinicVisit = paymentDao.checkClinicVisit(vehicleNum) > 0;
         LocalDateTime now = LocalDateTime.now();
 
@@ -189,7 +186,9 @@ public class ParkingSpotService {
         parkingLogDao.updateExitLog(log);
     }
 
+    // =====================
     // 6. 입차 로직 (parkCar, dummyParkCar)
+    // =====================
     public EntryPathResponse parkCar(int spotId, String vehicleNum) {
         ParkingLogDto newLog = new ParkingLogDto();
         newLog.setVehicleNum(vehicleNum);
@@ -220,7 +219,9 @@ public class ParkingSpotService {
         return parkCar(spotId, vehicleNum);
     }
 
+    // =====================
     // 7. 기타 공통 (Controller 매칭 완료)
+    // =====================
     public List<ParkingSpotDto> findAllSpots() { return dao.findAllSpots(); }
     public List<ParkingSpotDto> findByFloor(int floor) { return dao.findByFloor(floor); }
     public ParkingSpotDto recommendSpot() { return dao.findFirstEmpty(); }

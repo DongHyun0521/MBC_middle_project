@@ -34,7 +34,7 @@
             </div>
             <p class="p-desc">서울에스병원을 방문하시는 고객님을 위한<br>빠르고 편리한 주차 시스템 안내</p>
             <div class="p-bottom">
-              <span class="p-tag">#무료주차 최대2시간</span>
+              <span class="p-tag">#무료주차 최대 30분</span>
               <div class="p-btn">상세보기 →</div>
             </div>
           </div>

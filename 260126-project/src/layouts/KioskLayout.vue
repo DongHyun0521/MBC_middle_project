@@ -151,7 +151,8 @@
     justify-content: center;
     align-items: center;
     width: 100%;
-    padding: 20px;
+    padding: 0; /* 내부 패딩을 줄여서 공간 확보 */
+    overflow: hidden; /* 자식이 삐져나가지 못하게 차단 */
 }
 
 .content-container {
@@ -163,13 +164,15 @@
 }
 
 .kiosk-footer {
-    height: 180px;
+    height: 180px; /* 푸터 높이 고정 */
+    flex-shrink: 0; /* 콘텐츠가 많아도 푸터가 찌그러지지 않게 고정 */
     background: transparent;
     display: flex;
     flex-direction: column;
     justify-content: center;
     align-items: center;
     padding-bottom: 20px;
+    z-index: 20;
 }
 
 .footer-line {
