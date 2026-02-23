@@ -46,10 +46,15 @@ public class OcrAccuracyTest {
     private PaymentService paymentService;
     
     // 테스트할 이미지 폴더 경로 (프로젝트 루트 기준)
-    private final String TEST_DIR_PATH = "generated_1";
+    //private final String TEST_DIR_PATH = "license_plate_test";
+    private final String TEST_DIR_PATH = "cropped_plates";
+    //private final String TEST_DIR_PATH = "input_images";
+    
     
     // 완벽 인식된 이미지를 저장할 폴더 이름
-    private final String SUCCESS_DIR_PATH = "generated_finish";
+    private final String SUCCESS_DIR_PATH = "cropped_plates_passed";
+    //private final String SUCCESS_DIR_PATH = "input_images_passed";
+    
 
     @BeforeEach
     public void setup() {

@@ -97,7 +97,14 @@ const handleInternalScroll = (e) => {
 const goToCarRegi = () => router.push('/vehiregi')
 const goToParkingGuide = () => router.push('/parkinginfo')
 const goToReserve = () => router.push('/reservation')
-const goToDoctor = () => router.push('/doctorsearch')
+const goToDoctor = (query) => {
+    if (query) {
+        // 주소창이 /doctorsearch?q=이름 형태로 변환
+        router.push({ path: '/doctorsearch', query: { q: query } });
+    } else {
+        router.push('/doctorsearch');
+    }
+}
 const goToDept = () => router.push('/deptsearch')
 const goToCheck = () => router.push('/checkreservation')
 const goToLocation = () => router.push('/location')

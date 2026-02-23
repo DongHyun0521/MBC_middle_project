@@ -1,0 +1,31 @@
+- 회원
+user01   aaaa!A
+user02   aaaa!A
+user03   aaaa!A
+
+- 의사:내과
+doctor101   aaaa!A
+doctor(과번호0)(순서00)   aaaa!A
+
+- 행정:원무
+admin31   aaaa!A
+admin32   aaaa!A
+admin33   aaaa!A
+
+- 행정:홍보
+admin71   aaaa!A
+admin72   aaaa!A
+admin73   aaaa!A
+
+
+
+- user01
+등록차량 : 01라8483, 01두5635
+내과-김내과 : 13:30, 14:00, 16:00, 16:30
+
+- user02
+내과-김내과 : 17:00
+
+- 입차
+12:10(비회원) - 01가2246, 01가3042, 01가3711, 01가5146, 01너2141, 01노6114, 01누3534
+12:11(회원) - 01두5635, 01라8483

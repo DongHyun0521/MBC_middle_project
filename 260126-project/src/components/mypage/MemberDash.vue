@@ -61,10 +61,15 @@
                         <tr v-for="res in filteredMyReservations" :key="res.reservation_id">
                             <td class="bold-blue">{{ res.med_dept_name }}</td>
                             <td class="bold-blue">{{ res.doctor_name }}</td>
-                            <td>{{ formatDate(res.reservation_date) }}</td>
-                            <td><span :class="['status-badge', res.reservation_status === '예약' ? 'active' : 'done']">{{
-                                res.reservation_status
-                                    }}</span></td>
+                            <td>{{ (res.reservation_time) }}</td>
+                            <td>
+                                <span :class="['status-badge',
+                                    res.reservation_status === '예약' ? 'active' :
+                                        res.reservation_status === '완료' ? 'done' :
+                                            res.reservation_status === '취소' ? 'cancel' : 'noshow']">
+                                    {{ res.reservation_status }}
+                                </span>
+                            </td>
                             <td class="txt-center">
                                 <button v-if="res.reservation_status === '예약'" class="btn-cancel-table"
                                     @click="cancelRes(res.reservation_id)">예약취소</button>
@@ -298,31 +303,37 @@ onMounted(() => {
     font-weight: 700;
 }
 
-/*  버튼 및 배지 스타일 */
-/* 관리 버튼 */
-.res-cancel-btn {
-    background-color: #fff;
-    color: #888;
-    border: 1px solid #ddd;
-    padding: 10px 20px;
+/* 내 진료 예약 버튼 css */
+/* 취소 버튼: 깔끔한 레드 아웃라인 */
+.btn-cancel-table {
+    padding: 8px 16px;
+    font-size: 14px;
     font-weight: 600;
+    background: transparent;
+    color: #ff3b30;
+    border: 1.5px solid #ff3b30;
     cursor: pointer;
-    font-size: 16px;
     transition: all 0.2s;
 }
 
-.res-cancel-btn:hover {
-    background-color: #f8f8f8;
-    color: #dc3545;
-    border-color: #dc3545;
+.btn-cancel-table:hover {
+    background: #ff3b30;
+    color: #fff;
 }
 
-/* 상태 배지 */
+/* 상태 배지: 상태별 컬러 차별화 */
 .status-badge {
-    display: inline-block;
-    padding: 6px 14px;
+    width: 80px;
+    height: 34px;
+    
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    
     font-size: 14px;
     font-weight: 700;
+    text-align: center;
+    white-space: nowrap; /* 글자가 줄바꿈되지 않게 방지 */
 }
 
 .status-badge.active {
@@ -331,9 +342,21 @@ onMounted(() => {
 }
 
 .status-badge.done {
-    background: #f5f5f5;
-    color: #999;
+    background: #e8f5e9;
+    color: #2e7d32;
 }
+
+.status-badge.cancel {
+    background: #ffebee;
+    color: #c62828;
+}
+
+.status-badge.noshow {
+    background: #f5f5f5;
+    color: #616161;
+}
+
+
 
 /*  정보 요약 및 기타 유틸리티 */
 .info-list .info-item {
@@ -365,12 +388,12 @@ onMounted(() => {
 
 .d-day {
     display: inline-block;
-    background: #005baa;
-    color: #fff;
-    padding: 12px 18px;
-    font-weight: 600;
+    /* background: #005baa; */
+    color: #005baa;
+    /* padding: 12px 18px; */
+    font-weight: 800;
     font-size: 60px;
-    margin-bottom: 20px;
+    margin-bottom: 10px;
 }
 
 .res-time-txt {

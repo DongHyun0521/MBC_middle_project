@@ -562,6 +562,7 @@ input::-ms-clear {
 }
 
 .regi-page-wrap {
+  font-family: 'pretendard';
   display: flex;
   justify-content: center;
   align-items: center;
@@ -572,10 +573,9 @@ input::-ms-clear {
 
 .regi-card {
   width: 100%;
-  max-width: 650px;
+  max-width: 700px;
   background: #fff;
   padding: 60px 50px;
-  border-radius: 4px;
   border: 1px solid #eee;
   box-shadow: 0 15px 40px rgba(0, 0, 0, 0.05);
 }
@@ -587,6 +587,7 @@ input::-ms-clear {
 }
 
 .tab-btn {
+  font-family: 'pretendard';
   flex: 1;
   padding: 14px;
   border: 1px solid #eee;
@@ -594,8 +595,8 @@ input::-ms-clear {
   color: #999;
   font-weight: 600;
   cursor: pointer;
-  border-radius: 4px;
   transition: 0.3s;
+  font-size: 18px;
 }
 
 .tab-btn.active {
@@ -610,14 +611,14 @@ input::-ms-clear {
 }
 
 .regi-header h2 {
-  font-size: 28px;
+  font-size: 42px;
   color: #404347;
   margin-bottom: 12px;
   font-weight: 700;
 }
 
 .title-bar {
-  width: 40px;
+  width: 120px;
   height: 3px;
   background: #005baa;
   margin: 0 auto 20px;
@@ -631,7 +632,7 @@ input::-ms-clear {
 
 .input-section label {
   display: block;
-  font-size: 14px;
+  font-size: 18px;
   font-weight: 600;
   color: #4e4e4e;
   margin-bottom: 10px;
@@ -640,15 +641,16 @@ input::-ms-clear {
 .req {
   color: #dc3545;
   margin-left: 4px;
+  font-size: 18px;
 }
 
 input,
 select {
+  font-family: 'pretendard';
   width: 100%;
   padding: 14px;
   border: 1px solid #ddd;
-  border-radius: 4px;
-  font-size: 15px;
+  font-size: 16px;
   background: #f9f9f9;
   transition: 0.3s;
 }
@@ -666,12 +668,13 @@ input:focus {
 }
 
 .check-btn {
+  font-family: 'pretendard';
   width: 130px;
   background: #404347;
   color: #fff;
   border: none;
-  border-radius: 4px;
   font-weight: 600;
+  font-size: 18px;
   cursor: pointer;
 }
 
@@ -717,7 +720,6 @@ input:focus {
 .staff-special-fields {
   background: #005baa10;
   padding: 25px;
-  border-radius: 4px;
   border: 1px dashed #ccc;
   margin-bottom: 10px;
 }
@@ -734,7 +736,6 @@ input:focus {
 .gender-selector {
   display: flex;
   border: 1px solid #ddd;
-  border-radius: 4px;
   overflow: hidden;
   height: 48px;
 }
@@ -786,7 +787,7 @@ input:focus {
 }
 
 .guide-msg {
-  font-size: 12px;
+  font-size: 15px;
   margin-top: 6px;
   color: #bbb;
   font-weight: 500;
@@ -825,14 +826,14 @@ input:focus {
 }
 
 .regi-submit-btn {
+  font-family: 'pretendard';
   width: 100%;
   padding: 18px;
   background: #005baa;
   color: #fff;
   border: none;
-  border-radius: 4px;
-  font-size: 17px;
-  font-weight: 600;
+  font-size: 20px;
+  font-weight: 700;
   cursor: pointer;
   transition: 0.3s;
   margin-top: 10px;

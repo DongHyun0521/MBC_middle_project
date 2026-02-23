@@ -38,8 +38,9 @@
                 </div>
                 <div class="hover-content">
                     <div class="search-box-mini">
-                        <input type="text" placeholder="성함/질환명 입력">
-                        <button @click="$emit('doctor')">검색</button>
+                        <input type="text" v-model="doctorSearchQuery" placeholder="의료진 이름/진료과 입력"
+                            @keyup.enter="onDoctorSearch">
+                        <button @click="onDoctorSearch">검색</button>
                     </div>
                 </div>
             </div>
@@ -79,6 +80,9 @@ import img2 from '@/assets/MainImg5.jpg'
 
 const router = useRouter()
 const totalSearchQuery = ref('')
+
+const emit = defineEmits(['doctor', 'reserve', 'dept', 'check']) // 부모에게 보낼 신호 명단(MainHome)
+const doctorSearchQuery = ref('') // 의료진 검색어를 담을 바구니 생성
 
 const currentSlide = ref(0) // 값이 바뀌면 화면을 새로 그리도록
 const slides = [
@@ -158,6 +162,16 @@ const handleSwipe = () => {
         // 시작(좌) < 끝(우) : 오른쪽으로 밀었음 -> 이전 슬라이드
         prevSlide()
     }
+}
+
+// 의료진 검색(메인배너 두번째 탭)
+const onDoctorSearch = () => {
+    if (!doctorSearchQuery.value.trim()) {
+        alert('검색어를 입력해주세요.');
+        return;
+    }
+    // 부모(MainHome.vue)에게 검색어와 함께 신호를 쏘기
+    emit('doctor', doctorSearchQuery.value);
 }
 
 onMounted(() => { startSlide() })

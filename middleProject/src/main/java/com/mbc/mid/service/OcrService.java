@@ -182,7 +182,7 @@ public class OcrService {
                             return res;
                         }
                         
-                        else {
+                        /*else {
                             Integer feeToPay = exitStatus.containsKey("amount") ? 
                                                (Integer) exitStatus.get("amount") : 
                                                (Integer) exitStatus.get("additionalFee");
@@ -205,7 +205,46 @@ public class OcrService {
                             );
                             res.setAlreadyPaid(false);
                             return res;
+                        }*/
+                     // OcrService.java 수정된 코드
+                        else {
+                            // 요금 안전하게 가져오기 (amount나 additionalFee가 없으면 0으로 처리)
+                            Integer feeToPay = 0;
+                            if (exitStatus.containsKey("amount")) {
+                                feeToPay = (Integer) exitStatus.get("amount");
+                            } else if (exitStatus.containsKey("additionalFee")) {
+                                feeToPay = (Integer) exitStatus.get("additionalFee");
+                            }
+
+                            StringBuilder msgBuilder = new StringBuilder();
+                            if (hasClinicVisit) msgBuilder.append("[진료할인 적용] ");
+                            else if (isMember) msgBuilder.append("[회원할인 적용] ");
+                            
+                            // 메시지 처리
+                            if (exitStatus.containsKey("message")) {
+                                msgBuilder.append(exitStatus.get("message"));
+                            } else {
+                                msgBuilder.append("결제가 필요합니다.");
+                            }
+
+                            // 💡 핵심: 현재 시간을 가상의 출차 시간으로 포맷팅하여 전달
+                            String currentExitTime = formatDateTime(LocalDateTime.now());
+
+                            OcrResponse res = new OcrResponse(
+                                finalResult,
+                                msgBuilder.toString(),
+                                debugImages,
+                                formatDateTime(log.getEntryTime()),
+                                currentExitTime,  // ✅ null 대신 현재 시간을 전달!
+                                isMember,
+                                feeToPay,
+                                log.getParkingLogId(),
+                                memId
+                            );
+                            res.setAlreadyPaid(false);
+                            return res;
                         }
+                        
                     }
                 }
                 // 수정 끝

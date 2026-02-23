@@ -26,7 +26,7 @@
             <span class="user-info"><b>{{ loginName }}</b>님</span>
             <span @click="handleLogout" class="util-item logout-txt">로그아웃</span>
           </template>
-          <span class="util-item" @click="router.push('/mypage')">마이페이지</span>
+          <span class="util-item" @click="goPage('/mypage')">마이페이지</span>
         </div>
       </div>
 
@@ -278,6 +278,22 @@
         </div>
       </div>
     </footer>
+
+    <div class="floating-aside">
+      <button class="float-btn car-regi" @click="goPage('/vehiregi')" title="차량 등록">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M7 10h10M7 14h10M19 18l-14 0M19 6l-14 0" />
+          <rect x="3" y="6" width="18" height="12" rx="2" />
+        </svg>
+        <span class="btn-label">차량등록</span>
+      </button>
+
+      <button v-show="isScrolled" class="float-btn top-move" @click="scrollToTop" title="위로 가기">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+          <polyline points="18 15 12 9 6 15"></polyline>
+        </svg>
+      </button>
+    </div>
   </div>
 </template>
 
@@ -314,16 +330,16 @@
     isMegamenuOpen.value = false;
   };
 
+  // 로그인 필요한 서비스 + 요청 경로로 보내주기
   const goPage = (path) => {
-    const protectedPaths = ['/reservation', '/checkreservation', '/voc'];
-
+    const protectedPaths = ['/reservation', '/checkreservation', '/voc', '/mypage', '/vehiregi'];
     if (protectedPaths.includes(path) && !isLogin.value) {
       alert("로그인 후 이용 가능한 서비스입니다");
       isMegamenuOpen.value = false;
-      router.push('/login');
+      // 쿼리 파라미터에 현재 가려던 주소(path)를 담기
+      router.push({ path: '/login', query: { redirect: path } }); 
       return;
     }
-
     isMegamenuOpen.value = false;
     router.push(path);
   }
@@ -480,6 +496,29 @@
   }
 
   const isMainPage = computed(() => route.path === '/' || route.path === '/mainhome')
+
+  // 위로 가기 로직
+  const scrollToTop = () => {
+    console.log("TOP 버튼 클릭. 강제 상단 이동 시작");
+
+    // 실제 스크롤이 일어나는 박스
+    const homeContainer = document.querySelector('.home-container');
+    if (homeContainer) {
+      homeContainer.scrollTo({
+        top: 0,
+        behavior: 'smooth' // 스르륵 올라가기
+      });
+    }
+
+    // 혹시 일반 페이지(병원소개 등)일 경우를 대비한 보험 코드
+    const contentBody = document.querySelector('.content-body');
+    if (contentBody) {
+      contentBody.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    // 윈도우 자체 스크롤 (기본)
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
 
   watch(() => route.path, () => { checkLogin(); isMegamenuOpen.value = false; isScrolled.value = false; })
 
@@ -1057,5 +1096,62 @@
 .bar {
   margin: 0 5px;
   color: #ddd;
+}
+
+/* 플로팅 버튼 */
+/* 플로팅 컨테이너 */
+.floating-aside {
+  position: fixed;
+  right: 40px;
+  bottom: 50px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  z-index: 99999;
+  pointer-events: auto; /* 마우스 이벤트를 확실히 받도록 설정 */
+}
+
+/* 플로팅 버튼 공통 스타일 */
+.float-btn {
+  width: 68px;
+  height: 68px;
+  border-radius: 50%;
+  border: none;
+  background: #fff;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
+  color: #555;
+}
+
+.float-btn:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+}
+
+/* 차량 등록 버튼 특화 */
+.car-regi {
+  background: #005baa;
+  color: #fff;
+}
+
+.btn-label {
+  font-size: 13px;
+  font-weight: 600;
+  margin-top: 2px;
+}
+
+/* TOP 버튼 특화 */
+.top-move {
+  background: #333;
+  color: #fff;
+}
+
+.floating-aside {
+  transition: opacity 0.3s;
 }
 </style>

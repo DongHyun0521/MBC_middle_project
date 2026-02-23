@@ -214,7 +214,7 @@
 
         <div class="timer-section">
           <div class="timer-bar">
-            <div class="timer-progress" :style="{ width: (countdown / 5) * 100 + '%' }"></div>
+            <div class="timer-progress" :style="{ width: (countdown / 3) * 100 + '%' }"></div>
           </div>
           <p class="timer-text"><b>{{ countdown }}초</b> 후 초기 화면으로 돌아갑니다</p>
         </div>
@@ -228,18 +228,18 @@
   import { uploadExitImage, requestPayment } from '@/api/exit.js';
   // 배경 이미지 import 제거함
 
-  const viewMode = ref('idle');
+  const viewMode = ref('idle'); // 화면 모드 (idle, input, result, success)
 
   const selectedFile = ref(null);
   const resultText = ref('');
   const entryTime = ref('');
   const exitTime = ref('');
-  const parkingFee = ref(0);
+  const parkingFee = ref(0); // 주차 요금 (-1: 조회 실패, 0: 무료, >0: 유료)
   const isMember = ref(false);
   const debugImages = ref([]);
   const isLoading = ref(false);
   
-  const currentLogId = ref(null);
+  const currentLogId = ref(null); // 결제 시 필요한 주차 기록 고유 번호(PK)
   const currentMemId = ref(null);
 
   const countdown = ref(3);
@@ -247,7 +247,7 @@
 
   const formattedFee = computed(() => {
     if (parkingFee.value === -1) return '확인 불가';
-    return parkingFee.value.toLocaleString();
+    return parkingFee.value.toLocaleString(); // [내장] 1000 -> 1,000 변환
   });
 
   // 총 주차 시간

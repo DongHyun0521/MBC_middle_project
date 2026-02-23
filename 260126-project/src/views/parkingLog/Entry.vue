@@ -112,9 +112,9 @@
 
     <div v-if="viewMode === 'full'" class="screen-container screen-full">
       <div class="center-content">
-        <div class="logo-box compact-logo">
+        <!-- <div class="logo-box compact-logo">
           <img class="main-logo-img" src="@/assets/txtlogo2.png" alt="S-HOSPITAL" />
-        </div>
+        </div> -->
 
         <h1 class="page-title error-title compact-title">주차장 만차 안내</h1>
 
@@ -138,7 +138,7 @@
 
         <div class="timer-section">
           <div class="timer-bar">
-            <div class="timer-progress" :style="{ width: (countdown / 5) * 100 + '%' }"></div>
+            <div class="timer-progress" :style="{ width: (countdown / 3) * 100 + '%' }"></div>
           </div>
           <p class="timer-text"><b>{{ countdown }}초</b> 후 초기 화면으로 돌아갑니다</p>
         </div>
@@ -150,36 +150,46 @@
 <script setup>
 import { ref } from 'vue';
 import { uploadEntryImage } from '@/api/entry.js';
+import axios from 'axios';
 
-const viewMode = ref('idle');
-const isLoading = ref(false);
-const selectedFile = ref(null);
-const debugImages = ref([]);
-const resultText = ref('');
-const isAlreadyParked = ref(false);
-const entryTime = ref('');
-const countdown = ref(3);
-let timerId = null;
+const viewMode = ref('idle'); // 현재 화면 모드 (idle, input, result, full)
+const isLoading = ref(false); // 로딩 스피너 표시 여부
+const selectedFile = ref(null); // 사용자가 선택한 사진 파일 객체
+const debugImages = ref([]); // 백엔드에서 받은 OCR 처리 과정 이미지 리스트
+const resultText = ref(''); // 인식된 차량 번호
+const isAlreadyParked = ref(false); // 이미 주차된 차량인지 여부
+const entryTime = ref(''); // 입차 확정 시각
+const countdown = ref(3); // 초기 화면 복귀까지 남은 초
+let timerId = null; // 타이머(setInterval)를 멈추기 위해 보관하는 ID
 
 // [추가] 입차 시작 시 만차 여부 체크 로직
 const startEntry = async () => {
+  console.log("입차 체크 시작...");
   try {
-    // 백엔드에 남은 자리 확인 요청
-    const response = await axios.get('/parking/spot/entry/dummy');
-    const availableSpots = response.data;
+    // 자리가 있으면 성공(200), 없으면 에러(500)
+    // await axios.post('/parking/spot/entry/dummy'); 
+    await axios.post('http://localhost:8080/parking/spot/entry/dummy', {}, {
+      withCredentials: true 
+    });
 
-    if (availableSpots <= 0) {
-      // 만차라면 바로 만차 화면으로
-      viewMode.value = 'full';
-      startCountdown(); // 자동 복귀 타이머 실행
-    } else {
-      // 자리가 있다면 입차 화면으로 이동
-      viewMode.value = 'input';
-    }
-  } catch (error) {
-    console.error("만차 확인 중 오류:", error);
-    // 오류 시 안전하게 입력 화면으로 보내거나 경고창 띄움
+    // 성공 -> 입차 안내 화면
     viewMode.value = 'input'; 
+  } catch (error) {
+    // 에러 (백엔드에서 공간 없다고 Exception 던진 상황)
+    console.error("만차 상태 확인됨:", error.response);
+
+    // 에러 -> 자리가 없다 -> 'full' 화면
+    viewMode.value = 'full';
+    countdown.value = 3; // 만차 화면 유지 시간
+    
+    if (timerId) clearInterval(timerId);
+    timerId = setInterval(() => {
+      countdown.value--;
+      if (countdown.value <= 0) {
+        clearInterval(timerId);
+        resetToIdle(); // 초기 화면으로 복귀
+      }
+    }, 1000);
   }
 };
 
@@ -201,6 +211,9 @@ const submitImage = async () => {
     const response = await uploadEntryImage(selectedFile.value);
     const data = response.data;
 
+    // 데이터 구조 확인을 위한 필수 로그
+    console.log("백엔드 수신 데이터:", data);
+
     debugImages.value = data.debugImages || [];
     resultText.value = data.resultText || '';
 
@@ -213,14 +226,15 @@ const submitImage = async () => {
     }
 
     viewMode.value = 'result';
-    countdown.value = 5;
+    countdown.value = 3;
 
+    // [내장] 1초마다 countdown을 깎는 타이머 실행
     if (timerId) clearInterval(timerId);
     timerId = setInterval(() => {
       countdown.value--;
       if (countdown.value <= 0) {
-        clearInterval(timerId);
-        resetToIdle();
+        clearInterval(timerId); // 0초가 되면 타이머 중지
+        resetToIdle(); // 초기 화면으로 복귀
       }
     }, 1000);
 
