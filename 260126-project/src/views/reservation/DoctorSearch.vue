@@ -42,7 +42,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, watch } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 // API 파일 가져오기 (진료과 목록 조회, 의사 목록 조회)
 import { getDeptsReq, getDoctorsReq, getAllDoctorsReq } from '@/api/reservation'
@@ -69,18 +69,39 @@ const allDoctors = ref([]) // 전체(혹은 해당 과) 의사 목록
 // 화면에 보여줄 진짜 의사만 걸러내는 필터
 const filteredDoctors = computed(() => {
   return allDoctors.value.filter(doc => {
-    
-    // (1) 이름 검색어 필터: 검색어가 없으면 무조건 통과, 있으면 포함 여부 확인
-    const nameMatch = (doc.staff_name || '').includes(searchName.value);
+    // 검색어가 없으면 모두 통과
+    if (!searchName.value) return (doc.role || '').toUpperCase() === '의사' || (doc.role || '').toUpperCase() === 'DOCTOR';
 
-    // (2) 직업 필터: '간호사' 등은 제외하고 '의사'만 통과시킴
-    const role = (doc.role || '').toUpperCase(); // 대소문자 무시 (Doctor, doctor 다 통과)
+    const keyword = searchName.value.toLowerCase();
+    
+    // (1) 이름 매칭 확인
+    const nameMatch = (doc.staff_name || '').includes(keyword);
+    // (2) 진료과 이름 매칭 확인 (추가 설명 / 참고)
+    const deptMatch = (doc.med_dept_name || '').includes(keyword);
+
+    // 직업이 의사인지 확인
+    const role = (doc.role || '').toUpperCase();
     const isDoctor = role === '의사' || role === 'DOCTOR';
 
-    // 두 조건(이름도 맞고 && 의사여야 함)을 모두 만족해야 화면에 나옴
-    return nameMatch && isDoctor;
+    // 이름 혹은 진료과 중 하나라도 맞고 + 의사여야 함
+    return (nameMatch || deptMatch) && isDoctor;
   })
 })
+
+// const filteredDoctors = computed(() => {
+//   return allDoctors.value.filter(doc => {
+    
+//     // (1) 이름 검색어 필터: 검색어가 없으면 무조건 통과, 있으면 포함 여부 확인
+//     const nameMatch = (doc.staff_name || '').includes(searchName.value);
+
+//     // (2) 직업 필터: '간호사' 등은 제외하고 '의사'만 통과시킴
+//     const role = (doc.role || '').toUpperCase(); // 대소문자 무시 (Doctor, doctor 다 통과)
+//     const isDoctor = role === '의사' || role === 'DOCTOR';
+
+//     // 두 조건(이름도 맞고 && 의사여야 함)을 모두 만족해야 화면에 나옴
+//     return nameMatch && isDoctor;
+//   })
+// })
 
 
 // =========================================
@@ -144,6 +165,13 @@ const fetchDoctors = async () => {
   }
 }
 
+// 외부(메가메뉴 등) 검색어 수신 로직
+// 주소창의 쿼리 파라미터(q)가 바뀔 때마다 실행됨
+watch(() => route.query.q, (newKeyword) => {
+  if (newKeyword !== undefined) {
+    searchName.value = newKeyword;
+  }
+}, { immediate: true }); // immediate: true를 주면 페이지 처음 들어올 때도 바로 실행함
 
 // =========================================
 // 5. 페이지 시작 (Life Cycle)

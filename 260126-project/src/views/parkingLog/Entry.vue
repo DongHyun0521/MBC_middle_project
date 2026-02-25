@@ -377,7 +377,9 @@ const resetToIdle = () => {
   cursor: pointer;
   display: flex;
   align-items: center;
+  justify-content: center;
   box-shadow: 0 10px 30px rgba(0, 91, 170, 0.2);
+  border: none;
 }
 
 .svg-icon {
@@ -584,3 +586,4 @@ const resetToIdle = () => {
   }
 }
 </style>
+

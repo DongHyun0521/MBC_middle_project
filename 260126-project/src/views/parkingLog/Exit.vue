@@ -411,7 +411,7 @@
   display: flex;
   justify-content: center;
   align-items: center;
-  padding: 40px 60px; /* 위아래 패딩 조절 */
+  padding: 20px 60px; /* 위아래 패딩 조절 */
 }
 
 .center-content {
@@ -512,8 +512,8 @@
 /* 결과 */
 .result-card-container {
   display: flex;
-  gap: 40px;
-  width: 100%;
+  gap: 20px;
+  width: 80%;
   margin-bottom: 20px;
 }
 
@@ -525,7 +525,6 @@
   flex: 1;
   background: #fff;
   padding: 30px 35px;
-  border-radius: 15px;
   box-shadow: 0 8px 25px rgba(0, 0, 0, 0.05);
   border: 1px solid #eef2f6;
 }
@@ -545,7 +544,7 @@
 
 .res-table th {
   text-align: left;
-  font-size: 1.6rem;
+  font-size: 23px;
   color: var(--text-grey);
   padding: 20px 0;
   border-bottom: 1px solid #f1f5f9;
@@ -556,12 +555,12 @@
   text-align: left;
   font-size: 1.5rem;
   font-weight: 700;
-  padding: 20px 0;
+  padding: 10px 0;
   border-bottom: 1px solid #f1f5f9;
 }
 
 .plate-num {
-  font-size: 4.5rem;
+  font-size: 3.5rem;
   color: #005baa;
   letter-spacing: 3px;
 }

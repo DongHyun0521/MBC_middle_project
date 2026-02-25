@@ -624,10 +624,10 @@ onMounted(() => {
 }
 
 .card-head h3 {
-    padding: 8px;
     font-size: 1.7rem;
     font-weight: 800;
     color: #005baa;
+    margin-bottom: 10px;
 }
 
 .label {
@@ -1162,6 +1162,7 @@ onMounted(() => {
     font-weight: 600;
     cursor: pointer;
     transition: 0.2s;
+    margin-bottom: 20px;
 }
 
 .filter-btn.active {

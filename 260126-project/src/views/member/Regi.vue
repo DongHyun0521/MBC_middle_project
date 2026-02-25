@@ -523,10 +523,10 @@ const handleRegi = async () => {
     }
 
     if (res.data === "success" || res.data === true) {
-      alert("가입이 완료되었습니다!");
+      alert("환영합니다!");
       router.push('/login');
     } else {
-      alert("가입 실패. 입력 정보를 확인해주세요.");
+      alert("가입에 실패했습니다. 입력 정보를 확인해주세요.");
     }
   } catch (err) { alert("서버 오류가 발생했습니다."); }
 }

@@ -749,10 +749,11 @@ INSERT INTO notice (admin_staff_id, top_fix, title, content, thumbnail_img, writ
 (2, FALSE, '''정확한 환자 확인'' 2024년 환자 안전의 날 캠페인 실시', '투약 및 검사 전 발생할 수 있는 오류를 원천 차단하기 위해 임직원과 환자가 함께 참여하는 ''정확한 환자 확인(이름, 생년월일) 캠페인''을 1층 로비에서 진행했습니다.', '/images/notice/notice_50.jpg', now() - INTERVAL '4 days', 2180),
 -- 51. 임시공휴일 진료 안내
 (3, FALSE, '10월 1일 국군의 날(임시공휴일) 오전 외래 진료 정상 운영 안내', '정부에서 지정한 10월 1일 임시공휴일에 환자분들의 진료 불편을 최소화하고자 오전 9시부터 13시까지 외래 진료를 정상 운영합니다. 사전 예약 시 착오 없으시길 바랍니다.', '/images/notice/notice_51.jpg', now() - INTERVAL '2 days', 5030);
+
 -- ==================================================
 
 -- 건강이야기 9개씩 5페이지까지 +1
-INSERT INTO hs (admin_staff_id, title, content, thumbnail_img, write_date, read_count) VALUES
+INSERT INTO health_story (admin_staff_id, title, content, thumbnail_img, write_date, read_count) VALUES
 -- 1. 침묵의 살인자, 고혈압
 (1, '침묵의 살인자 고혈압, 평소 혈압 관리가 중요한 이유', '고혈압은 초기 증상이 거의 없어 ''침묵의 살인자''로 불립니다. 방치할 경우 뇌졸중, 심근경색 등 치명적인 합병증을 유발할 수 있습니다. 올바른 혈압 측정법과 나트륨 섭취를 줄이는 식습관 개선에 대해 알아봅니다.', '/images/hs/hs_01.jpg', now() - INTERVAL '200 days', 3421),
 -- 2. 당뇨병 식단
@@ -850,14 +851,13 @@ INSERT INTO hs (admin_staff_id, title, content, thumbnail_img, write_date, read_
 
 -- 고객의소리 미답변 10개
 INSERT INTO voc (mem_id, title, content, upload_img, write_date, admin_staff_id, answer_content, answer_write_date, answer_status) VALUES
-(1, '소아과 간호사님 칭찬합니다', '아이가 병원을 무서워해서 많이 울었는데, 소아과 간호사님께서 장난감으로 달래주시고 주사도 안 아프게 놔주셔서 정말 감사했습니다.', '/images/voc/voc_01.jpg', now() - INTERVAL '30 days', 1, '고객님, 따뜻한 칭찬의 말씀 진심으로 감사드립니다. 해당 부서와 간호사님께 고객님의 감사한 마음을 꼭 전달하여 더욱 친절한 병원이 되도록 노력하겠습니다.', now() - INTERVAL '29 days', TRUE),
-(1, '주차장 공간이 너무 부족합니다', '아침 진료 예약이라 일찍 왔는데도 만차라서 주차하는 데만 30분이 걸렸습니다. 주차 공간 개선이 시급해 보입니다.', '/images/voc/voc_02.jpg', now() - INTERVAL '28 days', 2, '주차 문제로 병원 이용에 큰 불편을 드려 대단히 죄송합니다. 현재 외부 주차장 증축 공사를 계획 중에 있으며, 혼잡 시간대에는 주차 안내 요원을 추가 배치하도록 조치하겠습니다.', now() - INTERVAL '27 days', TRUE),
-(1, '대기실 의자가 부족해요', '어르신들이 많이 오시는데 정형외과 앞 대기실 의자가 부족해서 서 계시는 분들이 많았습니다. 대기 공간에 의자를 더 늘려주세요.', '/images/voc/voc_03.jpg', now() - INTERVAL '25 days', 3, '소중한 의견 감사드립니다. 즉시 해당 부서의 대기실 공간을 확인하였고, 통행에 방해가 되지 않는 선에서 추가 의자를 배치 완료하였습니다. 앞으로도 편안한 진료 환경을 위해 노력하겠습니다.', now() - INTERVAL '24 days', TRUE),
-(1, '2층 수납 키오스크 오류', '어제 오후에 2층에서 키오스크로 카드 결제를 하려는데 계속 오류가 나서 결국 창구에서 한참 기다렸습니다. 기기 점검 부탁드립니다.', '/images/voc/voc_04.jpg', now() - INTERVAL '20 days', 1, '키오스크 기기 오류로 이용에 불편을 드려 대단히 죄송합니다. 즉시 전산팀을 통해 2층 기기의 통신 상태를 점검하고 부품 교체 및 수리 조치를 완료했습니다.', now() - INTERVAL '19 days', TRUE),
-(1, '내과 원장님 상세한 설명 감사합니다', '검사 결과에 대해 걱정이 많았는데, 내과 원장님께서 제가 이해하기 쉽게 사진을 보여주시며 꼼꼼히 설명해주셔서 너무 안심이 되었습니다.', '/images/voc/voc_05.jpg', now() - INTERVAL '15 days', 2, '고객님의 따뜻한 칭찬에 감사드립니다. 담당 원장님께 고객님의 소중한 마음을 잘 전달하겠습니다. 앞으로도 환자를 최우선으로 생각하는 병원이 되겠습니다.', now() - INTERVAL '14 days', TRUE),
-(1, '환자식 온도가 너무 차갑습니다', '어머니께서 입원 중이신데, 저녁 배식 때 국이랑 반찬이 다 식어서 나왔다고 하시네요. 식사 보온에 조금 더 신경 써주시면 좋겠습니다.', '/images/voc/voc_06.jpg', now() - INTERVAL '10 days', 3, '식사 문제로 환자분께 불편을 드려 죄송합니다. 영양팀과 병동 간호팀에 전달하여 배식 카트의 온열 상태를 재점검하고, 배식이 지연되지 않도록 프로세스를 개선하였습니다.', now() - INTERVAL '9 days', TRUE),
-(2, '응급실 의료진분들 정말 고생 많으십니다', '새벽에 급성 장염으로 응급실에 갔는데, 정신없이 바쁘신 와중에도 간호사님들과 당직 의사 선생님께서 너무 친절하게 처치해 주셨습니다. 진심으로 감사합니다.', '/images/voc/voc_07.jpg', now() - INTERVAL '5 days', 1, '응급의료센터 의료진에게 고객님의 따뜻한 격려의 말씀을 잘 전달하였습니다. 앞으로도 365일 24시간 환자분들의 생명과 건강을 지키기 위해 최선을 다하겠습니다.', now() - INTERVAL '4 days', TRUE),
+(1, '소아과 간호사님 칭찬합니다', '아이가 병원을 무서워해서 많이 울었는데, 소아과 간호사님께서 장난감으로 달래주시고 주사도 안 아프게 놔주셔서 정말 감사했습니다.', '/images/voc/voc_01.jpg', now() - INTERVAL '30 days', NULL, NULL, NULL, FALSE),
+(1, '주차장 공간이 너무 부족합니다', '아침 진료 예약이라 일찍 왔는데도 만차라서 주차하는 데만 30분이 걸렸습니다. 주차 공간 개선이 시급해 보입니다.', '/images/voc/voc_02.jpg', now() - INTERVAL '28 days', NULL, NULL, NULL, FALSE),
+(1, '대기실 의자가 부족해요', '어르신들이 많이 오시는데 정형외과 앞 대기실 의자가 부족해서 서 계시는 분들이 많았습니다. 대기 공간에 의자를 더 늘려주세요.', '/images/voc/voc_03.jpg', now() - INTERVAL '25 days', NULL, NULL, NULL, FALSE),
+(1, '2층 수납 키오스크 오류', '어제 오후에 2층에서 키오스크로 카드 결제를 하려는데 계속 오류가 나서 결국 창구에서 한참 기다렸습니다. 기기 점검 부탁드립니다.', '/images/voc/voc_04.jpg', now() - INTERVAL '20 days', NULL, NULL, NULL, FALSE),
+(1, '내과 원장님 상세한 설명 감사합니다', '검사 결과에 대해 걱정이 많았는데, 내과 원장님께서 제가 이해하기 쉽게 사진을 보여주시며 꼼꼼히 설명해주셔서 너무 안심이 되었습니다.', '/images/voc/voc_05.jpg', now() - INTERVAL '15 days', NULL, NULL, NULL, FALSE),
+(1, '환자식 온도가 너무 차갑습니다', '어머니께서 입원 중이신데, 저녁 배식 때 국이랑 반찬이 다 식어서 나왔다고 하시네요. 식사 보온에 조금 더 신경 써주시면 좋겠습니다.', '/images/voc/voc_06.jpg', now() - INTERVAL '10 days', NULL, NULL, NULL, FALSE),
+(2, '응급실 의료진분들 정말 고생 많으십니다', '새벽에 급성 장염으로 응급실에 갔는데, 정신없이 바쁘신 와중에도 간호사님들과 당직 의사 선생님께서 너무 친절하게 처치해 주셨습니다. 진심으로 감사합니다.', '/images/voc/voc_07.jpg', now() - INTERVAL '5 days', NULL, NULL, NULL, FALSE),
 (2, '모바일 앱 로그인 오류가 자주 발생합니다', '어제부터 앱으로 진료 예약을 하려고 하는데 지문 인증 로그인 단계에서 앱이 자꾸 종료됩니다. 빠른 확인 및 수정 부탁드립니다.', '/images/voc/voc_08.jpg', now() - INTERVAL '2 days', NULL, NULL, NULL, FALSE),
 (3, '본관 1층 화장실 청결 상태 개선 요청', '본관 1층 여자 화장실 세면대 쪽에 휴지가 널브러져 있고 바닥이 물기 때문에 미끄러워 위험해 보였습니다. 미화원분들의 청소 주기를 늘려주세요.', '/images/voc/voc_09.jpg', now() - INTERVAL '1 days', NULL, NULL, NULL, FALSE),
-(4, '셔틀버스 기사님 서비스 교육이 필요합니다', '오늘 아침 9시 타임 지하철역에서 출발하는 셔틀버스를 탔는데, 거동이 불편하신 어르신이 늦게 타셨다고 기사님이 짜증을 내시더라고요. 친절 교육이 필요해 보입니다.', '/images/voc/voc_10.jpg', now(), NULL, NULL, NULL, FALSE);
-
+(3, '셔틀버스 기사님 서비스 교육이 필요합니다', '오늘 아침 9시 타임 지하철역에서 출발하는 셔틀버스를 탔는데, 거동이 불편하신 어르신이 늦게 타셨다고 기사님이 짜증을 내시더라고요. 친절 교육이 필요해 보입니다.', '/images/voc/voc_10.jpg', now(), NULL, NULL, NULL, FALSE);

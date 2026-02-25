@@ -121,7 +121,7 @@
 </template>
 
 <script setup>
-// [중요] watch를 꼭 import 해야 뒤로가기가 됩니다!
+// [중요] watch를 꼭 import 해야 뒤로가기 됨
 import { ref, computed, onMounted, watch } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
 

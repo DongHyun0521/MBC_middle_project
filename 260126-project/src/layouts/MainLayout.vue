@@ -38,8 +38,8 @@
               <h3 class="st-title">의료진/진료과</h3>
               <p class="st-desc">의료진 이름이나 진료과를 입력하세요</p>
               <div class="st-search-bar">
-                <input type="text" placeholder="의료진/진료과 입력">
-                <button @click="goPage('/doctorsearch')">검색</button>
+                <input type="text" placeholder="의료진/진료과 입력" v-model="searchKeyword" @keyup.enter="onMenuSearch">
+                <button @click="onMenuSearch">검색</button>
               </div>
             </div>
             <div class="right-icon-zone">
@@ -299,240 +299,262 @@
 </template>
 
 <script setup>
-  import { ref, onMounted, onUnmounted, watch, computed } from 'vue'
-  import { useRouter, useRoute } from 'vue-router'
+import { ref, onMounted, onUnmounted, watch, computed } from 'vue'
+import { useRouter, useRoute } from 'vue-router'
 
-  import logoDark from '@/assets/txtlogo2.png'  // 어두운 로고 (txtlogo2)
-  import logoLight from '@/assets/txtlogo3.png' // 밝은색 로고 (txtlogo3)
+import logoDark from '@/assets/txtlogo2.png'  // 어두운 로고 (txtlogo2)
+import logoLight from '@/assets/txtlogo3.png' // 밝은색 로고 (txtlogo3)
 
-  const router = useRouter();
-  const route = useRoute();
+const router = useRouter();
+const route = useRoute();
 
-  const isScrolled = ref(false);
+const isScrolled = ref(false);
 
-  const isLogin = ref(false);
-  const loginName = ref('');
-  const loginInfo = ref(null);
+const isLogin = ref(false);
+const loginName = ref('');
+const loginInfo = ref(null);
 
-  const isMegamenuOpen = ref(false);
-  const isTransparentSection = ref(false);
+const isMegamenuOpen = ref(false);
+const isTransparentSection = ref(false);
 
-  const activeMenu = ref(''); // 현재 어떤 메뉴가 열려있는지 저장
+const activeMenu = ref(''); // 현재 어떤 메뉴가 열려있는지 저장
 
-  const openDepth1 = ref(false);
-  const openDepth2 = ref(false);
+const openDepth1 = ref(false);
+const openDepth2 = ref(false);
 
-  // 메가메뉴 열기 함수
-  const openMegamenu = (menuName) => {
-    activeMenu.value = menuName;
-    isMegamenuOpen.value = true;
-  };
+// [추가] 검색어 상태 관리
+const searchKeyword = ref('');
 
-  // 메가메뉴 닫기 함수
-  const closeMegamenu = () => {
-    activeMenu.value = '';
+// [추가] 메가메뉴 전용 검색 함수
+const onMenuSearch = () => {
+  if (!searchKeyword.value.trim()) {
+    alert("검색어를 입력해 주세요");
+    return;
+  }
+
+  // 검색 페이지로 이동하면서 쿼리 파라미터(q)로 검색어 전달
+  router.push({
+    path: '/doctorsearch',
+    query: { q: searchKeyword.value }
+  });
+
+  // 검색 후 메가메뉴 닫기 및 검색어 초기화
+  isMegamenuOpen.value = false;
+  searchKeyword.value = '';
+};
+
+
+// 메가메뉴 열기 함수
+const openMegamenu = (menuName) => {
+  activeMenu.value = menuName;
+  isMegamenuOpen.value = true;
+};
+
+// 메가메뉴 닫기 함수
+const closeMegamenu = () => {
+  activeMenu.value = '';
+  isMegamenuOpen.value = false;
+};
+
+
+// [추가] 현재 상태에 따른 로고 선택 로직
+const logoSrc = computed(() => {
+  // 1. 메인 페이지가 아니면 무조건 어두운 로고 (흰색 배경)
+  if (!isMainPage.value) return logoDark;
+
+  // 2. 메인 페이지일 때: 스크롤 되었거나 메가메뉴가 열렸으면 흰색 배경이므로 어두운 로고
+  const isWhiteBg = (isScrolled.value && !isTransparentSection.value) || isMegamenuOpen.value;
+
+  return isWhiteBg ? logoDark : logoLight;
+});
+
+// 로그인 필요한 서비스 + 요청 경로로 보내주기
+const goPage = (path) => {
+  const protectedPaths = ['/reservation', '/checkreservation', '/voc', '/mypage', '/vehiregi'];
+  if (protectedPaths.includes(path) && !isLogin.value) {
+    alert("로그인 후 이용 가능한 서비스입니다");
     isMegamenuOpen.value = false;
-  };
+    // 쿼리 파라미터에 현재 가려던 주소(path)를 담기
+    router.push({ path: '/login', query: { redirect: path } });
+    return;
+  }
+  isMegamenuOpen.value = false;
+  router.push(path);
+}
 
+const handleScroll = () => {
+  if (!isMainPage.value) {
+    isScrolled.value = window.scrollY > 50
+  }
+}
 
-  // [추가] 현재 상태에 따른 로고 선택 로직
-  const logoSrc = computed(() => {
-    // 1. 메인 페이지가 아니면 무조건 어두운 로고 (흰색 배경)
-    if (!isMainPage.value) return logoDark;
+const handleMainScroll = (info) => {
+  if (typeof info === 'object') {
+    isScrolled.value = info.scrolled;
+    // 섹션 1(메인) 혹은 섹션 3(건강이야기 - 배경색)일 때 투명 유지
+    isTransparentSection.value = (info.section === 1 || info.section === 3);
+  } else {
+    isScrolled.value = info;
+  }
+}
 
-    // 2. 메인 페이지일 때: 스크롤 되었거나 메가메뉴가 열렸으면 흰색 배경이므로 어두운 로고
-    const isWhiteBg = (isScrolled.value && !isTransparentSection.value) || isMegamenuOpen.value;
-    
-    return isWhiteBg ? logoDark : logoLight;
-  });
+const showVoc = computed(() => {
+  if (!isLogin.value) return false;
+  if (loginInfo.value && loginInfo.value.loginType === 'MED') return false;
+  return true;
+});
 
-  // 로그인 필요한 서비스 + 요청 경로로 보내주기
-  const goPage = (path) => {
-    const protectedPaths = ['/reservation', '/checkreservation', '/voc', '/mypage', '/vehiregi'];
-    if (protectedPaths.includes(path) && !isLogin.value) {
-      alert("로그인 후 이용 가능한 서비스입니다");
-      isMegamenuOpen.value = false;
-      // 쿼리 파라미터에 현재 가려던 주소(path)를 담기
-      router.push({ path: '/login', query: { redirect: path } }); 
-      return;
+const siteMap = [
+  {
+    name: '병원소개',
+    list: [
+      { name: '인사말', path: '/greeting' },
+      { name: '연혁', path: '/history' },
+      { name: '미션/비전', path: '/mission' },
+      { name: '오시는 길', path: '/location' },
+      { name: '주차안내', path: '/parkinginfo' }
+    ]
+  },
+  {
+    name: '의료진/진료과',
+    list: [
+      { name: '의료진 찾기', path: '/doctorsearch' },
+      { name: '진료과 찾기', path: '/deptsearch' },
+      { name: '센터/클리닉', path: '/centerclinic' }
+    ]
+  },
+  {
+    name: '진료예약',
+    list: [
+      { name: '진료예약 신청', path: '/reservation' },
+      { name: '예약내역 조회', path: '/checkreservation' },
+      { name: '진료안내', path: '/guide' },
+      { name: '진료절차', path: '/process' }
+    ]
+  },
+  {
+    name: '건강정보',
+    list: [
+      { name: '건강이야기', path: '/story' },
+      { name: '질환백과', path: '/disease' },
+      { name: '자가진단', path: '/checkup' }
+    ]
+  },
+  {
+    name: '고객서비스',
+    list: [
+      { name: '고객의 소리', path: '/voc' },
+      { name: '공지사항', path: '/notice' },
+      { name: 'FAQ', path: '/faq' },
+      { name: '차량등록', path: '/vehiregi' }
+    ]
+  },
+  {
+    name: '마이페이지',
+    list: [
+      { name: '나의 정보', path: '/mypage' }
+    ]
+  }
+];
+
+const menuMap = {
+  'doctorsearch': { parent: '의료진/진료과', current: '의료진 찾기' },
+  'deptsearch': { parent: '의료진/진료과', current: '진료과 찾기' },
+  'centerclinic': { parent: '의료진/진료과', current: '센터/클리닉' },
+  'reservation': { parent: '진료예약', current: '진료예약 신청' },
+  'checkreservation': { parent: '진료예약', current: '예약내역 조회' },
+  'guide': { parent: '진료예약', current: '진료안내' },
+  'process': { parent: '진료예약', current: '진료절차' },
+  'notice': { parent: '고객서비스', current: '공지사항' },
+  'faq': { parent: '고객서비스', current: 'FAQ' },
+  'voc': { parent: '고객서비스', current: '고객의 소리' },
+  'vehiregi': { parent: '고객서비스', current: '차량등록' },
+  'login': { parent: '회원서비스', current: '로그인' },
+  'regi': { parent: '회원서비스', current: '회원가입' },
+  'mypage': { parent: '마이페이지', current: '나의 정보' },
+  'location': { parent: '병원소개', current: '오시는 길' },
+  'greeting': { parent: '병원소개', current: '인사말' },
+  'history': { parent: '병원소개', current: '연혁' },
+  'mission': { parent: '병원소개', current: '미션/비전' },
+  'disease': { parent: '건강정보', current: '질환백과' },
+  'checkup': { parent: '건강정보', current: '자가진단' },
+  'stroy': { parent: '건강정보', current: '건강이야기' },
+  'search': { parent: '통합검색', current: '검색결과' },
+  'parking': { parent: 'HOME', current: '주차 이용 안내' }
+};
+
+const currentCategoryInfo = computed(() => {
+  const currentPath = route.path;
+  for (const group of siteMap) {
+    const found = group.list.find(page => currentPath.startsWith(page.path) && page.path !== '/');
+    if (found) return { categoryName: group.name, pages: group.list };
+  }
+  return { categoryName: '', pages: [] };
+});
+
+const currentMenuName = computed(() => {
+  const foundInSiteMap = currentCategoryInfo.value.pages.find(p => route.path.startsWith(p.path));
+  if (foundInSiteMap) return foundInSiteMap.name;
+  const key = route.path.replace('/', '').split('/')[0];
+  return menuMap[key]?.current || '페이지';
+});
+
+const checkLogin = () => {
+  const loginData = sessionStorage.getItem('loginId')
+  if (loginData) {
+    try {
+      const user = JSON.parse(loginData);
+      isLogin.value = true;
+      loginName.value = user.name || user.id;
+      loginInfo.value = user;
     }
-    isMegamenuOpen.value = false;
-    router.push(path);
+    catch (e) {
+      isLogin.value = true;
+      loginName.value = loginData;
+    }
+  } else {
+    isLogin.value = false;
+    loginInfo.value = null;
+  }
+}
+
+const handleLogout = () => {
+  if (confirm("로그아웃 하시겠습니까?")) {
+    sessionStorage.removeItem('loginId');
+    isLogin.value = false;
+    router.push('/');
+  }
+}
+
+const isMainPage = computed(() => route.path === '/' || route.path === '/mainhome')
+
+// 위로 가기 로직
+const scrollToTop = () => {
+  console.log("TOP 버튼 클릭. 강제 상단 이동 시작");
+
+  // 실제 스크롤이 일어나는 박스
+  const homeContainer = document.querySelector('.home-container');
+  if (homeContainer) {
+    homeContainer.scrollTo({
+      top: 0,
+      behavior: 'smooth' // 스르륵 올라가기
+    });
   }
 
-  const handleScroll = () => {
-    if (!isMainPage.value) {
-      isScrolled.value = window.scrollY > 50
-    }
+  // 혹시 일반 페이지(병원소개 등)일 경우를 대비한 보험 코드
+  const contentBody = document.querySelector('.content-body');
+  if (contentBody) {
+    contentBody.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
-  const handleMainScroll = (info) => {
-    if (typeof info === 'object') {
-      isScrolled.value = info.scrolled;
-      // 섹션 1(메인) 혹은 섹션 3(건강이야기 - 배경색)일 때 투명 유지
-      isTransparentSection.value = (info.section === 1 || info.section === 3);
-    } else {
-      isScrolled.value = info;
-    }
-  }
+  // 윈도우 자체 스크롤 (기본)
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+};
 
-  const showVoc = computed(() => {
-    if (!isLogin.value) return false;
-    if (loginInfo.value && loginInfo.value.loginType === 'MED') return false;
-    return true;
-  });
+watch(() => route.path, () => { checkLogin(); isMegamenuOpen.value = false; isScrolled.value = false; })
 
-  const siteMap = [
-    {
-      name: '병원소개',
-      list: [
-        { name: '인사말', path: '/greeting' },
-        { name: '연혁', path: '/history' },
-        { name: '미션/비전', path: '/mission' },
-        { name: '오시는 길', path: '/location' },
-        { name: '주차안내', path: '/parkinginfo' }
-      ]
-    },
-    {
-      name: '의료진/진료과',
-      list: [
-        { name: '의료진 찾기', path: '/doctorsearch' },
-        { name: '진료과 찾기', path: '/deptsearch' },
-        { name: '센터/클리닉', path: '/centerclinic' }
-      ]
-    },
-    {
-      name: '진료예약',
-      list: [
-        { name: '진료예약 신청', path: '/reservation' },
-        { name: '예약내역 조회', path: '/checkreservation' },
-        { name: '진료안내', path: '/guide' },
-        { name: '진료절차', path: '/process' }
-      ]
-    },
-    {
-      name: '건강정보',
-      list: [
-        { name: '건강이야기', path: '/story' },
-        { name: '질환백과', path: '/disease' },
-        { name: '자가진단', path: '/checkup' }
-      ]
-    },
-    {
-      name: '고객서비스',
-      list: [
-        { name: '고객의 소리', path: '/voc' },
-        { name: '공지사항', path: '/notice' },
-        { name: 'FAQ', path: '/faq' },
-        { name: '차량등록', path: '/vehiregi' }
-      ]
-    },
-    {
-      name: '마이페이지',
-      list: [
-        { name: '나의 정보', path: '/mypage' }
-      ]
-    }
-  ];
-
-  const menuMap = {
-    'doctorsearch': { parent: '의료진/진료과', current: '의료진 찾기' },
-    'deptsearch': { parent: '의료진/진료과', current: '진료과 찾기' },
-    'centerclinic': { parent: '의료진/진료과', current: '센터/클리닉' },
-    'reservation': { parent: '진료예약', current: '진료예약 신청' },
-    'checkreservation': { parent: '진료예약', current: '예약내역 조회' },
-    'guide': { parent: '진료예약', current: '진료안내' },
-    'process': { parent: '진료예약', current: '진료절차' },
-    'notice': { parent: '고객서비스', current: '공지사항' },
-    'faq': { parent: '고객서비스', current: 'FAQ' },
-    'voc': { parent: '고객서비스', current: '고객의 소리' },
-    'vehiregi': { parent: '고객서비스', current: '차량등록' },
-    'login': { parent: '회원서비스', current: '로그인' },
-    'regi': { parent: '회원서비스', current: '회원가입' },
-    'mypage': { parent: '마이페이지', current: '나의 정보' },
-    'location': { parent: '병원소개', current: '오시는 길' },
-    'greeting': { parent: '병원소개', current: '인사말' },
-    'history': { parent: '병원소개', current: '연혁' },
-    'mission': { parent: '병원소개', current: '미션/비전' },
-    'disease': { parent: '건강정보', current: '질환백과' },
-    'checkup': { parent: '건강정보', current: '자가진단' },
-    'stroy': { parent: '건강정보', current: '건강이야기' },
-    'search': { parent: '통합검색', current: '검색결과' },
-    'parking': { parent: 'HOME', current: '주차 이용 안내' }
-  };
-
-  const currentCategoryInfo = computed(() => {
-    const currentPath = route.path;
-    for (const group of siteMap) {
-      const found = group.list.find(page => currentPath.startsWith(page.path) && page.path !== '/');
-      if (found) return { categoryName: group.name, pages: group.list };
-    }
-    return { categoryName: '', pages: [] };
-  });
-
-  const currentMenuName = computed(() => {
-    const foundInSiteMap = currentCategoryInfo.value.pages.find(p => route.path.startsWith(p.path));
-    if (foundInSiteMap) return foundInSiteMap.name;
-    const key = route.path.replace('/', '').split('/')[0];
-    return menuMap[key]?.current || '페이지';
-  });
-
-  const checkLogin = () => {
-    const loginData = sessionStorage.getItem('loginId')
-    if (loginData) {
-      try {
-        const user = JSON.parse(loginData);
-        isLogin.value = true;
-        loginName.value = user.name || user.id;
-        loginInfo.value = user;
-      }
-      catch (e) {
-        isLogin.value = true;
-        loginName.value = loginData;
-      }
-    } else {
-      isLogin.value = false;
-      loginInfo.value = null;
-    }
-  }
-
-  const handleLogout = () => {
-    if (confirm("로그아웃 하시겠습니까?")) {
-      sessionStorage.removeItem('loginId');
-      isLogin.value = false;
-      router.push('/');
-    }
-  }
-
-  const isMainPage = computed(() => route.path === '/' || route.path === '/mainhome')
-
-  // 위로 가기 로직
-  const scrollToTop = () => {
-    console.log("TOP 버튼 클릭. 강제 상단 이동 시작");
-
-    // 실제 스크롤이 일어나는 박스
-    const homeContainer = document.querySelector('.home-container');
-    if (homeContainer) {
-      homeContainer.scrollTo({
-        top: 0,
-        behavior: 'smooth' // 스르륵 올라가기
-      });
-    }
-
-    // 혹시 일반 페이지(병원소개 등)일 경우를 대비한 보험 코드
-    const contentBody = document.querySelector('.content-body');
-    if (contentBody) {
-      contentBody.scrollTo({ top: 0, behavior: 'smooth' });
-    }
-
-    // 윈도우 자체 스크롤 (기본)
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  };
-
-  watch(() => route.path, () => { checkLogin(); isMegamenuOpen.value = false; isScrolled.value = false; })
-
-  onMounted(() => { checkLogin(); window.addEventListener('scroll', handleScroll); })
-  onUnmounted(() => { window.removeEventListener('scroll', handleScroll); })
+onMounted(() => { checkLogin(); window.addEventListener('scroll', handleScroll); })
+onUnmounted(() => { window.removeEventListener('scroll', handleScroll); })
 </script>
 
 <!-- <style scoped>
@@ -1319,7 +1341,8 @@
 .megamenu-inner {
   max-width: 1800px;
   margin: 0 auto;
-  padding: 0 20px; /* 헤더 inner와 동일한 패딩 부여 */
+  padding: 0 20px;
+  /* 헤더 inner와 동일한 패딩 부여 */
   background: #fff;
 }
 
@@ -1401,8 +1424,13 @@
   transform: translateX(5px);
 }
 
-.promo-small-box.sky { background-color: #f0f7ff; }
-.promo-small-box.point { background-color: #fbb8001b; }
+.promo-small-box.sky {
+  background-color: #f0f7ff;
+}
+
+.promo-small-box.point {
+  background-color: #fbb8001b;
+}
 
 /* 오른쪽 아이콘/리스트 메뉴 영역 */
 .right-icon-zone {
@@ -1477,7 +1505,8 @@
   color: #555;
   margin-bottom: 14px;
   cursor: pointer;
-  list-style: none; /* 점 제거 */
+  list-style: none;
+  /* 점 제거 */
   text-align: left;
   transition: 0.2s;
 }
@@ -1563,15 +1592,19 @@
   width: 100%;
   background-color: #f9f9f9;
   border-bottom: 1px solid #eee;
-  padding: 20px 0; /* 상하 패딩만 남기고 좌측 강제 패딩 제거 */
+  padding: 20px 0;
+  /* 상하 패딩만 남기고 좌측 강제 패딩 제거 */
   margin-top: 100px;
-  /* padding-left: 78px; */ /* 정렬을 방해하므로 주석 처리 */
+  /* padding-left: 78px; */
+  /* 정렬을 방해하므로 주석 처리 */
 }
 
 .breadcrumb-inner {
-  max-width: 1800px; /* 헤더 내비바와 동일하게 1800px로 수정 */
+  max-width: 1800px;
+  /* 헤더 내비바와 동일하게 1800px로 수정 */
   margin: 0 auto;
-  padding: 0 20px; /* 헤더와 동일한 패딩 부여 */
+  padding: 0 20px;
+  /* 헤더와 동일한 패딩 부여 */
   display: flex;
   align-items: center;
   gap: 10px;
@@ -1612,7 +1645,8 @@
   min-width: 160px;
   z-index: 6000;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
-  list-style: none; /* 불필요한 점(Bullet) 제거 */
+  list-style: none;
+  /* 불필요한 점(Bullet) 제거 */
   padding: 10px 0;
   margin: 0;
 }
@@ -1622,7 +1656,8 @@
   font-size: 15px;
   color: #555;
   transition: 0.2s;
-  list-style: none; /* 이중 방어 */
+  list-style: none;
+  /* 이중 방어 */
 }
 
 .dropdown-list li:hover {
@@ -1647,7 +1682,8 @@
 }
 
 .footer-inner {
-  max-width: 1500px; /* 푸터는 조금 좁은 것이 안정적 (원하시면 1800으로 변경 가능) */
+  max-width: 1500px;
+  /* 푸터는 조금 좁은 것이 안정적 (원하시면 1800으로 변경 가능) */
   margin: 0 auto;
   padding: 0 40px;
   text-align: left;

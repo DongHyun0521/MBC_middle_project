@@ -232,7 +232,7 @@ onMounted(() => {
 
 .health-card {
     flex: 0 0 33.333%;
-    padding: 0 15px;
+    padding: 25px 5px;
     transition: all 0.5s ease;
     opacity: 0.5;
     /* 비활성 카드는 더 흐리게 */
@@ -297,24 +297,22 @@ onMounted(() => {
 
 /* 제목 스타일 업그레이드 */
 .h-title {
-    font-size: 23px;
+    font-size: 22px;
     font-weight: 700;
     color: #333;
-    line-height: 0.8;
-    height: 100px;
+    line-height: 1.3;
     display: -webkit-box;
     -webkit-box-orient: vertical;
-    -webkit-line-clamp: 2;
+    -webkit-line-clamp: 3;
     overflow: hidden;
-    padding: 40px 20px;
+    padding: 12px 20px;
     word-break: keep-all;
     font-family: 'pretendard';
-    margin-top: 3px;
 }
 
 .h-img-box {
     width: 100%;
-    height: 280px;
+    height: 300px;
     position: relative;
     overflow: hidden;
     background-color: #f1f1f1;
@@ -327,7 +325,7 @@ onMounted(() => {
     display: block;
 }
 
-.placeholder-thumb {
+/* .placeholder-thumb {
     width: 100%;
     height: 100%;
     display: flex;
@@ -335,7 +333,7 @@ onMounted(() => {
     justify-content: center;
     font-size: 40px;
     color: #ccc;
-}
+} */
 
 .h-tag {
     position: absolute;
@@ -346,24 +344,24 @@ onMounted(() => {
     color: #333;
     padding: 5px 12px;
     font-weight: 700;
-    font-size: 13px;
+    font-size: 16px;
     z-index: 5;
 }
 
 .h-text-box {
     background: #fff;
-    height: 50px;
+    height: 70px;
     display: flex;
     flex-direction: column;
     justify-content: center;
 }
 
 .h-date {
-    padding: 40px 20px;
-    font-size: 16px;
+    padding: 0 20px;
+    font-size: 18px;
     color: #aaa;
     text-align: left;
     font-family: 'pretendard';
-    margin-top: -20px;
+    margin-top: 10px;
 }
 </style>

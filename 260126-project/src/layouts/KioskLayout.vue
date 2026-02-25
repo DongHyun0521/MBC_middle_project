@@ -99,6 +99,7 @@
     border-bottom: 2px solid rgba(132, 194, 230, 0.2);
     z-index: 10;
 }
+
 .main-logo-img{
     width: 150px;
     height: auto;
@@ -164,14 +165,14 @@
 }
 
 .kiosk-footer {
-    height: 180px; /* 푸터 높이 고정 */
+    height: 120px; /* 푸터 높이 고정 */
     flex-shrink: 0; /* 콘텐츠가 많아도 푸터가 찌그러지지 않게 고정 */
     background: transparent;
     display: flex;
     flex-direction: column;
     justify-content: center;
     align-items: center;
-    padding-bottom: 20px;
+    padding-bottom: 10px;
     z-index: 20;
 }
 
@@ -187,8 +188,8 @@
     font-weight: 500;
     color: #666;
     letter-spacing: -0.88px;
-    margin-bottom: 12px;
-    margin-top: 30px;
+    margin-bottom: 8px;
+    margin-top: 10px;
     font-family: 'pretendard';
     text-align: center;
 }
