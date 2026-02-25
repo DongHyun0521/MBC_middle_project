@@ -182,6 +182,7 @@ public class ParkingSpotService {
         Integer spotId = dao.findSpotIdByParkingLogId(log.getParkingLogId());
         if (spotId != null) dao.exitCar(spotId);
         
+        log.setIsMember(isMember);
         log.setExitTime(now);
         parkingLogDao.updateExitLog(log);
     }
@@ -192,6 +193,10 @@ public class ParkingSpotService {
     public EntryPathResponse parkCar(int spotId, String vehicleNum) {
         ParkingLogDto newLog = new ParkingLogDto();
         newLog.setVehicleNum(vehicleNum);
+        
+        boolean isMember = parkingLogDao.isMemberVehicle(vehicleNum) > 0;
+        newLog.setIsMember(isMember);
+        
         parkingLogDao.insertEntryLog(newLog);
         
         ParkingLogDto log = parkingLogDao.selectRecentEntryLog(vehicleNum);

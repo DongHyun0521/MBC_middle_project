@@ -29,9 +29,10 @@
                 </div>
             </section>
 
-            <section class="dash-card">
+            <section class="dash-card clickable-card" @click="goToResList">
                 <div class="card-head">
                     <h3>오늘 진료 현황</h3>
+                    <span class="more-view">자세히 보기 +</span>
                 </div>
                 <div class="stat-grid">
                     <div class="stat-box blue">
@@ -43,21 +44,34 @@
                 </div>
             </section>
 
-            <section class="dash-card">
+            <section class="dash-card clickable-card" @click="goToList">
                 <div class="card-head">
                     <h3>나의 병원 예약</h3>
+                    <span class="more-view">더보기 +</span>
                 </div>
-                <div v-if="upcomingRes" class="res-highlight">
-                    <span class="d-day">D-{{ calculateDday(upcomingRes.reservation_date) }}</span>
-                    <p class="res-time-txt">{{ upcomingRes.reservation_time }}</p>
-                    <p class="res-doc-txt">{{ upcomingRes.med_dept_name }} | {{ upcomingRes.doctor_name }} 의사</p>
+
+                <div v-if="upcomingResList.length > 0">
+                    <div class="res-highlight main-res">
+                        <span class="d-day">D-{{ calculateDday(upcomingRes.reservation_date) }}</span>
+                        <p class="res-time-txt">{{ formatDate(upcomingRes.reservation_time) }}</p>
+                        <p class="res-doc-txt">{{ upcomingRes.med_dept_name }} | {{ upcomingRes.doctor_name }} 의사</p>
+                    </div>
+
+                    <div v-if="upcomingResList.length > 1" class="sub-res-list">
+                        <div v-for="(res, idx) in upcomingResList.slice(1)" :key="res.reservation_id"
+                            class="sub-res-item">
+                            <span class="sub-time">{{ formatDate(res.reservation_time) }}</span>
+                            <span class="sub-info">{{ res.med_dept_name }} ({{ res.doctor_name }})</span>
+                        </div>
+                    </div>
                 </div>
+
                 <div v-else class="empty-res">예정된 예약이 없습니다</div>
             </section>
         </div>
 
         <div v-if="currentView === 'doc_res'" class="view-section">
-            <div class="section-card">
+            <div class="section-card ">
                 <div class="card-head">
                     <h3>진료 업무 일정</h3>
                     <div class="toggle-group">
@@ -209,8 +223,12 @@
                             <td class="bold-blue">{{ res.med_dept_name }}</td>
                             <td class="bold-blue">{{ res.doctor_name }}</td>
                             <td>{{ formatDate(res.reservation_date) }}</td>
-                            <td><span :class="['status-badge', res.reservation_status === '예약' ? 'active' : 'done']">{{
-                                res.reservation_status }}</span></td>
+                            <td><span :class="['status-badge',
+                                    res.reservation_status === '예약' ? 'active' :
+                                        res.reservation_status === '완료' ? 'done' :
+                                            res.reservation_status === '취소' ? 'cancel' : 'noshow']">
+                                    {{ res.reservation_status }}
+                                </span></td>
                             <td class="txt-center">
                                 <button v-if="res.reservation_status === '예약'" class="btn-cancel-table"
                                     @click="cancelRes(res.reservation_id)">예약취소</button>
@@ -228,7 +246,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted, computed } from 'vue'
+import { ref, onMounted, computed, defineEmits } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { getMyResReq, cancelResReq, getAllDoctorsReq, getDocSchedReq, completeResByDocReq, forceCancelResByDocReq } from '@/api/reservation'
 
@@ -236,6 +254,10 @@ import { getMyResReq, cancelResReq, getAllDoctorsReq, getDocSchedReq, completeRe
         userInfo: Object,
         currentView: String
     })
+
+    // 부모(MyPage.vue)의 탭 상태를 바꾸기 위한 통로 .개설
+    const emit = defineEmits(['changeView'])
+
     const router = useRouter()
     const route = useRoute()
 
@@ -271,10 +293,32 @@ import { getMyResReq, cancelResReq, getAllDoctorsReq, getDocSchedReq, completeRe
         })
     })
 
+    // 추가
+    // 예약 리스트를 '진짜 빠른 시간순'으로 정렬하고 최대 3개까지 추출
+    const upcomingResList = computed(() => {
+        return [...myReservations.value] // 원본 복사
+            .filter(r => r.reservation_status === '예약')
+            .sort((a, b) => {
+                // 날짜(YYYYMMDD)와 시간(HH:mm)을 합쳐서 비교 (예: "202602230900" < "202602231000")
+                const timeA = String(a.reservation_date) + String(a.reservation_time || '00:00').replace(':', '')
+                const timeB = String(b.reservation_date) + String(b.reservation_time || '00:00').replace(':', '')
+                return timeA.localeCompare(timeB) // 오름차순 정렬 (빠른 시간 우선) 
+            })
+            .slice(0, 3) // 상위 3개만 자르기
+    })
+
+    // D-Day 계산용 (정렬된 리스트의 0번이 무조건 가장 빠른 예약!)
+    const upcomingRes = computed(() => upcomingResList.value[0])
+
+    // 탭 이동 함수
+    const goToList = () => emit('changeView', 'res');  // 목록으로 가기
+    const goToResList = () => emit('changeView', 'doc_res');
+
+
     // [개인용] 내가 환자일 때 가장 가까운 예약 하나 찾기 (대시보드 요약용)
-    const upcomingRes = computed(() =>
-        myReservations.value.find(r => r.reservation_status === '예약')
-    )
+    // const upcomingRes = computed(() =>
+    //     myReservations.value.find(r => r.reservation_status === '예약')
+    // )
 
     // [개인용] 내 전체 예약 리스트 중 선택한 필터에 맞는 것만 노출
     const filteredMyReservations = computed(() => {
@@ -892,17 +936,16 @@ import { getMyResReq, cancelResReq, getAllDoctorsReq, getDocSchedReq, completeRe
     background: #f0f7ff;
     padding: 30px;
     text-align: center;
-    border-radius: 8px;
 }
 
 .d-day {
     display: inline-block;
-    background: #005baa;
-    color: #fff;
-    padding: 12px 18px;
-    font-weight: 600;
+    /* background: #005baa; */
+    color: #005baa;
+    /* padding: 12px 18px; */
+    font-weight: 800;
     font-size: 60px;
-    margin-bottom: 20px;
+    margin-bottom: 10px;
 }
 
 .res-time-txt {
@@ -917,12 +960,38 @@ import { getMyResReq, cancelResReq, getAllDoctorsReq, getDocSchedReq, completeRe
     font-weight: 500;
     color: #666;
 }
+/* 내 진료 예약 버튼 css */
+/* 취소 버튼: 깔끔한 레드 아웃라인 */
+.btn-cancel-table {
+    padding: 8px 16px;
+    font-size: 14px;
+    font-weight: 600;
+    background: transparent;
+    color: #ff3b30;
+    border: 1.5px solid #ff3b30;
+    cursor: pointer;
+    transition: all 0.2s;
+}
 
+.btn-cancel-table:hover {
+    background: #ff3b30;
+    color: #fff;
+}
+
+/* 상태 배지: 상태별 컬러 차별화 */
 .status-badge {
-    padding: 6px 14px;
+    width: 80px;
+    height: 34px;
+
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
     font-size: 14px;
     font-weight: 700;
-    display: inline-block;
+    text-align: center;
+    white-space: nowrap;
+    /* 글자가 줄바꿈되지 않게 방지 */
 }
 
 .status-badge.active {
@@ -931,13 +1000,23 @@ import { getMyResReq, cancelResReq, getAllDoctorsReq, getDocSchedReq, completeRe
 }
 
 .status-badge.done {
-    background: #f5f5f5;
-    color: #999;
+    background: #e8f5e9;
+    color: #2e7d32;
 }
 
 .status-badge.cancel {
+    background: #ffebee;
+    color: #c62828;
+}
+
+.status-badge.noshow {
     background: #f5f5f5;
-    color: #dc3545;
+    color: #616161;
+}
+
+.status-badge.noshow-badge {
+    background: #f5f5f5;
+    color: #616161;
 }
 
 .bold-blue {
@@ -965,4 +1044,41 @@ import { getMyResReq, cancelResReq, getAllDoctorsReq, getDocSchedReq, completeRe
 .py-20 {
     text-align: center;
 }
+
+/* 추가(내 예약 내역-대시보드) */
+.clickable-card {
+    cursor: pointer;
+    transition: all 0.2s ease-in-out;
+}
+.clickable-card:hover {
+    border-color: #005baa;
+    transform: translateY(-5px);
+}
+
+.more-view {
+    font-size: 18px;
+    color: #888;
+    font-weight: 700;
+}
+
+/* 서브 리스트 스타일 */
+.sub-res-list {
+    margin-top: 15px;
+    padding-top: 15px;
+    border-top: 1px dashed #d1e6ff;
+}
+
+.sub-res-item {
+    display: flex;
+    justify-content: space-between;
+    padding: 10px 15px;
+    background: #f8f9fa;
+    border-radius: 8px;
+    margin-bottom: 5px;
+    font-size: 15px;
+    font-weight: 600;
+}
+
+.sub-time { color: #005baa; }
+.sub-info { color: #555; }
 </style>

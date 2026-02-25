@@ -1,11 +1,21 @@
 <template>
     <section class="health-section-wrapper">
         <div class="health-area">
-            <h2 class="main-title">에스병원 건강이야기</h2>
+            <div class="section-top-header">
+                <h2 class="main-title">에스병원 건강이야기</h2>
+                <router-link to="/story" class="view-all-link">
+                    전체보기
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="12" y1="5" x2="12" y2="19"></line>
+                        <line x1="5" y1="12" x2="19" y2="12"></line>
+                    </svg>
+                </router-link>
+            </div>
 
             <div class="slider-outer-container">
                 <div class="slider-window">
-                    <div class="slide-track" :style="{ transform: `translateX(calc(-33.333% * ${currentIndex}))`, transitionDuration: transitionSpeed }">
+                    <div class="slide-track"
+                        :style="{ transform: `translateX(calc(-33.333% * ${currentIndex}))`, transitionDuration: transitionSpeed }">
 
                         <div class="health-card" v-for="(story, index) in displayStories" :key="index"
                             :class="{ active: currentIndex + 1 === index }"
@@ -38,7 +48,8 @@
                     </button>
 
                     <div class="page-indicator">
-                        <strong>{{ ((currentIndex + 1) % healthStories.length) || healthStories.length }}</strong> / {{ healthStories.length }}
+                        <strong>{{ ((currentIndex + 1) % healthStories.length) || healthStories.length }}</strong> / {{
+                        healthStories.length }}
                     </div>
 
                     <button class="nav-arrow next" @click="nextSlide">
@@ -73,18 +84,18 @@ const fetchHealthStories = async () => {
     try {
         const res = await getStoriesReq()
         let list = res.data || []
-        
+
         // 최신순 정렬 및 6개 제한
         const originalList = list.sort((a, b) => new Date(b.writeDate) - new Date(a.writeDate))
-                                 .slice(0, 6).map(item => ({
-            ...item,
-            fileUrl: getImageUrl(item.thumbnailImg),
-            fileName: item.thumbnailImg,
-            writerName: item.writerName || item.adminName,
-            writeDate: item.writeDate ? String(item.writeDate).substring(0, 10) : ''
-        }))
+            .slice(0, 6).map(item => ({
+                ...item,
+                fileUrl: getImageUrl(item.thumbnailImg),
+                fileName: item.thumbnailImg,
+                writerName: item.writerName || item.adminName,
+                writeDate: item.writeDate ? String(item.writeDate).substring(0, 10) : ''
+            }))
         healthStories.value = originalList
-        
+
         currentIndex.value = originalList.length
     } catch (e) {
         console.error("데이터 로드 실패", e)
@@ -141,15 +152,62 @@ onMounted(() => {
     z-index: 10;
 }
 
+/* 헤더 컨테이너: 버튼 배치를 위해 relative 설정 */
+.section-top-header {
+    max-width: 1550px;
+    margin: 0 auto 60px;
+    padding: 0 15px;
+    position: relative; /* 중요! */
+}
+
+/* [복구] 메인 타이틀 중앙 정렬 및 42px */
 .main-title {
-    text-align: center;
     color: #fff;
-    font-size: 50px;
-    font-weight: 600;
-    margin-bottom: 60px;
-    font-family: 'pretendard';
-    position: relative;
-    z-index: 20;
+    font-size: 54px;
+    font-weight: 800;
+    font-family: 'Pretendard';
+    text-align: center; /* 공주님 요청 사항 */
+    margin: 0;
+    width: 100%;
+}
+
+/* 전체보기 버튼 (우측 정렬 배치) */
+.view-all-link {
+    position: absolute;
+    right: 15px;
+    bottom: 5px; /* 타이틀 바닥선과 맞춤 */
+    color: #fff;
+    text-decoration: none;
+    font-family: 'Pretendard';
+    font-size: 18px; 
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 20px;
+    border: 1px solid rgba(255, 255, 255, 0.4);
+    border-radius: 0; /* 직선 유지 */
+    transition: all 0.3s;
+}
+
+/* 호버 효과 */
+.view-all-link:hover {
+    background: #fff;
+    color: #005baa;
+    border-color: #fff;
+}
+
+/* 모바일 대응: 화면이 좁아지면 버튼을 아래로 */
+@media (max-width: 768px) {
+    .section-top-header {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 20px;
+    }
+    .view-all-link {
+        position: static;
+    }
 }
 
 .empty-story {

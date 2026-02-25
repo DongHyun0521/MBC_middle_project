@@ -2,14 +2,13 @@
   <div class="sub-page-container">
     <div class="page-header">
       <h2>주차 이용 안내</h2>
-      <p>병원을 이용하시는 고객님의 편의를 위해 최선을 다하겠습니다</p>
+      <p>병원을 이용하시는 고객님의 편의를 위해 최선을 다하겠습니다.</p>
     </div>
 
     <div class="parking-summary">
       <div class="summary-card">
         <div class="icon-box">
-          <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#84c2e6" stroke-width="2.5"
-            stroke-linecap="round" stroke-linejoin="round">
+          <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="#005baa" stroke-width="2.5">
             <circle cx="12" cy="12" r="10" />
             <polyline points="12 6 12 12 16 14" />
           </svg>
@@ -21,8 +20,7 @@
       </div>
       <div class="summary-card highlight">
         <div class="icon-box">
-          <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5"
-            stroke-linecap="round" stroke-linejoin="round">
+          <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5">
             <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2" />
             <circle cx="12" cy="7" r="4" />
           </svg>
@@ -36,12 +34,7 @@
 
     <section class="parking-sec">
       <h3 class="sec-title">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#005baa" stroke-width="2.5"
-          style="margin-right:8px">
-          <rect x="1" y="3" width="22" height="18" rx="2" ry="2" />
-          <line x1="12" y1="18" x2="12" y2="18" />
-        </svg>
-        주차 요금 안내
+        <span class="title-icon">P</span> 주차 요금 안내
       </h3>
       <table class="parking-tbl">
         <thead>
@@ -68,12 +61,7 @@
 
     <section class="parking-sec">
       <h3 class="sec-title">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#005baa" stroke-width="2.5"
-          style="margin-right:8px">
-          <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
-          <polyline points="22 4 12 14.01 9 11.01" />
-        </svg>
-        예약 환자 혜택
+        <span class="title-icon">V</span> 예약 환자 혜택
       </h3>
       <div class="benefit-box">
         <div class="b-info">
@@ -85,11 +73,19 @@
         </div>
       </div>
     </section>
+
+    <div class="parking-notice">
+      <h4>이용 안내</h4>
+      <ul>
+        <li>장애인 및 국가유공자 차량은 관련 법규에 따라 감면 혜택이 적용됩니다.</li>
+        <li>홈페이지의 <b>[차량등록]</b> 메뉴를 이용하시면 출차 시 더욱 편리합니다.</li>
+        <li>무료 주차 시간 초과 시 무인 정산기에서 결제 후 출차해 주시기 바랍니다.</li>
+      </ul>
+    </div>
   </div>
 </template>
 
 <style scoped>
-/* 전체 컨테이너 및 텍스트 폰트 설정 */
 .sub-page-container {
   max-width: 1000px;
   margin: 0 auto;
@@ -99,22 +95,22 @@
 
 .page-header {
   text-align: center;
-  margin-bottom: 60px
+  margin-bottom: 60px;
 }
 
 .page-header h2 {
   font-size: 42px;
-  color: #333;
+  font-weight: 800;
+  color: #111;
   margin-bottom: 10px;
-  font-weight: 700;
 }
 
 .page-header p {
-  color: #666;
   font-size: 18px;
+  color: #666;
 }
 
-/* 요약 카드 구역 */
+/* 요약 카드 */
 .parking-summary {
   display: flex;
   gap: 20px;
@@ -127,9 +123,9 @@
   align-items: center;
   gap: 20px;
   padding: 30px;
-  background: #fdfdfd;
-  border-radius: 12px;
-  border: 1px solid #bcbcbc9f;
+  background: #fff;
+  border: 1px solid #eee;
+  transition: 0.3s;
 }
 
 .summary-card.highlight {
@@ -138,30 +134,29 @@
   border-color: #005baa;
 }
 
-/* 메인 블루 적용 */
+.summary-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+}
+
 .icon-box {
-  width: 60px;
-  height: 60px;
-  background: #fff;
+  width: 64px;
+  height: 64px;
+  background: #f4f7fa;
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
 }
 
 .summary-card.highlight .icon-box {
   background: rgba(255, 255, 255, 0.15);
 }
 
-.txt-box {
-  display: flex;
-  flex-direction: column;
-}
-
-.label {
-  font-size: 18px;
+.txt-box .label {
+  font-size: 16px;
   color: #888;
+  display: block;
   margin-bottom: 4px;
 }
 
@@ -170,55 +165,58 @@
   font-weight: 600;
 }
 
-/* 서브 컬러 활용 */
-.val {
+.txt-box .val {
   font-size: 24px;
   font-weight: 800;
-  color: #333;
 }
 
-.summary-card.highlight .val {
-  color: #fff;
-}
-
-/* 섹션 및 제목 */
+/* 섹션 타이틀 */
 .parking-sec {
-  margin-bottom: 60px
+  margin-bottom: 60px;
 }
 
 .sec-title {
-  display: flex;
-  align-items: center;
   font-size: 26px;
   font-weight: 700;
   color: #333;
-  margin-bottom: 25px
+  margin-bottom: 25px;
+  display: flex;
+  align-items: center;
 }
 
-/* 테이블 스타일 */
+.title-icon {
+  background: #005baa;
+  color: #fff;
+  width: 32px;
+  height: 32px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: 12px;
+  font-size: 16px;
+}
+
+/* 테이블 (기존 컬러 및 정렬 유지) */
 .parking-tbl {
   width: 100%;
   border-collapse: collapse;
-  background: #fff;
+  border-top: 3px solid #005baa;
 }
 
 .parking-tbl th {
   background: #f9fbff;
-  color: #333;
-  font-weight: 700;
   padding: 20px;
-  border-top: 3px solid #005baa;
-  border-bottom: 1px solid #bcbcbc9f;
-  font-size: 20px;
+  font-size: 18px;
+  border-bottom: 1px solid #ddd;
+  text-align: center;
 }
 
-/* 상단 메인 블루 */
 .parking-tbl td {
   padding: 20px;
   text-align: center;
   border-bottom: 1px solid #eee;
+  font-size: 17px;
   color: #555;
-  font-size: 18px;
 }
 
 .parking-tbl td.bold {
@@ -231,12 +229,11 @@
   font-weight: 800;
 }
 
-/* 회원 1,000원 강조 */
 .sub-txt {
   color: #666;
 }
 
-/* 예약 혜택 박스 */
+/* 혜택 박스 */
 .benefit-box {
   display: flex;
   justify-content: space-between;
@@ -244,12 +241,10 @@
   padding: 40px;
   background: #fff;
   border: 2px dashed #84c2e6;
-  border-radius: 12px;
 }
 
-/* 서브 블루 점선 */
 .b-title {
-  font-size: 26px;
+  font-size: 24px;
   font-weight: 700;
   color: #333;
   margin-bottom: 8px;
@@ -257,7 +252,7 @@
 
 .b-desc {
   color: #888;
-  font-size: 18px;
+  font-size: 17px;
 }
 
 .status-point {
@@ -265,16 +260,34 @@
   font-weight: 800;
 }
 
-/* 포인트 옐로우 활용 */
 .b-val {
-  font-size: 24px;
+  font-size: 22px;
   font-weight: 700;
   color: #005baa;
 }
 
 .b-val .time {
-  font-size: 40px;
+  font-size: 38px;
   font-weight: 900;
   margin-right: 4px;
+}
+
+/* 안내사항 */
+.parking-notice {
+  background: #f9f9f9;
+  padding: 25px;
+  border-radius: 8px;
+}
+
+.parking-notice h4 {
+  font-size: 18px;
+  margin-bottom: 12px;
+  color: #333;
+}
+
+.parking-notice ul {
+  padding-left: 20px;
+  color: #777;
+  line-height: 1.7;
 }
 </style>

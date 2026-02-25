@@ -6,7 +6,7 @@
     }]" @mouseleave="closeMegamenu">
       <div class="header-inner">
         <div class="logo-box" @click="router.push('/')">
-          <img src="@/assets/txtlogo2.png" alt="S-HOSPITAL" class="main-logo-img">
+          <img :src="logoSrc" alt="S-HOSPITAL" class="main-logo-img">
         </div>
 
         <nav class="nav-menu">
@@ -173,15 +173,15 @@
                 </ul>
               </div>
               <div class="menu-box-item">
-                <p class="box-head">소통</p>
-                <ul>
-                  <li @click="goPage('/voc')" v-if="showVoc">고객의 소리</li>
-                </ul>
-              </div>
-              <div class="menu-box-item">
                 <p class="box-head">도움말</p>
                 <ul>
                   <li @click="goPage('/faq')">자주 묻는 질문(FAQ)</li>
+                </ul>
+              </div>
+              <div class="menu-box-item">
+                <p class="box-head" v-if="showVoc">소통</p>
+                <ul>
+                  <li @click="goPage('/voc')" v-if="showVoc">고객의 소리</li>
                 </ul>
               </div>
             </div>
@@ -193,7 +193,7 @@
     <div v-if="!isMainPage" class="breadcrumb-bar">
       <div class="breadcrumb-inner">
         <span class="home-icon" @click="router.push('/')">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
             <polyline points="9 22 9 12 15 12 15 22" />
           </svg>
@@ -292,6 +292,7 @@
         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
           <polyline points="18 15 12 9 6 15"></polyline>
         </svg>
+        <span class="btn-label">TOP</span>
       </button>
     </div>
   </div>
@@ -300,6 +301,9 @@
 <script setup>
   import { ref, onMounted, onUnmounted, watch, computed } from 'vue'
   import { useRouter, useRoute } from 'vue-router'
+
+  import logoDark from '@/assets/txtlogo2.png'  // 어두운 로고 (txtlogo2)
+  import logoLight from '@/assets/txtlogo3.png' // 밝은색 로고 (txtlogo3)
 
   const router = useRouter();
   const route = useRoute();
@@ -329,6 +333,18 @@
     activeMenu.value = '';
     isMegamenuOpen.value = false;
   };
+
+
+  // [추가] 현재 상태에 따른 로고 선택 로직
+  const logoSrc = computed(() => {
+    // 1. 메인 페이지가 아니면 무조건 어두운 로고 (흰색 배경)
+    if (!isMainPage.value) return logoDark;
+
+    // 2. 메인 페이지일 때: 스크롤 되었거나 메가메뉴가 열렸으면 흰색 배경이므로 어두운 로고
+    const isWhiteBg = (isScrolled.value && !isTransparentSection.value) || isMegamenuOpen.value;
+    
+    return isWhiteBg ? logoDark : logoLight;
+  });
 
   // 로그인 필요한 서비스 + 요청 경로로 보내주기
   const goPage = (path) => {
@@ -361,7 +377,7 @@
   }
 
   const showVoc = computed(() => {
-    // if (!isLogin.value) return false;
+    if (!isLogin.value) return false;
     if (loginInfo.value && loginInfo.value.loginType === 'MED') return false;
     return true;
   });
@@ -397,25 +413,18 @@
     {
       name: '건강정보',
       list: [
+        { name: '건강이야기', path: '/story' },
         { name: '질환백과', path: '/disease' },
-        { name: '자가진단', path: '/checkup' },
-        { name: '건강이야기', path: '/story' }
+        { name: '자가진단', path: '/checkup' }
       ]
     },
     {
       name: '고객서비스',
       list: [
+        { name: '고객의 소리', path: '/voc' },
         { name: '공지사항', path: '/notice' },
         { name: 'FAQ', path: '/faq' },
-        { name: '고객의 소리', path: '/voc' },
         { name: '차량등록', path: '/vehiregi' }
-      ]
-    },
-    {
-      name: '회원서비스',
-      list: [
-        { name: '로그인', path: '/login' },
-        { name: '회원가입', path: '/regi' }
       ]
     },
     {
@@ -526,7 +535,8 @@
   onUnmounted(() => { window.removeEventListener('scroll', handleScroll); })
 </script>
 
-<style scoped>
+<!-- <style scoped>
+
 /* =====================================================================
    [1] 공통 및 레이아웃 (Layout & Global)
    ===================================================================== */
@@ -937,10 +947,11 @@
   border-bottom: 1px solid #eee;
   padding: 20px 35px;
   margin-top: 100px;
+  padding-left: 78px;
 }
 
 .breadcrumb-inner {
-  max-width: 1550px;
+  max-width: 1880px;
   margin: 0 auto;
   padding: 0 20px;
   display: flex;
@@ -1154,4 +1165,634 @@
 .floating-aside {
   transition: opacity 0.3s;
 }
+</style> -->
+
+<style scoped>
+/* =====================================================================
+   [1] 공통 및 레이아웃 (Layout & Global)
+   ===================================================================== */
+#home-layout {
+  width: 100%;
+  font-family: 'pretendard', sans-serif !important;
+}
+
+.content-body {
+  min-height: 100vh;
+}
+
+.content-body.is-main-view {
+  padding-top: 0;
+}
+
+/* =====================================================================
+   [2] 메인 헤더 및 상태 제어 (Main Header States)
+   ===================================================================== */
+.main-header {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100px;
+  z-index: 5000;
+  background: #fff;
+  border-bottom: 1px solid #e5e5e5;
+  transition: background 0.3s, border 0.3s;
+}
+
+/* 메인 페이지 투명 헤더 상태 */
+.main-header.is-main:not(.is-scrolled) {
+  background: transparent;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.15);
+}
+
+/* 스크롤 시 또는 메뉴 오픈 시 배경색 반전 */
+.main-header:has(.megamenu-panel.active),
+.main-header.is-scrolled {
+  background-color: #ffffff;
+  border-bottom: 1px solid #e5e5e5;
+}
+
+/* 투명 헤더일 때 텍스트 컬러 (White) */
+.main-header.is-main:not(.is-scrolled):not(:has(.megamenu-panel.active)) .nav-item,
+.main-header.is-main:not(.is-scrolled):not(:has(.megamenu-panel.active)) .util-item {
+  color: #fff;
+}
+
+/* 헤더 내부 가로 정렬 컨테이너 (공주님 기준 1800px) */
+.header-inner {
+  max-width: 1800px;
+  margin: 0 auto;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 20px;
+}
+
+/* =====================================================================
+   [3] 헤더 구성 요소 (Logo, Navigation, Utility)
+   ===================================================================== */
+/* 로고 영역 */
+.logo-box {
+  flex: 0 0 240px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+}
+
+.main-logo-img {
+  height: 60px;
+  width: auto;
+  object-fit: contain;
+}
+
+/* 내비게이션 메뉴 영역 */
+.nav-menu {
+  display: flex;
+  gap: 50px;
+  justify-content: left;
+  padding-left: 40px;
+  flex: 1;
+}
+
+.nav-item {
+  font-size: 20px;
+  font-weight: 500;
+  color: #333;
+  cursor: pointer;
+  line-height: 100px;
+  transition: 0.2s;
+  white-space: nowrap;
+}
+
+.nav-item:hover {
+  color: #005baa;
+}
+
+/* 우측 유틸리티 영역 */
+.combined-util {
+  flex: 0 0 350px;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 30px;
+  padding-right: 30px;
+}
+
+.util-item {
+  font-size: 18px;
+  font-weight: 400;
+  color: #666;
+  cursor: pointer;
+}
+
+.logout-txt {
+  color: #888;
+}
+
+.user-info {
+  color: #fbb900;
+}
+
+/* =====================================================================
+   [4] 메가메뉴 패널 설정 (Megamenu Panel)
+   ===================================================================== */
+.megamenu-panel {
+  position: absolute;
+  top: 100px;
+  left: 0;
+  width: 100%;
+  background-color: #ffffff;
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.08);
+  z-index: 4900;
+}
+
+.megamenu-panel.active {
+  max-height: 350px;
+  visibility: visible;
+}
+
+/* 메가메뉴 내부 수직 정렬을 내비바에 맞춤 (1800px) */
+.megamenu-inner {
+  max-width: 1800px;
+  margin: 0 auto;
+  padding: 0 20px; /* 헤더 inner와 동일한 패딩 부여 */
+  background: #fff;
+}
+
+.special-menu-box,
+.full-menu-grid {
+  display: flex;
+  align-items: stretch;
+  min-height: 350px;
+}
+
+/* =====================================================================
+   [5] 메가메뉴 내부 서브 섹션 (Promo & Search & Icon)
+   ===================================================================== */
+/* 왼쪽 프로모션 영역 */
+.promo-small-box,
+.left-search-zone,
+.left-info-zone {
+  flex: 0 0 350px;
+  background-color: #f8f9fb;
+  padding: 0 55px;
+  border-right: 1px solid #e5e5e5;
+  text-align: left;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: flex-start;
+  gap: 2px;
+}
+
+.promo-icon-circle {
+  width: 64px;
+  height: 64px;
+  background: #fff;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 6px 15px rgba(0, 91, 170, 0.08);
+  margin-bottom: 5px;
+}
+
+.st-title {
+  font-size: 26px;
+  font-weight: 700;
+  color: #005baa;
+}
+
+.promo-small-box p b {
+  font-size: 22px;
+  color: #333;
+  display: block;
+  margin-bottom: 8px;
+}
+
+.st-desc,
+.promo-small-box p {
+  font-size: 14px;
+  color: #666;
+  line-height: 1.6;
+}
+
+.promo-go-btn {
+  margin-top: 10px;
+  padding: 10px 22px;
+  background: transparent;
+  border: 1px solid #005baa;
+  color: #005baa;
+  font-size: 14px;
+  font-weight: 700;
+  border-radius: 30px;
+  cursor: pointer;
+  transition: all 0.3s;
+  white-space: nowrap;
+}
+
+.promo-go-btn:hover {
+  background: #005baa;
+  color: #fff;
+  transform: translateX(5px);
+}
+
+.promo-small-box.sky { background-color: #f0f7ff; }
+.promo-small-box.point { background-color: #fbb8001b; }
+
+/* 오른쪽 아이콘/리스트 메뉴 영역 */
+.right-icon-zone {
+  flex: 1;
+  padding: 50px 60px;
+  display: flex;
+  gap: 80px;
+  align-items: flex-start;
+}
+
+.st-icon-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+  cursor: pointer;
+  transition: 0.3s;
+}
+
+.circle-icon {
+  width: 120px;
+  height: 120px;
+  background-color: #f2f2f2;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #333;
+  transition: 0.3s;
+}
+
+.st-icon-item:hover .circle-icon {
+  border-color: #005baa;
+  background-color: #fff;
+  box-shadow: 0 10px 20px rgba(0, 91, 170, 0.1);
+}
+
+.icon-txt .main-t {
+  font-size: 20px;
+  font-weight: 700;
+  color: #333;
+}
+
+.st-icon-item:hover .main-t {
+  color: #005baa;
+}
+
+.right-list-zone {
+  display: flex;
+  align-items: flex-start;
+}
+
+.menu-box-item {
+  flex: 0 0 300px;
+  display: flex;
+  flex-direction: column;
+  padding: 50px 40px;
+}
+
+.box-head {
+  font-size: 20px;
+  font-weight: 800;
+  color: #333;
+  margin-bottom: 15px;
+  padding-bottom: 10px;
+  border-bottom: 2px solid #333;
+  text-align: left;
+}
+
+.menu-box-item li {
+  font-size: 18px;
+  color: #555;
+  margin-bottom: 14px;
+  cursor: pointer;
+  list-style: none; /* 점 제거 */
+  text-align: left;
+  transition: 0.2s;
+}
+
+.menu-box-item li:hover {
+  color: #005baa;
+  text-decoration: underline;
+  font-weight: 600;
+}
+
+/* 검색바 및 예약 카드 관련 */
+.st-search-bar {
+  display: flex;
+  height: 50px;
+  border: 1px solid #005baa;
+  overflow: hidden;
+  width: 100%;
+  margin-top: 15px;
+}
+
+.st-search-bar input {
+  flex: 1;
+  border: none;
+  padding: 0 15px;
+  outline: none;
+  font-size: 16px;
+}
+
+.st-search-bar button {
+  background: #005baa;
+  color: #fff;
+  border: none;
+  padding: 0 25px;
+  font-weight: 700;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.reserve-guide-card {
+  background: #fff;
+  border: 1px solid #e5e5e5;
+  padding: 35px 30px;
+  margin-top: 20px;
+}
+
+.guide-tag {
+  font-size: 14px;
+  font-weight: 700;
+  color: #005baa;
+  letter-spacing: 1px;
+  margin-bottom: 20px;
+}
+
+.call-center-box .number {
+  font-size: 30px;
+  font-weight: 800;
+  color: #333;
+  line-height: 1;
+}
+
+.primary-rect-btn {
+  width: 100%;
+  height: 55px;
+  background: #005baa;
+  color: #fff;
+  border: none;
+  font-size: 18px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: 0.3s;
+  margin-top: 15px;
+}
+
+.primary-rect-btn:hover {
+  background-color: #004a8a;
+  box-shadow: 0 5px 15px rgba(0, 91, 170, 0.2);
+}
+
+/* =====================================================================
+   [6] 브레드크럼 바 (Breadcrumb Section) 이미지 대응 정렬
+   ===================================================================== */
+.breadcrumb-bar {
+  width: 100%;
+  background-color: #f9f9f9;
+  border-bottom: 1px solid #eee;
+  padding: 20px 0; /* 상하 패딩만 남기고 좌측 강제 패딩 제거 */
+  margin-top: 100px;
+  /* padding-left: 78px; */ /* 정렬을 방해하므로 주석 처리 */
+}
+
+.breadcrumb-inner {
+  max-width: 1800px; /* 헤더 내비바와 동일하게 1800px로 수정 */
+  margin: 0 auto;
+  padding: 0 20px; /* 헤더와 동일한 패딩 부여 */
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 17px;
+  color: #666;
+}
+
+.home-icon,
+.divider {
+  color: #999;
+  cursor: pointer;
+}
+
+/* 브레드크럼 드롭다운 및 리스트 기강 잡기 (이미지 4번 대응) */
+.crumb-dropdown {
+  position: relative;
+  cursor: pointer;
+}
+
+.current-select {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  color: #444;
+}
+
+.current-select.active {
+  font-weight: 700;
+  color: #005baa;
+}
+
+.dropdown-list {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  background: #fff;
+  border: 1px solid #ddd;
+  min-width: 160px;
+  z-index: 6000;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+  list-style: none; /* 불필요한 점(Bullet) 제거 */
+  padding: 10px 0;
+  margin: 0;
+}
+
+.dropdown-list li {
+  padding: 10px 20px;
+  font-size: 15px;
+  color: #555;
+  transition: 0.2s;
+  list-style: none; /* 이중 방어 */
+}
+
+.dropdown-list li:hover {
+  background-color: #f5f8ff;
+  color: #005baa;
+}
+
+.dropdown-list li.on {
+  font-weight: 700;
+  color: #005baa;
+}
+
+/* =====================================================================
+   [7] 메인 푸터 (Footer)
+   ===================================================================== */
+.main-footer {
+  width: 100%;
+  background-color: #f8f8f8;
+  padding: 40px 0;
+  border-top: 1px solid #eee;
+  font-family: 'pretendard', sans-serif;
+}
+
+.footer-inner {
+  max-width: 1500px; /* 푸터는 조금 좁은 것이 안정적 (원하시면 1800으로 변경 가능) */
+  margin: 0 auto;
+  padding: 0 40px;
+  text-align: left;
+}
+
+.f-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 9px;
+}
+
+.f-logo-img {
+  filter: grayscale(1);
+  height: 50px;
+  width: auto;
+  object-fit: contain;
+  opacity: 0.5;
+  transition: 0.3s;
+}
+
+.f-logo-img:hover {
+  filter: grayscale(0);
+  opacity: 1;
+}
+
+.f-links {
+  font-size: 17px;
+  color: #666;
+  display: flex;
+  gap: 15px;
+}
+
+.f-links .bold {
+  font-weight: 700;
+  color: #005baa;
+}
+
+.f-info-text {
+  font-size: 15px;
+  color: #888;
+  line-height: 1.2;
+}
+
+.f-sns-side {
+  display: flex;
+  gap: 10px;
+}
+
+.sns-link {
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #fff;
+  border: 1px solid #eee;
+  border-radius: 50%;
+  color: #777;
+  transition: 0.3s;
+}
+
+.sns-link:hover {
+  background-color: #005baa;
+  color: #fff;
+  border-color: #005baa;
+  transform: translateY(-3px);
+}
+
+.f-bottom-info {
+  display: flex;
+  justify-content: flex-start;
+  font-size: 15px;
+  color: #888;
+  line-height: 1.2;
+  margin-bottom: 30px;
+}
+
+.blue-txt {
+  color: #005baa;
+  font-weight: 800;
+}
+
+.footer-copyright {
+  font-size: 13px;
+  color: #bbb;
+  border-top: 1px solid #f2f2f2;
+  padding-top: 20px;
+}
+
+.bar {
+  margin: 0 5px;
+  color: #ddd;
+}
+
+/* =====================================================================
+   [8] 플로팅 버튼 및 탑 버튼 (Floating Aside)
+   ===================================================================== */
+.floating-aside {
+  position: fixed;
+  right: 40px;
+  bottom: 50px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  z-index: 99999;
+}
+
+.float-btn {
+  width: 68px;
+  height: 68px;
+  border-radius: 50%;
+  border: none;
+  background: #fff;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
+  color: #555;
+}
+
+.float-btn:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+}
+
+.car-regi {
+  background: #005baa;
+  color: #fff;
+}
+
+.btn-label {
+  font-size: 13px;
+  font-weight: 600;
+  margin-top: 2px;
+}
+
+.top-move {
+  background: #333;
+  color: #fff;
+}
+
+/* 중복 선언 주석 처리 */
+/* .floating-aside { transition: opacity 0.3s; } */
 </style>

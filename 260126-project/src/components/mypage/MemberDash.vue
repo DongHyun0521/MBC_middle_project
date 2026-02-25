@@ -24,7 +24,7 @@
                 </div>
             </section>
 
-            <section class="dash-card">
+            <!-- <section class="dash-card">
                 <div class="card-head">
                     <h3>나의 병원 예약</h3>
                 </div>
@@ -33,6 +33,30 @@
                     <p class="res-time-txt">{{ upcomingRes.reservation_time }}</p>
                     <p class="res-doc-txt">{{ upcomingRes.med_dept_name }} | {{ upcomingRes.doctor_name }} 의사</p>
                 </div>
+                <div v-else class="empty-res">예정된 예약이 없습니다</div>
+            </section> -->
+            <section class="dash-card clickable-card" @click="goToList">
+                <div class="card-head">
+                    <h3>나의 병원 예약</h3>
+                    <span class="more-view">더보기 +</span>
+                </div>
+
+                <div v-if="upcomingResList.length > 0">
+                    <div class="res-highlight main-res">
+                        <span class="d-day">D-{{ calculateDday(upcomingRes.reservation_date) }}</span>
+                        <p class="res-time-txt">{{ formatDate(upcomingRes.reservation_time) }}</p>
+                        <p class="res-doc-txt">{{ upcomingRes.med_dept_name }} | {{ upcomingRes.doctor_name }} 의사</p>
+                    </div>
+
+                    <div v-if="upcomingResList.length > 1" class="sub-res-list">
+                        <div v-for="(res, idx) in upcomingResList.slice(1)" :key="res.reservation_id"
+                            class="sub-res-item">
+                            <span class="sub-time">{{ formatDate(res.reservation_time) }}</span>
+                            <span class="sub-info">{{ res.med_dept_name }} ({{ res.doctor_name }})</span>
+                        </div>
+                    </div>
+                </div>
+
                 <div v-else class="empty-res">예정된 예약이 없습니다</div>
             </section>
         </div>
@@ -61,7 +85,7 @@
                         <tr v-for="res in filteredMyReservations" :key="res.reservation_id">
                             <td class="bold-blue">{{ res.med_dept_name }}</td>
                             <td class="bold-blue">{{ res.doctor_name }}</td>
-                            <td>{{ (res.reservation_time) }}</td>
+                            <td>{{ formatDate(res.reservation_time) }}</td>
                             <td>
                                 <span :class="['status-badge',
                                     res.reservation_status === '예약' ? 'active' :
@@ -92,7 +116,7 @@
 // onMounted: 화면(DOM)이 그려지자마자 이것 먼저 실행하라고 시키는 시작 버튼이며, 주로 서버에서 데이터를 처음 가져올 때 사용
 // computed: 결과값을 캐싱(저장)해둬서 똑같은 계산을 반복 안 함. 연결된 데이터가 바뀔 때만 다시 계산해서 효율적
 
-import { ref, onMounted, computed } from 'vue'
+import { ref, onMounted, computed, defineEmits } from 'vue'
 import { getMyResReq, cancelResReq } from '@/api/reservation'
 
 // Props 정의: 부모 컴포넌트(MyPage.vue)에서 넘겨받는 데이터
@@ -101,16 +125,39 @@ const props = defineProps({
     currentView: String     // 현재 클릭한 메뉴 탭 이름
 })
 
+// 부모(MyPage.vue)의 탭 상태를 바꾸기 위한 통로 개설
+const emit = defineEmits(['changeView'])
+
 // 서버에서 받아온 전체 예약 리스트
 const myReservations = ref([])
 // 현재 사용자가 선택한 필터 상태 (기본값: 전체)
 const resFilter = ref('전체')
 
 // ======================================= 가공 데이터 로직 (Computed) =======================================
+// 추가
+// 예약 리스트를 '진짜 빠른 시간순'으로 정렬하고 최대 3개까지 추출
+const upcomingResList = computed(() => {
+    return [...myReservations.value] // 원본 복사
+        .filter(r => r.reservation_status === '예약')
+        .sort((a, b) => {
+            // 날짜(YYYYMMDD)와 시간(HH:mm)을 합쳐서 비교 (예: "202602230900" < "202602231000")
+            const timeA = String(a.reservation_date) + String(a.reservation_time || '00:00').replace(':', '')
+            const timeB = String(b.reservation_date) + String(b.reservation_time || '00:00').replace(':', '')
+            return timeA.localeCompare(timeB) // 오름차순 정렬 (빠른 시간 우선) 
+        })
+        .slice(0, 3) // 상위 3개만 자르기
+})
+
+// D-Day 계산용 (정렬된 리스트의 0번이 무조건 가장 빠른 예약!)
+const upcomingRes = computed(() => upcomingResList.value[0])
+
+// 탭 이동 함수
+const goToList = () => emit('changeView', 'res');  // 목록으로 가기
+
 // [예약 요약] 전체 목록 중 상태가 '예약'인 것들 중 가장 빠른 것 하나 찾기
-const upcomingRes = computed(() =>
-    myReservations.value.find(r => r.reservation_status === '예약')
-)
+// const upcomingRes = computed(() =>
+//     myReservations.value.find(r => r.reservation_status === '예약')
+// )
 
 // [목록 필터링] 사용자가 선택한 탭(resFilter)에 맞는 데이터만 걸러내기
 const filteredMyReservations = computed(() => {
@@ -137,6 +184,7 @@ const formatPhone = (phone) => {
 }
 
 // [날짜] 날짜 형식 '20260222' -> '2026년 02월 22일' 형태로 변환
+/*
 const formatDate = (date) => {
     if (!date) {
         return '-'
@@ -151,7 +199,36 @@ const formatDate = (date) => {
         const dd = d.getDate() < 10 ? `0${d.getDate()}` : d.getDate()
         return `${d.getFullYear()}년 ${mm}월 ${dd}일`
     } catch (e) { return s }
-}
+} */
+// [MemberDash.vue] <script setup> 내 수정
+const formatDate = (date) => {
+    if (!date) return '-';
+    const s = String(date); 
+
+    // 1. 생년월일(19900101)처럼 원래 시간이 없는 8자리 데이터 처리
+    if (s.length === 8 && !s.includes('-') && !s.includes(':')) {
+        return `${s.substring(0, 4)}년 ${s.substring(4, 6)}월 ${s.substring(6, 8)}일`;
+    }
+    try {
+        const d = new Date(date);
+        if (isNaN(d.getTime())) return s;
+
+        const f = (n) => String(n).padStart(2, '0');
+        const year = d.getFullYear();
+        const mm = f(d.getMonth() + 1);
+        const dd = f(d.getDate());
+        const hh = f(d.getHours());
+        const min = f(d.getMinutes());
+
+        // 시간이 00:00이면 날짜만, 아니면 시간까지 "딱 한 번만" 리턴
+        if (hh === '00' && min === '00') {
+            return `${year}년 ${mm}월 ${dd}일`;
+        }
+        return `${year}년 ${mm}월 ${dd}일 ${hh}:${min}`;
+    } catch (e) {
+        return s;
+    }
+};
 
 // [D-Day] 예약 날짜와 오늘 날짜의 차이를 계산 (밀리초 단위 계산 후 일 단위로 변환)
 const calculateDday = (dateStr) => {
@@ -325,15 +402,16 @@ onMounted(() => {
 .status-badge {
     width: 80px;
     height: 34px;
-    
+
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    
+
     font-size: 14px;
     font-weight: 700;
     text-align: center;
-    white-space: nowrap; /* 글자가 줄바꿈되지 않게 방지 */
+    white-space: nowrap;
+    /* 글자가 줄바꿈되지 않게 방지 */
 }
 
 .status-badge.active {
@@ -355,8 +433,6 @@ onMounted(() => {
     background: #f5f5f5;
     color: #616161;
 }
-
-
 
 /*  정보 요약 및 기타 유틸리티 */
 .info-list .info-item {
@@ -422,4 +498,41 @@ onMounted(() => {
     font-size: 20px;
     padding: 8px;
 }
+
+/* 추가(내 예약 내역-대시보드) */
+.clickable-card {
+    cursor: pointer;
+    transition: all 0.2s ease-in-out;
+}
+.clickable-card:hover {
+    border-color: #005baa;
+    transform: translateY(-5px);
+}
+
+.more-view {
+    font-size: 18px;
+    color: #888;
+    font-weight: 700;
+}
+
+/* 서브 리스트 스타일 */
+.sub-res-list {
+    margin-top: 15px;
+    padding-top: 15px;
+    border-top: 1px dashed #d1e6ff;
+}
+
+.sub-res-item {
+    display: flex;
+    justify-content: space-between;
+    padding: 10px 15px;
+    background: #f8f9fa;
+    border-radius: 8px;
+    margin-bottom: 5px;
+    font-size: 15px;
+    font-weight: 600;
+}
+
+.sub-time { color: #005baa; }
+.sub-info { color: #555; }
 </style>

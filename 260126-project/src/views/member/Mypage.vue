@@ -83,10 +83,10 @@
 
       <div class="dash-content-body">
         <template v-if="currentView !== 'vehi' && currentView !== 'edit'">
-          <MemberDash v-if="userType === 'MEMBER'" :userInfo="userInfo" :currentView="currentView" />
-          <DoctorDash v-else-if="isDoctor" :userInfo="userInfo" :currentView="currentView" />
-          <NurseDash v-else-if="isNurse" :userInfo="userInfo" :currentView="currentView" />
-          <AdminDash v-else-if="userType === 'ADMIN'" :userInfo="userInfo" :currentView="currentView" />
+          <MemberDash v-if="userType === 'MEMBER'" :userInfo="userInfo" :currentView="currentView" @changeView="(val) => currentView = val"/>
+          <DoctorDash v-else-if="isDoctor" :userInfo="userInfo" :currentView="currentView" @changeView="(val) => currentView = val"/>
+          <NurseDash v-else-if="isNurse" :userInfo="userInfo" :currentView="currentView" @changeView="(val) => currentView = val"/>
+          <AdminDash v-else-if="userType === 'ADMIN'" :userInfo="userInfo" :currentView="currentView" @changeView="(val) => currentView = val"/>
         </template>
       </div>
 
@@ -378,6 +378,7 @@
                 <option value="휘발유">휘발유</option>
                 <option value="경유">경유</option>
                 <option value="LPG">LPG</option>
+                <option value="전기차">전기차</option>
               </select>
             </div>
 

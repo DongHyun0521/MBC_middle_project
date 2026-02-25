@@ -9,6 +9,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.mbc.mid.dao.ParkingLogDao;
 import com.mbc.mid.dao.PaymentDao;
+import com.mbc.mid.dto.ParkingLogDto;
 import com.mbc.mid.dto.PaymentDto;
 
 @Service
@@ -20,11 +21,16 @@ public class PaymentService {
     
     @Autowired
     private ParkingLogDao parkingLogDao;
+    
+    @Autowired
+    private ParkingSpotService parkingSpotService;
 
     // 결제 정보 저장
     public void processPayment(PaymentDto paymentDto) {
     	System.out.println("=> PaymentService: processPayment | "+ new Date());
         paymentDao.insertPayment(paymentDto);
         parkingLogDao.updatePaymentStatus(paymentDto.getParkingLogId());
+        ParkingLogDto log = parkingLogDao.findById(paymentDto.getParkingLogId().intValue());
+        if (log != null) parkingSpotService.processExit(log.getVehicleNum());
     }
 }

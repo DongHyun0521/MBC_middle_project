@@ -280,7 +280,7 @@ onUnmounted(() => { stopSlide() })
 /* 평소 보이는 제목 */
 .base-content h4 {
     font-family: 'pretendard';
-    font-size: 28px;
+    font-size: 30px;
     font-weight: 700;
     margin: 0;
     text-align: center;
@@ -289,13 +289,13 @@ onUnmounted(() => { stopSlide() })
 /* 숨겨져 있다가 나타나는 내용물 */
 .hover-content {
     font-family: 'pretendard';
-    margin-top: 30px;
+    margin-top: 20px;
     text-align: center;
     opacity: 0;
     /* 평소엔 투명 */
     transition: opacity 0.3s 0.1s;
     /* 높이가 커진 후 나타나도록 0.1초 딜레이 */
-    font-size: 18px;
+    font-size: 20px;
     font-weight: 300;
 }
 

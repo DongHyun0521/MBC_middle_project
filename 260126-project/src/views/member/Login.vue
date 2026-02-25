@@ -4,7 +4,7 @@
       <div class="portal-info-panel">
         <div class="brand-area">
           <img src="@/assets/txtlogo2.png" alt="S-HOSPITAL" class="brand-logo">
-          </div>
+        </div>
 
         <div v-if="mainTab === 'member'" class="service-intro transition-box">
           <p class="intro-main">안전하고 편리한<br>환자 맞춤형 서비스</p>
@@ -131,7 +131,7 @@ import { ref, onMounted, computed } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
 import { useCookies } from 'vue3-cookies';
 // API 파일 가져오기 (로그인, 아이디 찾기, 전체 의료진 목록 조회)
-import { loginReq, loginMedReq, loginAdminReq, findIdReq } from '@/api/member.js';
+import { loginReq, loginMedReq, loginAdminReq, findIdReq, getAdminMyInfoReq } from '@/api/member.js';
 import { getAllDoctorsReq } from '@/api/reservation.js';
 
 // =========================================
@@ -182,11 +182,19 @@ const handleStyle = computed(() => {
 // 메인 탭 변경 (환자 <-> 관계자)
 const setMainTab = (type) => {
   mainTab.value = type;
-  // 탭 바꿀 때 입력값 초기화 (사용자 혼동 방지)
-  user.value.id = '';
+  
   user.value.password = '';
-  // 관계자 탭으로 가면 기본값을 '의료진'으로 설정
-  if (type === 'hospital') hospitalType.value = 'med';
+
+  // 아이디 처리
+  const savedCookie = cookies.get('userId'); // 쿠키에서 저장된 아이디 확인
+  
+  if (saveId.value && savedCookie) {
+    // 아이디 저장이 체크되어 있고 저장된 쿠키가 있다면, 지우지 말고 다시 채워줌
+    user.value.id = savedCookie;
+  } else {
+    // 그게 아니라면(아이디 저장을 안 썼다면) 원래대로 비워줌
+    user.value.id = '';
+  }
 };
 
 // 회원가입 페이지로 이동 (쿼리로 타입 전달)
@@ -202,8 +210,8 @@ const handleSaveIdChange = () => {
 };
 
 // 아이디 입력 시 소문자/숫자만 남기기 (자동 보정)
-const checkID = () => { 
-  user.value.id = user.value.id.toLowerCase().replace(/[^a-z0-9]/g, ''); 
+const checkID = () => {
+  user.value.id = user.value.id.toLowerCase().replace(/[^a-z0-9]/g, '');
 };
 
 
@@ -213,8 +221,8 @@ const checkID = () => {
 
 // 아이디 찾기 요청
 const handleFindId = async () => {
-  if (!findUser.value.name || !findUser.value.email) { 
-    alert("정보를 입력해 주세요"); return; 
+  if (!findUser.value.name || !findUser.value.email) {
+    alert("정보를 입력해 주세요"); return;
   }
   try {
     const res = await findIdReq(findUser.value);
@@ -224,122 +232,111 @@ const handleFindId = async () => {
 };
 
 // 모달 닫기 및 초기화
-const closeFindIdModal = () => { 
-  isFindIdModalOpen.value = false; 
-  foundId.value = ""; 
+const closeFindIdModal = () => {
+  isFindIdModalOpen.value = false;
+  foundId.value = "";
 };
 
 // 찾은 아이디 복사해서 로그인 입력창에 넣기
-const copyAndLogin = () => { 
-  user.value.id = foundId.value; 
-  closeFindIdModal(); 
+const copyAndLogin = () => {
+  user.value.id = foundId.value;
+  closeFindIdModal();
 };
 
 
 // =========================================
 // 5. 로그인 핵심 로직 (서버 통신)
 // =========================================
+// [Login.vue] handleLogin 함수 수정
 const handleLogin = async () => {
-  // 1. 유효성 검사
-  if (!user.value.id || !user.value.password) { 
-    alert('아이디와 비밀번호를 입력해 주십시오'); return; 
+  if (!user.value.id || !user.value.password) {
+    alert('아이디와 비밀번호를 입력해 주십시오'); return;
   }
 
   try {
     let res;
     const payload = { id: user.value.id, password: user.value.password };
 
-    // 2. 탭에 따라 다른 로그인 API 호출
+    // 1. 로그인 API 호출
     if (mainTab.value === 'member') {
-      res = await loginReq(payload); // 일반 회원 로그인
+      res = await loginReq(payload);
     } else {
-      if (hospitalType.value === 'med') res = await loginMedReq(payload); // 의료진 로그인
-      else res = await loginAdminReq(payload); // 행정직 로그인
+      if (hospitalType.value === 'med') res = await loginMedReq(payload);
+      else res = await loginAdminReq(payload);
     }
 
-    // 3. 로그인 실패 처리
     if (!res.data || res.data === "") {
       alert("아이디 또는 비밀번호가 일치하지 않습니다.");
       return;
     }
 
-    const loginData = { ...res.data }; // 로그인 성공 데이터 복사
+    const loginData = { ...res.data };
+    let userRole = 'MEMBER';
 
-    // 4. [신원 확인] 전체 의료진 명단에서 이 사람이 있는지 조회
+    // 2. 의료진 여부 확인
     let isMedicalStaff = false;
     let myStaffInfo = null;
-
     try {
-      const staffRes = await getAllDoctorsReq(); // 전체 의사 목록 가져오기
-      const allStaff = staffRes.data;
-      // 입력한 ID와 일치하는 의사 정보 찾기
-      myStaffInfo = allStaff.find(s => s.user_id === user.value.id);
+      const staffRes = await getAllDoctorsReq();
+      myStaffInfo = staffRes.data.find(s => s.user_id === user.value.id);
       if (myStaffInfo) isMedicalStaff = true;
-    } catch (e) {
-      console.error("명단 조회 실패", e);
-    }
+    } catch (e) { console.error("명단 조회 실패", e); }
 
-    // 5. [상호 차단 로직] 탭을 잘못 선택했는지 검사
-    
-    // (A) '일반회원' 탭인데 의료진이 로그인하려고 하면?
+    // 3. 상호 차단 및 역할 설정 (B-2 구간 수정)
     if (mainTab.value === 'member') {
       if (isMedicalStaff) {
         alert("병원 관계자입니다. 관계자 로그인 탭을 이용해 주세요.");
         return;
       }
-    }
-
-    // (B) '병원 관계자' 탭인데...
-    if (mainTab.value === 'hospital') {
-      // (B-1) '의료진'을 선택했는데 의료진이 아니면?
+    } else if (mainTab.value === 'hospital') {
       if (hospitalType.value === 'med') {
         if (!isMedicalStaff) {
-          alert("등록된 의료진 정보가 없습니다. 일반회원 또는 행정직 로그인을 이용해 주세요.");
+          alert("등록된 의료진 정보가 없습니다.");
           return;
         }
-      }
-      // (B-2) '행정직'을 선택했는데 의료진이면?
-      else if (hospitalType.value === 'admin') {
-        if (isMedicalStaff) {
-          alert("의료진입니다. 의료진 항목을 선택해 주세요.");
-          return;
-        }
-      }
-    }
-
-    // 6. [데이터 주입] 로그인 성공 후 세션에 저장할 추가 정보 세팅
-    let userRole = 'MEMBER';
-
-    if (mainTab.value === 'hospital') {
-      if (hospitalType.value === 'med') {
-        userRole = 'MED'; // 의료진 권한
-        // 의사 정보(과 이름, 직원 번호 등) 추가 저장
+        userRole = 'MED';
         loginData.role = myStaffInfo.role;
         loginData.deptName = myStaffInfo.med_dept_name;
         loginData.medStaffId = myStaffInfo.staff_id;
       } else {
-        userRole = 'ADMIN'; // 행정직 권한
+        if (isMedicalStaff) {
+          alert("의료진입니다. 의료진 항목을 선택해 주세요.");
+          return;
+        }
+        userRole = 'ADMIN';
         loginData.role = '행정직';
+
+        try {
+          const adminExtraRes = await getAdminMyInfoReq();
+
+          if (adminExtraRes.data) {
+            // 서버의 /admin/my-info에서 준 값들로 싹 갈아치웁니다.
+            loginData.adminDeptName = adminExtraRes.data.deptName; // "홍보팀" 등 진짜 이름
+            loginData.isWonmu = adminExtraRes.data.isWonmu;      // true/false
+            loginData.isPr = adminExtraRes.data.isPr;            // true/false
+          }
+        } catch (e) {
+          console.error("행정 상세 정보 로드 실패", e);
+          loginData.adminDeptName = '행정지원팀'; // 실패 시 기본값
+        }
+
+        console.log("데이터:", loginData);
       }
-    } else {
-      userRole = 'MEMBER'; // 일반 회원 권한
     }
 
-    // 최종 데이터 세션 스토리지에 저장
+    // 4. 최종 데이터 세션 저장
     loginData.loginType = userRole;
     sessionStorage.setItem('loginId', JSON.stringify(loginData));
 
-    // 7. 후처리 (환영 메시지, 아이디 저장, 페이지 이동)
     alert(`${loginData.name}님 환영합니다.`);
+    if (saveId.value) cookies.set("userId", user.value.id, '7d');
+    else cookies.remove("userId");
 
-    if (saveId.value) cookies.set("userId", user.value.id, '7d'); // 쿠키 저장 (7일)
-    else cookies.remove("userId"); // 쿠키 삭제
-
-    router.push(route.query.redirect || "/"); // 원래 가려던 페이지로 이동
+    router.push(route.query.redirect || "/");
 
   } catch (err) {
     console.error(err);
-    alert('로그인 처리 중 시스템 오류가 발생했습니다.');
+    alert('로그인 처리 중 오류가 발생했습니다.');
   }
 };
 
@@ -350,9 +347,9 @@ const handleLogin = async () => {
 onMounted(() => {
   // 저장된 아이디(쿠키)가 있으면 불러와서 채워넣기
   const savedCookie = cookies.get('userId');
-  if (savedCookie) { 
-    user.value.id = savedCookie; 
-    saveId.value = true; 
+  if (savedCookie) {
+    user.value.id = savedCookie;
+    saveId.value = true;
   }
 });
 </script>
@@ -360,7 +357,8 @@ onMounted(() => {
 <style scoped>
 input::-ms-reveal,
 input::-ms-clear {
-  display: none !important; /* MS Edge/IE 전용 눈 아이콘 제거 */
+  display: none !important;
+  /* MS Edge/IE 전용 눈 아이콘 제거 */
 }
 
 /* 크롬/사파리 등 자동완성 아이콘 방어 (깔끔함 유지) */
@@ -662,7 +660,8 @@ input:focus {
   font-weight: 600;
   font-size: 18px;
   text-decoration: none;
-  border-bottom: 1px solid transparent; /* 밑줄 호버 효과용 */
+  border-bottom: 1px solid transparent;
+  /* 밑줄 호버 효과용 */
   transition: border-bottom 0.3s;
 }
 

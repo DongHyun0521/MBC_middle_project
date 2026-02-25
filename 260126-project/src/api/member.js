@@ -77,4 +77,10 @@ export const getAdminDeptsReq = () => {
   return url.get('/admin/dept/list'); 
 }
 
+// 12. 행정직 상세 권한 정보 조회 (세션 기반)
+// 백엔드 AdminController의 /admin/my-info 주소를 호출
+export const getAdminMyInfoReq = () => {
+    return url.get('/admin/my-info');
+}
+
 export default url;

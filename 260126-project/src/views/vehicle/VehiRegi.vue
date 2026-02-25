@@ -40,7 +40,7 @@
         <div class="input-section">
           <label>유종 선택</label>
           <div class="fuel-grid">
-            <label v-for="fuel in ['휘발유', '경유', 'LPG']" :key="fuel" class="fuel-tile">
+            <label v-for="fuel in ['휘발유', '경유', 'LPG', '전기차']" :key="fuel" class="fuel-tile">
               <input type="radio" :value="fuel" v-model="vehi.fuelType" class="hide-radio" />
               <span class="fuel-txt">{{ fuel }}</span>
             </label>
@@ -163,6 +163,7 @@ const handleVehiRegi = async () => {
 
 <style scoped>
 .vehi-regi-wrap {
+  font-family: 'Pretendard', -apple-system, sans-serif !important;
   display: flex;
   justify-content: center;
   align-items: center;
@@ -173,7 +174,7 @@ const handleVehiRegi = async () => {
 
 .regi-card {
   width: 100%;
-  max-width: 550px;
+  max-width: 600px;
   background: #fff;
   padding: 60px 50px;
   border-radius: 4px;
@@ -187,21 +188,21 @@ const handleVehiRegi = async () => {
 }
 
 .regi-header h2 {
-  font-size: 28px;
+  font-size: 40px;
   color: #404347;
   margin-bottom: 12px;
   font-weight: 700;
 }
 
 .title-bar {
-  width: 40px;
+  width: 120px;
   height: 3px;
   background: #005baa;
   margin: 0 auto 20px;
 }
 
 .regi-desc {
-  font-size: 15px;
+  font-size: 18px;
   color: #888;
   font-weight: 300;
 }
@@ -214,7 +215,7 @@ const handleVehiRegi = async () => {
 
 .input-section label {
   display: block;
-  font-size: 14px;
+  font-size: 18px;
   font-weight: 600;
   color: #4e4e4e;
   margin-bottom: 12px;
@@ -225,7 +226,6 @@ const handleVehiRegi = async () => {
   width: 100%;
   padding: 15px;
   border: 1px solid #ddd;
-  border-radius: 4px;
   font-size: 15px;
   background: #f9f9f9;
   transition: 0.3s;
@@ -250,16 +250,19 @@ const handleVehiRegi = async () => {
   justify-content: center;
   align-items: center;
   border: 1px solid #ddd;
-  border-radius: 4px;
   background: #f9f9f9;
   cursor: pointer;
   transition: 0.2s;
+  text-align: center;
 }
 
 .fuel-txt {
-  font-size: 14px;
+  margin-top: 13px;
+  font-family: 'pretendard';
+  font-size: 16.5px;
   color: #666;
   font-weight: 500;
+  display: inline-block;
 }
 
 .hide-radio {
@@ -294,13 +297,13 @@ const handleVehiRegi = async () => {
 
 /* 등록 버튼 */
 .regi-submit-btn {
+  font-family: 'pretendard';
   width: 100%;
   padding: 18px;
   background: #005baa;
   color: #fff;
   border: none;
-  border-radius: 4px;
-  font-size: 17px;
+  font-size: 20px;
   font-weight: 600;
   cursor: pointer;
   transition: 0.3s;
@@ -318,3 +321,4 @@ const handleVehiRegi = async () => {
   cursor: not-allowed;
 }
 </style>
+

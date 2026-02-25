@@ -24,33 +24,46 @@
                 </div>
             </section>
 
-            <section class="dash-card">
+            <section class="dash-card clickable-card" @click="handleNavByDept">
                 <div class="card-head">
-                    <h3>긴급 업무 현황</h3>
+                    <h3>업무 현황</h3>
+                    <span class="more-view">바로가기 →</span>
                 </div>
                 <div class="stat-grid">
-                    <div v-if="userInfo.isWonmu" class="stat-box red" @click="currentView = 'admin_voc'">
+                    <div v-if="userInfo.isWonmu" class="stat-box red" @click="goToView('admin_voc')">
                         <span>{{vocList.filter(v => !v.answerStatus).length}}건</span><br>VOC 미답변
                     </div>
-                    <div v-if="userInfo.adminDeptName === '홍보팀'" class="stat-box blue"
-                        @click="currentView = 'admin_event'">
+                    <div v-if="userInfo.adminDeptName === '홍보팀'" class="stat-box blue" @click="goToView('admin_event')">
                         <span>{{ hospitalEvents.length }}건</span><br>이달의 행사
                     </div>
-                    <div class="stat-box" @click="currentView = 'admin_todo'">
+                    <div class="stat-box" @click="goToView('admin_todo')">
                         <span>{{todoList.filter(t => !t.done).length}}건</span><br>미완료 업무
                     </div>
                 </div>
             </section>
 
-            <section class="dash-card">
+            <section class="dash-card clickable-card" @click="goToList">
                 <div class="card-head">
                     <h3>나의 병원 예약</h3>
+                    <span class="more-view">더보기 +</span>
                 </div>
-                <div v-if="upcomingRes" class="res-highlight">
-                    <span class="d-day">D-{{ calculateDday(upcomingRes.reservation_date) }}</span>
-                    <p class="res-time-txt">{{ upcomingRes.reservation_time }}</p>
-                    <p class="res-doc-txt">{{ upcomingRes.med_dept_name }} | {{ upcomingRes.doctor_name }} 의사</p>
+
+                <div v-if="upcomingResList.length > 0">
+                    <div class="res-highlight main-res">
+                        <span class="d-day">D-{{ calculateDday(upcomingRes.reservation_date) }}</span>
+                        <p class="res-time-txt">{{ formatDate(upcomingRes.reservation_time) }}</p>
+                        <p class="res-doc-txt">{{ upcomingRes.med_dept_name }} | {{ upcomingRes.doctor_name }} 의사</p>
+                    </div>
+
+                    <div v-if="upcomingResList.length > 1" class="sub-res-list">
+                        <div v-for="(res, idx) in upcomingResList.slice(1)" :key="res.reservation_id"
+                            class="sub-res-item">
+                            <span class="sub-time">{{ formatDate(res.reservation_time) }}</span>
+                            <span class="sub-info">{{ res.med_dept_name }} ({{ res.doctor_name }})</span>
+                        </div>
+                    </div>
                 </div>
+
                 <div v-else class="empty-res">예정된 예약이 없습니다</div>
             </section>
         </div>
@@ -138,7 +151,7 @@
                     </div>
                     <div class="cal-grid">
                         <div v-for="day in ['일', '월', '화', '수', '목', '금', '토']" :key="day" class="cal-day-head">{{ day
-                        }}</div>
+                            }}</div>
                         <div v-for="(date, idx) in calendarDays" :key="idx"
                             :class="['cal-cell', { 'diff-month': !date.isCurrentMonth }]">
                             <span class="day-num">{{ date.day }}</span>
@@ -156,8 +169,11 @@
 
         <div v-if="currentView === 'admin_voc'" class="view-section">
             <div class="section-card">
-                <div class="card-head">
+                <div class="card-head voc-header-wrap">
                     <h3>VOC 관리</h3>
+                    <button class="btn-action-small blue-btn" @click="goToVocMain">
+                        답변 등록 →
+                    </button>
                     <div class="filter-tabs">
                         <button v-for="f in ['전체', '미답변', '답변완료', '휴지통']" :key="f"
                             :class="['filter-btn', { active: vocFilter === f }]" @click="vocFilter = f">{{ f }}</button>
@@ -175,15 +191,13 @@
                     </thead>
                     <tbody>
                         <tr v-for="voc in filteredVocList" :key="voc.vocId">
-                            <td><span :class="voc.answerStatus ? 'badge-gray' : 'red-alert'">{{ voc.answerStatus ?
-                                    '답변완료' : '미답변' }}</span></td>
+                            <td><span :class="voc.answerStatus ? 'badge-gray' : 'red-alert'">{{ voc.answerStatus ? '답변완료' : '미답변' }}</span></td>
                             <td class="txt-left">{{ voc.title }}</td>
                             <td>{{ voc.writerName }}</td>
                             <td>{{ formatDate(voc.writeDate) }}</td>
                             <td class="txt-center">
-                                <button v-if="!voc.answerStatus" class="btn-action-small"
-                                    @click="goToVocReply(voc.vocId)">답변하기</button>
-                                <span v-else>-</span>
+                                    <button v-if="vocFilter === '휴지통'" class="btn-action-small" @click="handleRestoreVoc(voc.vocId)">복구</button>
+                                    <button v-else class="btn-cancel-table-small" @click="handleDeleteVoc(voc.vocId)">삭제</button>
                             </td>
                         </tr>
                     </tbody>
@@ -217,9 +231,14 @@
                             <td class="bold-blue">{{ res.med_dept_name }}</td>
                             <td class="bold-blue">{{ res.doctor_name }}</td>
                             <td>{{ formatDate(res.reservation_date) }}</td>
-                            <td><span :class="['status-badge', res.reservation_status === '예약' ? 'active' : 'done']">{{
-                                res.reservation_status
-                                    }}</span></td>
+                            <td>
+                                <span :class="['status-badge',
+                                    res.reservation_status === '예약' ? 'active' :
+                                        res.reservation_status === '완료' ? 'done' :
+                                            res.reservation_status === '취소' ? 'cancel' : 'noshow']">
+                                    {{ res.reservation_status }}
+                                </span>
+                            </td>
                             <td class="txt-center"><button v-if="res.reservation_status === '예약'"
                                     class="btn-cancel-table" @click="cancelRes(res.reservation_id)">예약취소</button><span
                                     v-else>-</span></td>
@@ -234,17 +253,19 @@
     </div>
 </template>
 
-
 <script setup>
-import { ref, onMounted, computed } from 'vue'
+import { ref, onMounted, computed, defineEmits, watch } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { getMyResReq, cancelResReq } from '@/api/reservation'
-import { getAdminVocListReq } from '@/api/customer'
+import { getAdminVocListReq, delVocByAdminReq, restoreVocReq } from '@/api/customer'
 
 const props = defineProps({
     userInfo: Object,
     currentView: String
 })
+// 부모(MyPage.vue)의 탭 상태를 바꾸기 위한 통로 개설
+const emit = defineEmits(['changeView'])
+
 const router = useRouter()
 const route = useRoute()
 
@@ -314,11 +335,13 @@ const hospitalEvents = ref([
 
 // ======================================= 가공 데이터 로직 (Computed) =======================================
 // [원무팀] VOC 필터링 로직
+// [computed 영역]
 const filteredVocList = computed(() => {
     if (vocFilter.value === '전체') return vocList.value;
     if (vocFilter.value === '미답변') return vocList.value.filter(v => !v.answerStatus);
     if (vocFilter.value === '답변완료') return vocList.value.filter(v => v.answerStatus);
-    return []; // 휴지통 로직 필요시 추가
+    if (vocFilter.value === '휴지통') return vocList.value; 
+    return [];
 });
 
 // [홍보팀] 달력 날짜별 행사 찾기
@@ -339,7 +362,52 @@ const filteredMyReservations = computed(() => {
     if (resFilter.value === '전체') return myReservations.value;
     return myReservations.value.filter(r => r.reservation_status === resFilter.value);
 });
-const upcomingRes = computed(() => myReservations.value.find(r => r.reservation_status === '예약'));
+
+// 추가
+// 예약 리스트를 '진짜 빠른 시간순'으로 정렬하고 최대 3개까지 추출
+const upcomingResList = computed(() => {
+    return [...myReservations.value] // 원본 복사
+        .filter(r => r.reservation_status === '예약')
+        .sort((a, b) => {
+            // 날짜(YYYYMMDD)와 시간(HH:mm)을 합쳐서 비교 (예: "202602230900" < "202602231000")
+            const timeA = String(a.reservation_date) + String(a.reservation_time || '00:00').replace(':', '')
+            const timeB = String(b.reservation_date) + String(b.reservation_time || '00:00').replace(':', '')
+            return timeA.localeCompare(timeB) // 오름차순 정렬 (빠른 시간 우선) 
+        })
+        .slice(0, 3) // 상위 3개만 자르기
+})
+
+// 탭 이동 함수
+const goToList = () => emit('changeView', 'res');  // 목록으로 가기
+
+const goToView = (targetView) => {
+    // 원무팀 권한 체크
+    if (targetView === 'admin_voc' && !props.userInfo.isWonmu) {
+        alert("원무팀 전용 메뉴입니다.");
+        return;
+    }
+
+    // 홍보팀 권한 체크
+    if (targetView === 'admin_event' && !props.userInfo.isPr) {
+        alert("홍보팀 전용 메뉴입니다.");
+        return;
+    }
+
+    // 권한 통과 시 부모에게 신호 전달
+    emit('changeView', targetView);
+};
+
+// 상단 '상세보기' 버튼용 로직
+const handleNavByDept = () => {
+    if (props.userInfo.isWonmu) goToView('admin_voc');
+    else if (props.userInfo.isPr) goToView('admin_event');
+    else goToView('admin_todo');
+};
+
+
+// D-Day 계산용 (정렬된 리스트의 0번이 무조건 가장 빠른 예약!)
+const upcomingRes = computed(() => upcomingResList.value[0])
+// const upcomingRes = computed(() => myReservations.value.find(r => r.reservation_status === '예약'));
 
 // [달력] 날짜 생성 로직
 const calendarDays = computed(() => {
@@ -361,12 +429,60 @@ const calendarDays = computed(() => {
 });
 // ======================================= 기능 및 서버 통신 =======================================
 
-// [VOC] 답변하기 버튼 클릭 시 이동
-const goToVocReply = (vocId) => {
+// [VOC] 관리
+// VOC 메인 관리 페이지로 이동 (쿼리 포함)
+const goToVocMain = () => {
     router.push({
         path: '/voc',
-        query: { filter: 'unanswered', targetId: vocId }
+        query: { filter: 'unanswered' } // 미답변 목록이 바로 뜨도록 세팅
     });
+};
+
+// VOC 삭제 로직 (백엔드 deleteVocByAdmin 연결)
+const handleDeleteVoc = async (id) => {
+    if (!confirm("해당 글을 삭제(휴지통 이동)하시겠습니까?")) return;
+    
+    try {
+        // 보내주신 API 파일의 삭제 함수 호출
+        await delVocByAdminReq(id); 
+        alert("삭제 처리가 완료되었습니다.");
+        fetchVocList(); // 목록 새로고침
+    } catch (e) {
+        console.error("삭제 실패", e);
+        alert("삭제 처리 중 오류가 발생했습니다.");
+    }
+};
+
+// 탭(vocFilter)이 바뀔 때마다 자동으로 서버에서 데이터를 다시 가져오는 감시자 추가
+watch(vocFilter, () => {
+    fetchVocList();
+});
+
+// fetchVocList 함수를 탭 상태에 따라 동적으로 작동하게 수정
+const fetchVocList = async () => {
+    try {
+        let filter = 'all';
+        if (vocFilter.value === '미답변') filter = 'unanswered';
+        if (vocFilter.value === '답변완료') filter = 'answered';
+        if (vocFilter.value === '휴지통') filter = 'deleted'; 
+
+        const res = await getAdminVocListReq(filter);
+        vocList.value = res.data || [];
+    } catch (e) {
+        console.error("VOC 로딩 실패", e);
+    }
+};
+
+// 복구 함수 추가 (휴지통에서 사용)
+const handleRestoreVoc = async (id) => {
+    if (!confirm("이 글을 다시 복구하시겠습니까?")) return;
+    try {
+        await restoreVocReq(id);
+        alert("복구가 완료되었습니다.");
+        fetchVocList(); // 목록 새로고침
+    } catch (e) {
+        alert("복구 처리 중 오류가 발생했습니다.");
+    }
 };
 
 // [To-Do] 관리
@@ -402,16 +518,6 @@ const cancelRes = async (id) => {
     }
 }
 
-// [API] VOC 전체 목록
-const fetchVocList = async () => {
-    try {
-        const res = await getAdminVocListReq('all');
-        vocList.value = res.data || [];
-    } catch (e) {
-        console.error("VOC 로딩 실패", e);
-    }
-};
-
 // [유틸]
 const formatPhone = (phone) => {
     if (!phone) return '-';
@@ -425,30 +531,34 @@ const formatPhone = (phone) => {
 };
 
 const formatDate = (date) => {
-    if (!date) return '-'
-    const s = String(date)
+    if (!date) return '-';
+    const s = String(date);
 
-    // 1. YYYYMMDD 형태인 경우 (예: 20260208)
-    if (s.length === 8) {
-        return `${s.substring(0, 4)}년 ${s.substring(4, 6)}월 ${s.substring(6, 8)}일`
+    // 1. 생년월일(19900101)처럼 원래 시간이 없는 8자리 데이터 처리
+    if (s.length === 8 && !s.includes('-') && !s.includes(':')) {
+        return `${s.substring(0, 4)}년 ${s.substring(4, 6)}월 ${s.substring(6, 8)}일`;
     }
-
-    // 2. 날짜 객체나 ISO 스트링인 경우 (예: 2026-02-08T...)
     try {
-        const d = new Date(date)
-        const year = d.getFullYear()
-        const month = d.getMonth() + 1
-        const day = d.getDate()
+        const d = new Date(date);
+        if (isNaN(d.getTime())) return s;
 
-        // 월/일이 10보다 작을 때 앞에 0을 붙이기 위함
-        const mm = month < 10 ? `0${month}` : month
-        const dd = day < 10 ? `0${day}` : day
+        const f = (n) => String(n).padStart(2, '0');
+        const year = d.getFullYear();
+        const mm = f(d.getMonth() + 1);
+        const dd = f(d.getDate());
+        const hh = f(d.getHours());
+        const min = f(d.getMinutes());
 
-        return `${year}년 ${mm}월 ${dd}일`
+        // 시간이 00:00이면 날짜만, 아니면 시간까지 "딱 한 번만" 리턴
+        if (hh === '00' && min === '00') {
+            return `${year}년 ${mm}월 ${dd}일`;
+        }
+        return `${year}년 ${mm}월 ${dd}일 ${hh}:${min}`;
     } catch (e) {
-        return s
+        return s;
     }
-}
+};
+
 
 const calculateDday = (dateStr) => {
     // 예: dateStr = "20260206" (YYYYMMDD)
@@ -559,14 +669,14 @@ onMounted(() => {
     font-size: 18px;
     font-weight: 600;
     color: #666;
-    cursor: pointer;
+    /* cursor: pointer; */
     transition: 0.2s;
 }
 
-.stat-box:hover {
+/* .stat-box:hover {
     transform: translateY(-3px);
     box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
-}
+} */
 
 .stat-box span {
     display: block;
@@ -658,31 +768,6 @@ onMounted(() => {
     color: #444;
 }
 
-/*  필터 탭 */
-.filter-tabs {
-    display: flex;
-    gap: 12px;
-    margin-bottom: 15px;
-}
-
-.filter-btn {
-    padding: 10px 20px;
-    background-color: #fff;
-    border: 1px solid #ddd;
-    color: #888;
-    font-size: 16px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.2s;
-}
-
-.filter-btn.active {
-    background-color: #005baa;
-    color: #fff;
-    border-color: #005baa;
-}
-
-
 /* 병원 공통 테이블 */
 .hospital-tbl {
     width: 100%;
@@ -691,7 +776,7 @@ onMounted(() => {
 
 .hospital-tbl th {
     background-color: #f8f9fa;
-    padding: 30px;
+    padding: 30px 40px;
     text-align: left;
     font-weight: 600;
     font-size: 18px;
@@ -699,7 +784,7 @@ onMounted(() => {
 }
 
 .hospital-tbl td {
-    padding: 18px 30px;
+    padding: 18px 40px;
     border-bottom: 1px solid #f0f0f0;
     font-size: 18px;
     vertical-align: middle;
@@ -710,22 +795,27 @@ onMounted(() => {
     font-weight: 700;
 }
 
+/* 배지 내부의 불필요한 왼쪽 정렬 제거 (이미 inline-flex로 중앙에 있으니까요!) */
+.red-alert, .badge-gray {
+    text-align: center; /* 배지 안의 '글자'는 가운데로! */
+    margin: 0; /* 혹시 모를 여백 제거 */
+}
+
 /* 기타 유틸리티 (D-Day, To-Do, 배지) */
 .res-highlight {
     background: #f0f7ff;
     padding: 30px;
     text-align: center;
-    border-radius: 8px;
 }
 
 .d-day {
     display: inline-block;
-    background: #005baa;
-    color: #fff;
-    padding: 12px 18px;
-    font-weight: 600;
+    /* background: #005baa; */
+    color: #005baa;
+    /* padding: 12px 18px; */
+    font-weight: 800;
     font-size: 60px;
-    margin-bottom: 20px;
+    margin-bottom: 10px;
 }
 
 .res-time-txt {
@@ -741,12 +831,20 @@ onMounted(() => {
     color: #666;
 }
 
+/* 상태 배지: 상태별 컬러 차별화 */
 .status-badge {
-    padding: 6px 14px;
+    width: 80px;
+    height: 34px;
+
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
     font-size: 14px;
     font-weight: 700;
-    display: inline-block;
-    border-radius: 4px;
+    text-align: center;
+    white-space: nowrap;
+    /* 글자가 줄바꿈되지 않게 방지 */
 }
 
 .status-badge.active {
@@ -755,13 +853,18 @@ onMounted(() => {
 }
 
 .status-badge.done {
-    background: #f5f5f5;
-    color: #999;
+    background: #e8f5e9;
+    color: #2e7d32;
 }
 
-.status-badge.red {
-    background: #fff1f0;
-    color: #dc3545;
+.status-badge.cancel {
+    background: #ffebee;
+    color: #c62828;
+}
+
+.status-badge.noshow {
+    background: #f5f5f5;
+    color: #616161;
 }
 
 .btn-cancel-table {
@@ -786,24 +889,25 @@ onMounted(() => {
 
 .split-view {
     display: flex;
-    gap: 20px; 
-    align-items: flex-start; 
+    gap: 20px;
+    align-items: flex-start;
 }
 
 /*  달력 영역 */
 .flex-calendar {
-    flex: 1.7; 
-    min-width: 0; /*  내용이 넘쳐도 박스가 안 깨지게 방어 */
+    flex: 1.7;
+    min-width: 0;
+    /*  내용이 넘쳐도 박스가 안 깨지게 방어 */
 }
 
 .flex-todo {
     flex: 1;
-    min-width: 300px; 
+    min-width: 300px;
 }
 
 /*  달력 셀 높이 보정 */
 .calendar-wrap.mini .cal-cell {
-    min-height: 100px; 
+    min-height: 100px;
 }
 
 
@@ -852,15 +956,18 @@ onMounted(() => {
     font-weight: 700;
     border-radius: 4px;
     margin-top: 4px;
-    white-space: nowrap;      /*  글자 줄바꿈 방지 */
-    overflow: hidden;         /*  넘치는 글자 숨김 */
-    text-overflow: ellipsis;  /*  말줄임표(...) 표시 */
+    white-space: nowrap;
+    /*  글자 줄바꿈 방지 */
+    overflow: hidden;
+    /*  넘치는 글자 숨김 */
+    text-overflow: ellipsis;
+    /*  말줄임표(...) 표시 */
 }
 
 /*  개인 업무 일정: 오렌지 톤 */
 .orange-bar {
-    background-color: #fff9e6; 
-    color: #fbb900; 
+    background-color: #fff9e6;
+    color: #fbb900;
     border-left: 3px solid #fbb900;
 }
 
@@ -874,14 +981,16 @@ onMounted(() => {
 /*  달력 셀 높이 보정 (일정이 들어갈 공간 확보) */
 .cal-cell {
     background: #fff;
-    min-height: 120px; /* 충분한 높이 */
+    min-height: 120px;
+    /* 충분한 높이 */
     padding: 15px;
     display: flex;
     flex-direction: column;
 }
 
 .calendar-wrap.mini .cal-cell {
-    min-height: 100px; /* To-Do 미니 달력용 */
+    min-height: 100px;
+    /* To-Do 미니 달력용 */
 }
 
 .btn-del-x {
@@ -904,5 +1013,160 @@ onMounted(() => {
 .empty-res {
     font-size: 20px;
     padding: 8px;
+}
+
+/* 추가(내 예약 내역-대시보드) */
+.clickable-card {
+    cursor: pointer;
+    transition: all 0.2s ease-in-out;
+}
+
+.clickable-card:hover {
+    border-color: #005baa;
+    transform: translateY(-5px);
+}
+
+.more-view {
+    font-size: 18px;
+    color: #888;
+    font-weight: 700;
+}
+
+/* 서브 리스트 스타일 */
+.sub-res-list {
+    margin-top: 15px;
+    padding-top: 15px;
+    border-top: 1px dashed #d1e6ff;
+}
+
+.sub-res-item {
+    display: flex;
+    justify-content: space-between;
+    padding: 10px 15px;
+    background: #f8f9fa;
+    border-radius: 8px;
+    margin-bottom: 5px;
+    font-size: 15px;
+    font-weight: 600;
+}
+
+.sub-time {
+    color: #005baa;
+}
+
+.sub-info {
+    color: #555;
+}
+
+/* 1. VOC 섹션 전체 레이아웃 */
+.voc-header-wrap {
+    display: flex;
+    flex-wrap: wrap; /* 화면이 좁아지면 자연스럽게 줄바꿈 */
+    align-items: center;
+    gap: 20px;
+    margin-bottom: 25px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid #f5f5f5;
+}
+
+.voc-header-wrap h3 {
+    margin: 0;
+    font-size: 1.6rem;
+    font-weight: 800;
+    color: #005baa;
+}
+
+/* 2. 상단 답변 등록 버튼 (Blue Point) */
+.blue-btn {
+    background-color: #005baa;
+    color: #fff;
+    border: none;
+    padding: 10px 18px;
+    font-size: 15px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    margin-right: auto; /* 제목 옆에 붙고 필터 탭은 오른쪽 끝으로 밀기 */
+}
+
+.blue-btn:hover {
+    background-color: #004a8a;
+    box-shadow: 0 4px 10px rgba(0, 91, 170, 0.2);
+    transform: translateY(-2px);
+}
+
+/* 3. 상태 표시 배지 (미답변/답변완료) */
+.red-alert, .badge-gray {
+    width: 80px;
+    height: 34px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    font-weight: 700;
+    white-space: nowrap;
+    
+}
+
+.red-alert {
+    color: #dc3545;
+    background-color: #fff5f5;
+    font-weight: 800;
+    font-size: 14px;
+}
+
+.badge-gray {
+    color: #888;
+    background-color: #f8f9fa;
+    font-weight: 600;
+    font-size: 14px;
+}
+
+/* 4. 테이블 내 삭제 버튼 (Red Outline) */
+.btn-cancel-table-small {
+    background-color: transparent;
+    color: #ff3b30;
+    border: 1.5px solid #ff3b30;
+    padding: 10px 16px;
+    font-size: 16px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.btn-cancel-table-small:hover {
+    background-color: #ff3b30;
+    color: #fff;
+}
+
+/* 5. 유틸리티 클래스 */
+.txt-left {
+    text-align: left;
+}
+
+.txt-center {
+    text-align: left;
+}
+
+/* 필터 탭 스타일 (기존 스타일 유지 및 보정) */
+.filter-tabs {
+    display: flex;
+    gap: 8px;
+}
+
+.filter-btn {
+    padding: 8px 16px;
+    background-color: #fff;
+    border: 1px solid #eee;
+    color: #888;
+    font-weight: 600;
+    cursor: pointer;
+    transition: 0.2s;
+}
+
+.filter-btn.active {
+    background-color: #005baa;
+    color: #fff;
+    border-color: #005baa;
 }
 </style>

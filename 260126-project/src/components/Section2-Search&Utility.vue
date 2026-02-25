@@ -218,7 +218,7 @@ onMounted(() => {
   align-items: center;
   cursor: pointer;
   transition: 0.3s;
-  margin-bottom: -100px;
+  margin-bottom: -30px;
 }
 
 .icon-box {

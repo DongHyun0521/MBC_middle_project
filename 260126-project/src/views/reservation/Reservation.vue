@@ -407,7 +407,7 @@ onMounted(async () => {
 
 .reservation-card {
   width: 100%;
-  max-width: 900px;
+  max-width: 770px;
   background: #fff;
   padding: 80px 50px;
   border-radius: 8px;

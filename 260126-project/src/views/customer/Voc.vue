@@ -244,18 +244,38 @@ const isWonmu = computed(() => {
 });
 const canReply = computed(() => isAdmin.value && isWonmu.value);
 const canManageDeleted = computed(() => isAdmin.value && isWonmu.value);
+
 // 목록 필터
 const currentTabs = computed(() => {
   const tabs = [{ id: 'all', label: '전체' }];
 
-  tabs.push({ id: 'unanswered', label: '미답변' });
+  // [미답변] 일반회원이거나(isAdmin이 아님) 원무팀일 때만 보임
+  if (!isAdmin.value || isWonmu.value) {
+    tabs.push({ id: 'unanswered', label: '미답변' });
+  }
+
+  // [답변완료] 누구나 공통
   tabs.push({ id: 'answered', label: '답변완료' });
 
+  // [휴지통] 오직 원무팀만 보임
   if (isWonmu.value) {
     tabs.push({ id: 'deleted', label: '휴지통' });
   }
+
   return tabs;
 });
+// const currentTabs = computed(() => {
+//   const tabs = [{ id: 'all', label: '전체' }];
+
+//   tabs.push({ id: 'unanswered', label: '미답변' });
+//   tabs.push({ id: 'answered', label: '답변완료' });
+
+//   if (isWonmu.value) {
+//     tabs.push({ id: 'deleted', label: '휴지통' });
+//   }
+//   return tabs;
+// });
+
 
 // ============================= 유틸리티 함수 =============================
 const getWriterName = (item) => {
