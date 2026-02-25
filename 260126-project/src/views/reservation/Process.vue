@@ -8,7 +8,7 @@
     <section class="reservation-methods">
       <div class="method-card">
         <div class="icon-wrapper">
-          <svg viewBox="0 0 24 24" fill="none" stroke="#0171e9" stroke-width="2">
+          <svg viewBox="0 0 24 24" fill="none" stroke="#005baa" stroke-width="2">
             <rect x="5" y="2" width="14" height="20" rx="0" ry="0"></rect>
             <line x1="12" y1="18" x2="12" y2="18"></line>
           </svg>
@@ -20,7 +20,7 @@
 
       <div class="method-card">
         <div class="icon-wrapper">
-          <svg viewBox="0 0 24 24" fill="none" stroke="#0171e9" stroke-width="2">
+          <svg viewBox="0 0 24 24" fill="none" stroke="#005baa" stroke-width="2">
             <path
               d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z">
             </path>
@@ -33,7 +33,7 @@
 
       <div class="method-card">
         <div class="icon-wrapper">
-          <svg viewBox="0 0 24 24" fill="none" stroke="#0171e9" stroke-width="2">
+          <svg viewBox="0 0 24 24" fill="none" stroke="#005baa" stroke-width="2">
             <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
             <polyline points="9 22 9 12 15 12 15 22"></polyline>
           </svg>
@@ -162,7 +162,7 @@
 
 .tag {
   font-size: 14px;
-  color: #0171e9;
+  color: #005baa;
   background: #eef6ff;
   padding: 5px 12px;
   font-weight: 600;
@@ -173,7 +173,7 @@
 
 .btn-primary {
   display: inline-block;
-  background: #0171e9;
+  background: #005baa;
   color: #fff;
   padding: 12px 30px;
   font-weight: 600;
@@ -241,13 +241,13 @@
 }
 
 .step-item.highlight .square {
-  border-color: #0171e9;
-  background: #0171e9;
+  border-color: #005baa;
+  background: #005baa;
   color: #fff;
 }
 
 .step-item.highlight span {
-  color: #0171e9;
+  color: #005baa;
 }
 
 .flow-arrow {
@@ -265,7 +265,7 @@
 .notice-box {
   padding: 35px;
   background: #fff;
-  border-left: 6px solid #0171e9;
+  border-left: 6px solid #005baa;
 }
 
 .notice-box h4 {

@@ -45,11 +45,17 @@
             </div>
 
             <div class="input-wrapper">
-              <label class="sub-label-sm">휴대폰 번호</label>
+              <label class="sub-label-sm">전화번호</label>
               <div class="phone-split-group">
                 <select v-model="phonePart1" class="res-select phone-part">
                   <option value="010">010</option>
                   <option value="011">011</option>
+                  <option value="070">070</option>
+                  <option value="02">02</option>
+                  <option value="031">031</option>
+                  <option value="032">032</option>
+                  <option value="051">051</option>
+                  <option value="042">042</option>
                 </select>
                 <span class="dash">-</span>
                 <input type="text" v-model="phonePart2" ref="phone2Ref" @input="handlePhonePart2" maxlength="4"
@@ -74,7 +80,7 @@
             <div class="date-display-box" @click="toggleCalendar" :class="{ active: showCalendar }">
               <span v-if="form.reservationDate" class="selected-date-txt">{{ form.reservationDate }}</span>
               <span v-else class="placeholder">날짜를 선택해 주세요</span>
-              <span class="calendar-icon">📅</span>
+              <span class="calendar-icon">▼</span>
             </div>
 
             <div v-if="showCalendar" class="calendar-popup">
@@ -390,7 +396,7 @@ onMounted(async () => {
 <style scoped>
 /* [추가] 안내 문구 스타일 */
 .guide-text {
-  font-size: 13px;
+  font-size: 15px;
   color: #b72323;
   margin-bottom: 12px;
   font-weight: 500;
@@ -410,7 +416,6 @@ onMounted(async () => {
   max-width: 770px;
   background: #fff;
   padding: 80px 50px;
-  border-radius: 8px;
   border: 1px solid #eee;
   box-shadow: 0 15px 40px rgba(0, 0, 0, 0.05);
   height: fit-content;
@@ -423,22 +428,22 @@ onMounted(async () => {
 }
 
 .res-header h2 {
-  font-size: 30px;
+  font-size: 42px;
   color: #333;
   margin-bottom: 12px;
-  font-weight: 700;
+  font-weight: 800;
 }
 
 .title-bar {
-  width: 40px;
+  width: 120px;
   height: 3px;
   background: #005baa;
   margin: 0 auto 20px;
 }
 
 .res-desc {
-  font-size: 15px;
-  color: #888;
+  font-size: 18px;
+  color: #666;
   font-weight: 300;
 }
 
@@ -450,7 +455,7 @@ onMounted(async () => {
 
 .input-section>label {
   display: block;
-  font-size: 16px;
+  font-size: 18px;
   font-weight: 700;
   color: #333;
   margin-bottom: 15px;
@@ -460,7 +465,7 @@ onMounted(async () => {
 
 .sub-label-sm {
   display: block;
-  font-size: 13px;
+  font-size: 16px;
   color: #666;
   margin-bottom: 6px;
   font-weight: 600;
@@ -471,7 +476,6 @@ onMounted(async () => {
   width: 100%;
   padding: 14px;
   border: 1px solid #ddd;
-  border-radius: 6px;
   font-size: 15px;
   background: #fff;
   transition: 0.2s;
@@ -503,6 +507,7 @@ onMounted(async () => {
 .phone-split-group {
   display: flex;
   align-items: center;
+  text-align: center;
   gap: 8px;
 }
 
@@ -540,7 +545,6 @@ onMounted(async () => {
   width: 100%;
   padding: 18px;
   border: 2px solid #eee;
-  border-radius: 8px;
   background: #fff;
   cursor: pointer;
   display: flex;
@@ -565,7 +569,6 @@ onMounted(async () => {
   width: 100%;
   background: #fff;
   border: 1px solid #eee;
-  border-radius: 12px;
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
   z-index: 100;
   padding: 20px;
@@ -634,7 +637,6 @@ onMounted(async () => {
   display: flex;
   justify-content: center;
   align-items: center;
-  border-radius: 8px;
   cursor: pointer;
   font-size: 15px;
   color: #333;
@@ -681,7 +683,6 @@ onMounted(async () => {
   align-items: center;
   flex-direction: column;
   border: 1px solid #e0e0e0;
-  border-radius: 8px;
   background: #fff;
   cursor: pointer;
   transition: all 0.2s ease;
@@ -746,22 +747,20 @@ onMounted(async () => {
   background: #f0f7ff;
   border: 1px solid #a1d8f3;
   padding: 25px 30px;
-  border-radius: 6px;
   display: flex;
   flex-direction: column;
   gap: 8px;
 }
 
 .fixed-label {
-  font-size: 13px;
+  font-size: 16px;
   color: #005baa;
-  font-weight: 700;
+  font-weight: 600;
 }
 
 .fixed-info {
   display: flex;
   align-items: center;
-  gap: 15px;
 }
 
 .f-dept {
@@ -771,9 +770,9 @@ onMounted(async () => {
 }
 
 .f-doc {
-  font-size: 18px;
+  font-size: 22px;
   color: #005baa;
-  font-weight: 700;
+  font-weight: 800;
 }
 
 .btn-change {
@@ -782,7 +781,6 @@ onMounted(async () => {
   border: 1px solid #ddd;
   padding: 6px 14px;
   font-size: 13px;
-  border-radius: 4px;
   color: #666;
   cursor: pointer;
   transition: 0.2s;
@@ -794,7 +792,6 @@ onMounted(async () => {
   background: #005baa;
   color: #fff;
   border: none;
-  border-radius: 6px;
   font-size: 18px;
   font-weight: 700;
   cursor: pointer;

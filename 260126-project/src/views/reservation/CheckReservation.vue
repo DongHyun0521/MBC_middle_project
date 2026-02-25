@@ -219,14 +219,14 @@ onMounted(fetchMyReservations)
 }
 
 .page-header h2 {
-  font-size: 30px;
+  font-size: 42px;
   color: #404347;
   margin-bottom: 15px;
   font-weight: 800;
 }
 
 .title-bar {
-  width: 45px;
+  width: 120px;
   height: 4px;
   background: #005baa;
   margin: 0 auto 20px;
@@ -234,13 +234,12 @@ onMounted(fetchMyReservations)
 
 .page-desc {
   color: #888;
-  font-size: 16px;
+  font-size: 18px;
   font-weight: 300;
 }
 
 .res-list-card {
   background: #fff;
-  border-radius: 8px;
   box-shadow: 0 12px 40px rgba(0, 0, 0, 0.04);
   border: 1px solid #eee;
   overflow: hidden;
@@ -279,7 +278,7 @@ onMounted(fetchMyReservations)
 .hospital-table th {
   background-color: #f8fafc;
   padding: 20px 15px;
-  font-size: 14px;
+  font-size: 16px;
   font-weight: 700;
   color: #64748b;
   border-bottom: 2px solid #edf2f7;
@@ -313,14 +312,14 @@ onMounted(fetchMyReservations)
 
 .dept-name {
   color: #005baa;
-  font-size: 17px;
+  font-size: 18px;
   font-weight: 700;
   margin-bottom: 5px;
 }
 
 .staff-name {
   color: #64748b;
-  font-size: 14px;
+  font-size: 16px;
 }
 
 .res-date-time {
@@ -342,7 +341,6 @@ onMounted(fetchMyReservations)
   background: #f1f5f9;
   color: #475569;
   padding: 4px 10px;
-  border-radius: 4px;
   font-size: 12px;
   font-weight: 600;
 }
@@ -350,7 +348,6 @@ onMounted(fetchMyReservations)
 .status-badge {
   display: inline-block;
   padding: 6px 12px;
-  border-radius: 4px;
   font-size: 12px;
   font-weight: 700;
 }
@@ -375,7 +372,6 @@ onMounted(fetchMyReservations)
   border: 1px solid #fecaca;
   color: #ef4444;
   padding: 8px 14px;
-  border-radius: 4px;
   font-size: 13px;
   font-weight: 600;
   cursor: pointer;

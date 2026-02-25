@@ -184,10 +184,10 @@
               </div>
 
               <div class="input-section">
-                <label>연락처 <span class="req">*</span></label>
+                <label>전화번호 <span class="req">*</span></label>
                 <div class="tel-flex-row">
                   <select v-model="tel1">
-                    <option v-for="opt in ['010', '011', '016', '017', '018', '019']" :key="opt" :value="opt">{{ opt }}
+                    <option v-for="opt in ['010', '011', '070', '02', '031', '032', '051', '042']" :key="opt" :value="opt">{{ opt }}
                     </option>
                   </select>
                   <span class="tel-dash">-</span>

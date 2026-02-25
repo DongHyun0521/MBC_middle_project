@@ -513,7 +513,7 @@
 .result-card-container {
   display: flex;
   gap: 20px;
-  width: 80%;
+  width: 100%;
   margin-bottom: 20px;
 }
 

@@ -134,22 +134,22 @@ onMounted(fetchDepts)
 }
 
 .page-header h2 {
-  font-size: 28px;
-  color: #404347;
+  font-size: 42px;
+  color: #333;
   margin-bottom: 15px;
-  font-weight: 700;
+  font-weight: 800;
 }
 
 .title-bar {
-  width: 40px;
+  width: 120px;
   height: 3px;
   background: #005baa;
   margin: 0 auto 15px;
 }
 
 .page-desc {
-  color: #888;
-  font-size: 15px;
+  color: #666;
+  font-size: 18px;
   font-weight: 300;
 }
 
@@ -159,7 +159,6 @@ onMounted(fetchDepts)
   margin-bottom: 40px;
   background: #fff;
   padding: 25px;
-  border-radius: 8px;
   box-shadow: 0 5px 15px rgba(0, 0, 0, 0.03);
   border: 1px solid #eee;
 }
@@ -167,7 +166,6 @@ onMounted(fetchDepts)
 .search-input {
   padding: 15px;
   border: 1px solid #ddd;
-  border-radius: 4px;
   font-size: 15px;
   color: #4e4e4e;
   transition: 0.3s;
@@ -205,7 +203,6 @@ select.search-input {
   background: #fff;
   border: 1px solid #eee;
   padding: 35px;
-  border-radius: 12px;
   box-shadow: 0 5px 15px rgba(0, 0, 0, 0.02);
   transition: all 0.3s ease;
   display: flex;
@@ -235,7 +232,6 @@ select.search-input {
 .tag {
   font-size: 13px;
   padding: 4px 10px;
-  border-radius: 4px;
   font-weight: 500;
 }
 
@@ -264,7 +260,6 @@ select.search-input {
   background: #404347;
   color: white;
   border: none;
-  border-radius: 4px;
   cursor: pointer;
   font-weight: 600;
   font-size: 15px;

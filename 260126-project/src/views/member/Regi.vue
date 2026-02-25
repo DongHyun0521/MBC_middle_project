@@ -158,11 +158,13 @@
           <div class="tel-flex-row">
             <select v-model="tel1">
               <option value="010">010</option>
-              <option value="011">011</option>
-              <option value="016">016</option>
-              <option value="017">017</option>
-              <option value="018">018</option>
-              <option value="019">019</option>
+                  <option value="011">011</option>
+                  <option value="070">070</option>
+                  <option value="02">02</option>
+                  <option value="031">031</option>
+                  <option value="032">032</option>
+                  <option value="051">051</option>
+                  <option value="042">042</option>
             </select>
             <span class="tel-dash">-</span>
             <input type="text" v-model="tel2" maxlength="4" @input="onlyNumber($event, 'tel2')" class="ime-en" />

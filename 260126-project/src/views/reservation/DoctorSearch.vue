@@ -199,22 +199,22 @@ onMounted(fetchData)
 }
 
 .page-header h2 {
-  font-size: 28px;
-  color: #404347;
+  font-size: 42px;
+  color: #333;
   margin-bottom: 15px;
-  font-weight: 700;
+  font-weight: 800;
 }
 
 .title-bar {
-  width: 40px;
+  width: 120px;
   height: 3px;
   background: #005baa;
   margin: 0 auto 15px;
 }
 
 .page-desc {
-  color: #888;
-  font-size: 15px;
+  color: #666;
+  font-size: 18px;
 }
 
 .filter-box {
@@ -223,7 +223,6 @@ onMounted(fetchData)
   margin-bottom: 40px;
   background: #fff;
   padding: 25px;
-  border-radius: 8px;
   box-shadow: 0 5px 15px rgba(0, 0, 0, 0.03);
   border: 1px solid #eee;
 }
@@ -232,7 +231,6 @@ onMounted(fetchData)
   flex: 1;
   padding: 15px;
   border: 1px solid #ddd;
-  border-radius: 4px;
   font-size: 15px;
   color: #4e4e4e;
   transition: 0.3s;
@@ -257,7 +255,6 @@ onMounted(fetchData)
   padding: 25px;
   display: flex;
   gap: 25px;
-  border-radius: 12px;
   box-shadow: 0 5px 15px rgba(0, 0, 0, 0.02);
   transition: all 0.3s ease;
   align-items: center;
@@ -272,7 +269,6 @@ onMounted(fetchData)
   width: 110px;
   height: 130px;
   background: #f0f2f5;
-  border-radius: 8px;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -310,7 +306,6 @@ onMounted(fetchData)
   color: #005baa;
   background: #e0f2fe;
   padding: 3px 8px;
-  border-radius: 4px;
   font-weight: 600;
 }
 
@@ -336,7 +331,6 @@ onMounted(fetchData)
   background: #005baa;
   color: #fff;
   border: none;
-  border-radius: 4px;
   font-size: 15px;
   font-weight: 600;
   cursor: pointer;
