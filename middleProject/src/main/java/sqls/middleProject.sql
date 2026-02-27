@@ -567,7 +567,7 @@ WITH new_log AS (
 UPDATE parking_spot
 SET parking_log_id = (SELECT parking_log_id FROM new_log),
     is_parked = true
-WHERE spot_id = 30;
+WHERE spot_id = 50;
 -- 회원 차량 (진료X)
 WITH new_log AS (
     INSERT INTO parking_log (vehicle_num, entry_time, is_member, payment_status)
@@ -577,7 +577,7 @@ WITH new_log AS (
 UPDATE parking_spot
 SET parking_log_id = (SELECT parking_log_id FROM new_log),
     is_parked = true
-WHERE spot_id = 31;
+WHERE spot_id = 51;
 -- 회원 차량 (진료O)
 WITH new_log AS (
     INSERT INTO parking_log (vehicle_num, entry_time, is_member, payment_status)
@@ -587,7 +587,7 @@ WITH new_log AS (
 UPDATE parking_spot
 SET parking_log_id = (SELECT parking_log_id FROM new_log),
     is_parked = true
-WHERE spot_id = 32;
+WHERE spot_id = 52;
 
 -- ==================================================
 
