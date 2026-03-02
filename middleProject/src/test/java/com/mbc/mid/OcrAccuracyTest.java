@@ -5,6 +5,7 @@ import com.mbc.mid.dao.ParkingLogDao;
 import com.mbc.mid.dto.OcrResponse;
 import com.mbc.mid.dto.ParkingLogDto;
 import com.mbc.mid.service.OcrService;
+import com.mbc.mid.service.ParkingSpotService;
 import com.mbc.mid.service.PaymentService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -37,6 +38,9 @@ public class OcrAccuracyTest {
 
     @MockitoBean
     private MemDao memDao;
+    
+    @MockitoBean
+    private ParkingSpotService parkingSpotService;
 
     @MockitoBean
     private PaymentService paymentService;
@@ -58,6 +62,10 @@ public class OcrAccuracyTest {
         // 3. 회원 확인
         given(memDao.checkMemberVehicle(anyString())).willReturn(0);
         given(memDao.getMemIdByVehicle(anyString())).willReturn(null);
+        
+        // 4. 주차 공간 배정 (null 반환하여 DB 로직 건너뜀)
+        given(parkingSpotService.findSpotIdByParkingLogId(any())).willReturn(null);
+        given(parkingSpotService.recommendSpot()).willReturn(null);
     }
 
     @Test

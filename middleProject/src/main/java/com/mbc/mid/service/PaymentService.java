@@ -1,14 +1,12 @@
 // middleProject - com.mbc.mid.service - OcrService.java
 package com.mbc.mid.service;
 
-import java.time.LocalDateTime;
 import java.util.Date;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.mbc.mid.dao.MemDao;
 import com.mbc.mid.dao.ParkingLogDao;
 import com.mbc.mid.dao.PaymentDao;
 import com.mbc.mid.dto.ParkingLogDto;
@@ -18,32 +16,21 @@ import com.mbc.mid.dto.PaymentDto;
 @Transactional
 public class PaymentService {
 	
-	@Autowired
+    @Autowired
     private PaymentDao paymentDao;
     
     @Autowired
     private ParkingLogDao parkingLogDao;
     
     @Autowired
-    private MemDao memDao;
+    private ParkingSpotService parkingSpotService;
 
     // 결제 정보 저장
     public void processPayment(PaymentDto paymentDto) {
-        System.out.println("=> PaymentService: processPayment | "+ new Date());
-        
-        // 1. 결제 내역 저장
+    	System.out.println("=> PaymentService: processPayment | "+ new Date());
         paymentDao.insertPayment(paymentDto);
-        
-        // 2. 파킹 로그 결제 상태 true 업데이트
         parkingLogDao.updatePaymentStatus(paymentDto.getParkingLogId());
-        
-        // 3. 결제가 완료되었으므로 바로 출차 처리(exit_time 업데이트)
         ParkingLogDto log = parkingLogDao.findById(paymentDto.getParkingLogId().intValue());
-        if (log != null) {
-            log.setExitTime(LocalDateTime.now());
-            boolean isMember = (memDao.checkMemberVehicle(log.getVehicleNum()) > 0);
-            log.setIsMember(isMember);
-            parkingLogDao.updateExitLog(log);
-        }
+        if (log != null) parkingSpotService.processExit(log.getVehicleNum());
     }
 }
