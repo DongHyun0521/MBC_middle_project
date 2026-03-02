@@ -74,7 +74,7 @@ CREATE TABLE parking_spot (
     floor INTEGER NOT NULL,						-- 층 (1, 2, ...)
     zone VARCHAR(1) NOT NULL,					-- 구역 (A, B, ...)
 	spot_number INTEGER NOT NULL,				-- 번호 (1, 2, ...)
-	distance_from_entrance INTEGER NOT NULL,	-- 입구로부터의 거리
+	--distance_from_entrance INTEGER NOT NULL,	-- 입구로부터의 거리
 	is_parked BOOLEAN NOT NULL DEFAULT FALSE	-- 주차 여부
 );
 -- 의료 부서
@@ -390,170 +390,7 @@ JOIN gen_doc g ON m.id = g.gen_id;
 -- ==================================================
 
 -- 주차 자리
-INSERT INTO parking_spot (floor, zone, spot_number, distance_from_entrance, is_parked)
-VALUES
-  (1, 'A', 1, 242, false),
-  (1, 'A', 2, 283, false),
-  (1, 'A', 3, 324, false),
-  (1, 'A', 4, 365, false),
-  (1, 'A', 5, 526, false),
-  (1, 'A', 6, 567, false),
-  (1, 'A', 7, 608, false),
-  (1, 'A', 8, 649, false),
-  (1, 'B', 1, 295, false),
-  (1, 'B', 2, 336, false),
-  (1, 'B', 3, 377, false),
-  (1, 'B', 4, 418, false),
-  (1, 'B', 5, 473, false),
-  (1, 'B', 6, 514, false),
-  (1, 'B', 7, 555, false),
-  (1, 'B', 8, 596, false),
-  (1, 'B', 9, 465, false),
-  (1, 'B', 10, 506, false),
-  (1, 'B', 11, 547, false),
-  (1, 'B', 12, 588, false),
-  (1, 'B', 13, 643, false),
-  (1, 'B', 14, 684, false),
-  (1, 'B', 15, 725, false),
-  (1, 'B', 16, 766, false),
-  (1, 'C', 1, 465, false),
-  (1, 'C', 2, 506, false),
-  (1, 'C', 3, 547, false),
-  (1, 'C', 4, 588, false),
-  (1, 'C', 5, 643, false),
-  (1, 'C', 6, 684, false),
-  (1, 'C', 7, 725, false),
-  (1, 'C', 8, 766, false),
-  (1, 'C', 9, 635, false),
-  (1, 'C', 10, 676, false),
-  (1, 'C', 11, 717, false),
-  (1, 'C', 12, 758, false),
-  (1, 'C', 13, 813, false),
-  (1, 'C', 14, 854, false),
-  (1, 'C', 15, 895, false),
-  (1, 'C', 16, 936, false),
-  (1, 'D', 1, 582, false),
-  (1, 'D', 2, 623, false),
-  (1, 'D', 3, 664, false),
-  (1, 'D', 4, 705, false),
-  (1, 'D', 5, 866, false),
-  (1, 'D', 6, 907, false),
-  (1, 'D', 7, 948, false),
-  (1, 'D', 8, 989, false),
-  (1, 'E', 1, 763, false),
-  (1, 'E', 2, 804, false),
-  (1, 'E', 3, 845, false),
-  (1, 'E', 4, 900, false),
-  (1, 'E', 5, 941, false),
-  (1, 'E', 6, 982, false),
-  (2, 'A', 1, 242, false),
-  (2, 'A', 2, 283, false),
-  (2, 'A', 3, 324, false),
-  (2, 'A', 4, 365, false),
-  (2, 'A', 5, 526, false),
-  (2, 'A', 6, 567, false),
-  (2, 'A', 7, 608, false),
-  (2, 'A', 8, 649, false),
-  (2, 'B', 1, 295, false),
-  (2, 'B', 2, 336, false),
-  (2, 'B', 3, 377, false),
-  (2, 'B', 4, 418, false),
-  (2, 'B', 5, 473, false),
-  (2, 'B', 6, 514, false),
-  (2, 'B', 7, 555, false),
-  (2, 'B', 8, 596, false),
-  (2, 'B', 9, 465, false),
-  (2, 'B', 10, 506, false),
-  (2, 'B', 11, 547, false),
-  (2, 'B', 12, 588, false),
-  (2, 'B', 13, 643, false),
-  (2, 'B', 14, 684, false),
-  (2, 'B', 15, 725, false),
-  (2, 'B', 16, 766, false),
-  (2, 'C', 1, 465, false),
-  (2, 'C', 2, 506, false),
-  (2, 'C', 3, 547, false),
-  (2, 'C', 4, 588, false),
-  (2, 'C', 5, 643, false),
-  (2, 'C', 6, 684, false),
-  (2, 'C', 7, 725, false),
-  (2, 'C', 8, 766, false),
-  (2, 'C', 9, 635, false),
-  (2, 'C', 10, 676, false),
-  (2, 'C', 11, 717, false),
-  (2, 'C', 12, 758, false),
-  (2, 'C', 13, 813, false),
-  (2, 'C', 14, 854, false),
-  (2, 'C', 15, 895, false),
-  (2, 'C', 16, 936, false),
-  (2, 'D', 1, 582, false),
-  (2, 'D', 2, 623, false),
-  (2, 'D', 3, 664, false),
-  (2, 'D', 4, 705, false),
-  (2, 'D', 5, 866, false),
-  (2, 'D', 6, 907, false),
-  (2, 'D', 7, 948, false),
-  (2, 'D', 8, 989, false),
-  (2, 'E', 1, 763, false),
-  (2, 'E', 2, 804, false),
-  (2, 'E', 3, 845, false),
-  (2, 'E', 4, 900, false),
-  (2, 'E', 5, 941, false),
-  (2, 'E', 6, 982, false),
-  (3, 'A', 1, 242, false),
-  (3, 'A', 2, 283, false),
-  (3, 'A', 3, 324, false),
-  (3, 'A', 4, 365, false),
-  (3, 'A', 5, 526, false),
-  (3, 'A', 6, 567, false),
-  (3, 'A', 7, 608, false),
-  (3, 'A', 8, 649, false),
-  (3, 'B', 1, 295, false),
-  (3, 'B', 2, 336, false),
-  (3, 'B', 3, 377, false),
-  (3, 'B', 4, 418, false),
-  (3, 'B', 5, 473, false),
-  (3, 'B', 6, 514, false),
-  (3, 'B', 7, 555, false),
-  (3, 'B', 8, 596, false),
-  (3, 'B', 9, 465, false),
-  (3, 'B', 10, 506, false),
-  (3, 'B', 11, 547, false),
-  (3, 'B', 12, 588, false),
-  (3, 'B', 13, 643, false),
-  (3, 'B', 14, 684, false),
-  (3, 'B', 15, 725, false),
-  (3, 'B', 16, 766, false),
-  (3, 'C', 1, 465, false),
-  (3, 'C', 2, 506, false),
-  (3, 'C', 3, 547, false),
-  (3, 'C', 4, 588, false),
-  (3, 'C', 5, 643, false),
-  (3, 'C', 6, 684, false),
-  (3, 'C', 7, 725, false),
-  (3, 'C', 8, 766, false),
-  (3, 'C', 9, 635, false),
-  (3, 'C', 10, 676, false),
-  (3, 'C', 11, 717, false),
-  (3, 'C', 12, 758, false),
-  (3, 'C', 13, 813, false),
-  (3, 'C', 14, 854, false),
-  (3, 'C', 15, 895, false),
-  (3, 'C', 16, 936, false),
-  (3, 'D', 1, 582, false),
-  (3, 'D', 2, 623, false),
-  (3, 'D', 3, 664, false),
-  (3, 'D', 4, 705, false),
-  (3, 'D', 5, 866, false),
-  (3, 'D', 6, 907, false),
-  (3, 'D', 7, 948, false),
-  (3, 'D', 8, 989, false),
-  (3, 'E', 1, 763, false),
-  (3, 'E', 2, 804, false),
-  (3, 'E', 3, 845, false),
-  (3, 'E', 4, 900, false),
-  (3, 'E', 5, 941, false),
-  (3, 'E', 6, 982, false);
+
 
 -- ==================================================
 
@@ -567,7 +404,7 @@ WITH new_log AS (
 UPDATE parking_spot
 SET parking_log_id = (SELECT parking_log_id FROM new_log),
     is_parked = true
-WHERE spot_id = 50;
+WHERE spot_id = 1;
 -- 회원 차량 (진료X)
 WITH new_log AS (
     INSERT INTO parking_log (vehicle_num, entry_time, is_member, payment_status)
@@ -577,7 +414,7 @@ WITH new_log AS (
 UPDATE parking_spot
 SET parking_log_id = (SELECT parking_log_id FROM new_log),
     is_parked = true
-WHERE spot_id = 51;
+WHERE spot_id = 2;
 -- 회원 차량 (진료O)
 WITH new_log AS (
     INSERT INTO parking_log (vehicle_num, entry_time, is_member, payment_status)
@@ -587,7 +424,7 @@ WITH new_log AS (
 UPDATE parking_spot
 SET parking_log_id = (SELECT parking_log_id FROM new_log),
     is_parked = true
-WHERE spot_id = 52;
+WHERE spot_id = 3;
 
 -- ==================================================
 

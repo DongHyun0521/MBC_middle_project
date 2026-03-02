@@ -163,34 +163,9 @@ const countdown = ref(3); // 초기 화면 복귀까지 남은 초
 let timerId = null; // 타이머(setInterval)를 멈추기 위해 보관하는 ID
 
 // [추가] 입차 시작 시 만차 여부 체크 로직
-const startEntry = async () => {
-  console.log("입차 체크 시작...");
-  try {
-    // 자리가 있으면 성공(200), 없으면 에러(500)
-    // await axios.post('/parking/spot/entry/dummy'); 
-    await axios.post('http://localhost:8080/parking/spot/entry/dummy', {}, {
-      withCredentials: true 
-    });
-
-    // 성공 -> 입차 안내 화면
-    viewMode.value = 'input'; 
-  } catch (error) {
-    // 에러 (백엔드에서 공간 없다고 Exception 던진 상황)
-    console.error("만차 상태 확인됨:", error.response);
-
-    // 에러 -> 자리가 없다 -> 'full' 화면
-    viewMode.value = 'full';
-    countdown.value = 3; // 만차 화면 유지 시간
-    
-    if (timerId) clearInterval(timerId);
-    timerId = setInterval(() => {
-      countdown.value--;
-      if (countdown.value <= 0) {
-        clearInterval(timerId);
-        resetToIdle(); // 초기 화면으로 복귀
-      }
-    }, 1000);
-  }
+const startEntry = () => {
+  console.log("화면 터치: 입차 사진 업로드 화면으로 이동");
+  viewMode.value = 'input'; 
 };
 
 const handleFileUpload = async (event) => {

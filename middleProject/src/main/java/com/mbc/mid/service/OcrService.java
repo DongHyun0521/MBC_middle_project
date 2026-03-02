@@ -32,10 +32,9 @@ import org.springframework.web.multipart.MultipartFile;
 
 import com.mbc.mid.dao.MemDao;
 import com.mbc.mid.dao.ParkingLogDao;
-import com.mbc.mid.dto.EntryPathResponse;
+import com.mbc.mid.dao.PaymentDao;
 import com.mbc.mid.dto.OcrResponse;
 import com.mbc.mid.dto.ParkingLogDto;
-import com.mbc.mid.dto.ParkingSpotDto;
 
 import net.sourceforge.tess4j.ITesseract;
 import net.sourceforge.tess4j.Tesseract;
@@ -47,16 +46,11 @@ public class OcrService {
     @Autowired
     private ParkingLogDao parkingLogDao;
     
-    // 추가
-    @Autowired
-    private ParkingSpotService parkingSpotService;
-    // 추가 끝
-    
     @Autowired
     private MemDao memDao;
     
     @Autowired
-    private PaymentService paymentService;
+    private PaymentDao paymentDao;
 
     // 추가
     private static final Map<String, Object> ENTRY_LOCK = new ConcurrentHashMap<>();
@@ -76,7 +70,7 @@ public class OcrService {
 
     // 번호판에 OCR 적용
     private OcrResponse processImageCommon(MultipartFile file, String type) {
-    	System.out.println("=> OcrService: processImageCommon | "+ new Date());
+        System.out.println("=> OcrService: processImageCommon | "+ new Date());
         List<String> debugImages = new ArrayList<>();
         File tempFile = null;
 
@@ -99,15 +93,17 @@ public class OcrService {
             instance.setLanguage("kor+eng");
             instance.setPageSegMode(7);
             instance.setOcrEngineMode(1);
+            
             // 인식률 높이기 위한 허용 숫자+한글 목록
             instance.setTessVariable("tessedit_char_whitelist",
             		"0123456789"
             		+ "가나다라마바사아자차카타파하거너더러머버서어저처커터퍼허고노도로모보소오조초코토포호구누두루무부수우주추쿠투푸후그느드르므브스으즈츠크트프흐육해공국합");
+            
             // OCR 실행
             String rawResult = instance.doOCR(tempFile).replace("\n", "").trim();
+            
             // OCR 실행해서 나온 번호판 결과
-            String finalResult = parseLicensePlate(rawResult);
-            finalResult = finalResult.replaceAll("\\s+", "");
+            String finalResult = parseLicensePlate(rawResult).replaceAll("\\s+", "");
             
             String entryTimeStr = "";
             String exitTimeStr = "";
@@ -116,164 +112,113 @@ public class OcrService {
 
             // OCR 성공 시 DB 로직 수행
             if (isValidResult(finalResult)) {
-                
-            	// 수정: 입차 로직
+            	// 입차 시
             	if (type.equals("ENTRY")) {
                     Object lock = ENTRY_LOCK.computeIfAbsent(finalResult, k -> new Object());
-
                     synchronized (lock) {
                         ParkingLogDto existingLog = parkingLogDao.selectRecentEntryLog(finalResult);
 
                         if (existingLog != null && existingLog.getExitTime() == null) {
-                            Integer spotId = parkingSpotService.findSpotIdByParkingLogId(existingLog.getParkingLogId());
-                            if (spotId != null) {
-                                return new OcrResponse(
-                                    finalResult, "이미 주차 공간(" + spotId + ")을 차지하고 있는 차량입니다.", debugImages, 
-                                    "ALREADY_PARKED", null, isMember, 0, existingLog.getParkingLogId(), null
-                                );
-                            } else {
-                                System.out.println("유령 로그 발견(ID:" + existingLog.getParkingLogId() + "). 무시하고 새로 입차 진행.");
-                            }
+                             return new OcrResponse(finalResult, "이미 주차장에 입차된 차량입니다.", debugImages, 
+                                     "ALREADY_PARKED", null, isMember, 0, existingLog.getParkingLogId(), null);
                         }
 
-                        ParkingSpotDto spot = parkingSpotService.recommendSpot();
-                        if (spot == null) {
-                            return new OcrResponse(finalResult, "주차 공간이 부족합니다", debugImages, "NO_SPACE", null, isMember, 0, null, null);
-                        }
+                        // DB에 입차 기록 생성
+                        ParkingLogDto newLog = new ParkingLogDto();
+                        newLog.setVehicleNum(finalResult);
+                        boolean isMem = (memDao.checkMemberVehicle(finalResult) > 0);
+                        newLog.setIsMember(isMem);
+                        parkingLogDao.insertEntryLog(newLog);
 
-                        EntryPathResponse parkResult = parkingSpotService.parkCar(spot.getSpotId().intValue(), finalResult);
                         entryTimeStr = formatDateTime(LocalDateTime.now());
-
-                        return new OcrResponse(finalResult, rawResult, debugImages, entryTimeStr, null, isMember, 0, null, null);
+                        return new OcrResponse(finalResult, rawResult, debugImages, entryTimeStr, null, isMem, 0, newLog.getParkingLogId(), null);
                     }
                 }
-            	// 수정 끝
                 
-            	// 수정: 출차 로직
-                else if (type.equals("EXIT")) {
+            	// 출차 시
+            	else if (type.equals("EXIT")) {
                     ParkingLogDto log = parkingLogDao.selectRecentEntryLog(finalResult);
+                    if (log == null) {
+                        return new OcrResponse(finalResult, "입차 기록이 없습니다.", debugImages, null, null, false, 0, null, null);
+                    }
+
                     Long memId = null;
+                    isMember = (memDao.checkMemberVehicle(finalResult) > 0);
+                    if (isMember) {
+                        memId = memDao.getMemIdByVehicle(finalResult);
+                    }
 
-                    if (log != null) {
-                        int count = memDao.checkMemberVehicle(finalResult);
-                        isMember = (count > 0);
+                    boolean hasClinicVisit = (paymentDao.checkClinicVisit(finalResult) > 0);
+                    LocalDateTime now = LocalDateTime.now();
+                    long totalMin = Duration.between(log.getEntryTime(), now).toMinutes();
+                    
+                    // 요금 계산 (기본 30분 무료, 진료 시 +120분 추가 무료)
+                    int feeToPay = calculateFee(totalMin, isMember, hasClinicVisit);
+
+                    // 이미 결제를 완료했는지 확인 (결제 상태가 true인 경우)
+                    if (log.getPaymentStatus() != null && log.getPaymentStatus()) {
+                    	// 결제가 완료되었으므로 요금은 0
+                        feeToPay = 0; 
+                    }
+
+                    StringBuilder msgBuilder = new StringBuilder();
+                    if (hasClinicVisit) msgBuilder.append("[진료할인 적용] ");
+                    else if (isMember) msgBuilder.append("[회원할인 적용] ");
+
+                    // 결제할 금액이 없거나 이미 결제한 경우 자동 출차 처리
+                    if (feeToPay == 0) {
+                        log.setExitTime(now);
+                        log.setIsMember(isMember);
+                        parkingLogDao.updateExitLog(log);
                         
-                        if (isMember)
-                            memId = memDao.getMemIdByVehicle(finalResult);
-
-                        Map<String, Object> exitStatus = parkingSpotService.checkExit(finalResult);
-                        String status = (String) exitStatus.get("status");
-                        
-                        boolean hasClinicVisit = exitStatus.get("hasClinicVisit") != null && (boolean) exitStatus.get("hasClinicVisit");
-                        boolean isCurrentFree = exitStatus.get("amount") != null && (int)exitStatus.get("amount") == 0;
-
-                        if ("PREPAID_OK".equals(status) || isCurrentFree) {
-                            parkingSpotService.processExit(finalResult);
-
-                            String msg = hasClinicVisit ? "[진료할인] 무료 주차입니다. " : "정산 확인되었습니다. ";
-                            msg += "안녕히 가십시오.";
-
-                            OcrResponse res = new OcrResponse(
-                                finalResult, msg, debugImages, 
-                                formatDateTime(log.getEntryTime()), formatDateTime(LocalDateTime.now()), 
+                        msgBuilder.append("무료 주차/정산 완료. 안녕히 가십시오.");
+                        OcrResponse res = new OcrResponse(
+                                finalResult, msgBuilder.toString(), debugImages, 
+                                formatDateTime(log.getEntryTime()), formatDateTime(now), 
                                 isMember, 0, log.getParkingLogId(), memId
-                            );
-                            res.setAlreadyPaid(true);
-                            return res;
-                        }
-                        
-                        /*else {
-                            Integer feeToPay = exitStatus.containsKey("amount") ? 
-                                               (Integer) exitStatus.get("amount") : 
-                                               (Integer) exitStatus.get("additionalFee");
-
-                            StringBuilder msgBuilder = new StringBuilder();
-                            if (hasClinicVisit) msgBuilder.append("[진료할인 적용] ");
-                            else if (isMember) msgBuilder.append("[회원할인 적용] ");
-                            msgBuilder.append(exitStatus.get("message"));
-
-                            OcrResponse res = new OcrResponse(
-                                finalResult,
-                                msgBuilder.toString(),
-                                debugImages,
-                                formatDateTime(log.getEntryTime()),
-                                null, 
-                                isMember,
-                                feeToPay,
-                                log.getParkingLogId(),
-                                memId
-                            );
-                            res.setAlreadyPaid(false);
-                            return res;
-                        }*/
-                     // OcrService.java 수정된 코드
-                        else {
-                            // 요금 안전하게 가져오기 (amount나 additionalFee가 없으면 0으로 처리)
-                            Integer feeToPay = 0;
-                            if (exitStatus.containsKey("amount")) {
-                                feeToPay = (Integer) exitStatus.get("amount");
-                            } else if (exitStatus.containsKey("additionalFee")) {
-                                feeToPay = (Integer) exitStatus.get("additionalFee");
-                            }
-
-                            StringBuilder msgBuilder = new StringBuilder();
-                            if (hasClinicVisit) msgBuilder.append("[진료할인 적용] ");
-                            else if (isMember) msgBuilder.append("[회원할인 적용] ");
-                            
-                            // 메시지 처리
-                            if (exitStatus.containsKey("message")) {
-                                msgBuilder.append(exitStatus.get("message"));
-                            } else {
-                                msgBuilder.append("결제가 필요합니다.");
-                            }
-
-                            // 💡 핵심: 현재 시간을 가상의 출차 시간으로 포맷팅하여 전달
-                            String currentExitTime = formatDateTime(LocalDateTime.now());
-
-                            OcrResponse res = new OcrResponse(
-                                finalResult,
-                                msgBuilder.toString(),
-                                debugImages,
-                                formatDateTime(log.getEntryTime()),
-                                currentExitTime,  // ✅ null 대신 현재 시간을 전달!
-                                isMember,
-                                feeToPay,
-                                log.getParkingLogId(),
-                                memId
-                            );
-                            res.setAlreadyPaid(false);
-                            return res;
-                        }
-                        
+                        );
+                        res.setAlreadyPaid(true);
+                        return res;
+                    } 
+                    // 결제가 필요한 경우
+                    else {
+                        msgBuilder.append("결제가 필요합니다.");
+                        OcrResponse res = new OcrResponse(
+                                finalResult, msgBuilder.toString(), debugImages,
+                                formatDateTime(log.getEntryTime()), formatDateTime(now), 
+                                isMember, feeToPay, log.getParkingLogId(), memId
+                        );
+                        res.setAlreadyPaid(false);
+                        return res;
                     }
                 }
-                // 수정 끝
             }
             return new OcrResponse(finalResult, rawResult, debugImages, entryTimeStr, exitTimeStr, isMember, parkingFee, null, null);
         } catch (Exception e) {
             e.printStackTrace();
             return new OcrResponse("에러", "에러", debugImages, "에러", "에러", false, -1, null, null);
         } finally {
-            if (tempFile != null)
-            	tempFile.delete();
+            if (tempFile != null) tempFile.delete();
         }
     }
 
     // 요금 계산 함수
-    /*private Integer calculateFee(LocalDateTime in, LocalDateTime out, boolean isMember) {
-    	System.out.println("=> OcrService: calculateFee | "+ new Date());
-        long minutes = Duration.between(in, out).toMinutes();
+    private int calculateFee(long minutes, boolean isMember, boolean hasClinicVisit) {
+        int freeMinutes = 30;
+        if (hasClinicVisit) freeMinutes += 120;
 
-        // 최초 30분 무료
-        if (minutes <= 30)
-        	return 0;
+        if (minutes <= freeMinutes) return 0;
 
-        // 이후 30분당
-        long chargeMinutes = minutes - 30;
+        long chargeMinutes = minutes - freeMinutes;
         int unit = (int) Math.ceil(chargeMinutes / 30.0);
         int rate = isMember ? 1000 : 2000;
-        return unit * rate;
-    }*/
+        int totalAmount = unit * rate;
+
+        long days = (minutes / (24 * 60)) + 1;
+        int dailyLimit = isMember ? 15000 : 30000;
+        
+        return Math.min(totalAmount, (int)(days * dailyLimit));
+    }
 
     // 추출한 문자열이 번호판 형태인지 확인
     private boolean isValidResult(String text) {
