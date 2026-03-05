@@ -86,7 +86,7 @@ OCR 기반 입·출차 시스템 운영 및 예약·민원 통합 관리를 지�
 
 ### 6. ERD
 **ERD - 전체**  
-![MBC_middle_ERD_v6_1](https://github.com/DongHyun0521/MBC_middle_project.git/etc/ERD/MBC_middle_ERD_v6_1.png)  
+![MBC_middle_ERD_v6_1](./etc/ERD/MBC_middle_ERD_v6_1.png)  
 
 **ERD - 회원 및 차량**  
 ![MBC_middle_ERD_v6_2](https://github.com/DongHyun0521/MBC_middle_project.git/etc/ERD/MBC_middle_ERD_v6_2.png)  
