@@ -36,8 +36,7 @@
 4. 발표 대본 작성 및 발표
 
 - 임소리
-1. 사용자 접점 서비스(Web/Kiosk)
-2. 통합 프론트 엔드 개발 및 UI 설계
+1. 사용자 접점 서비스(Web/Kiosk) 통합 프론트 엔드 개발 및 UI 설계
 3. 발표 자료 작성
 
 - 오종석
@@ -77,9 +76,9 @@ OCR 기반 입·출차 시스템 운영 및 예약·민원 통합 관리를 지�
 | Vue.js               | Java                       | PostgreSQL  | Tesseract OCR              | JUnit 5                    |           |
 | JavaScript           | Spring Boot                | HikariCP    | Tess4J                     | Mockito                    |           |
 | HTML5                | Spring                     | MyBatis     | Java 2D API                |                            |           |
-| CSS3                 | Maven                      | RegEx       |                            |                            |           |
-| Vite                 | Tomcat                     |             |                            |                            |           |
-| Axios                |                            |             |                            |                            |           |
+| CSS3                 | Lombok                     | RegEx       |                            |                            |           |
+| Vite                 | Maven                      |             |                            |                            |           |
+| Axios                | Tomcat                     |             |                            |                            |           |
 | Node.js              |                            |             |                            |                            |           |
 
 ---
@@ -156,7 +155,7 @@ OCR 기반 입·출차 시스템 운영 및 예약·민원 통합 관리를 지�
 1. Python YOLO 기반의 딥러닝 객체 탐지 모델 도입
 2. 기상 악화 및 야간 환경에서의 OCR 인식 정밀도 개선
 3. 차량 객체 추적(Object Tracking)을 통한 주차 유도 자동화
-4. 
+
 - E-Mobility 연동형 스마트 파킹
 1. 전기차(EV) 충전 구역 자동 배정 및 점유 현황 관제
 2. 충전 시간과 주차 요금을 결합한 통합 정산 시스템 확장
